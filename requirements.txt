@@ -1,0 +1,8 @@
+fastapi>=0.110
+uvicorn[standard]>=0.27
+requests>=2.31
+python-multipart>=0.0.9
+tencentcloud-sdk-python>=3.0
+
+# Optional: required only for local GGUF models and local image vision.
+# llama-cpp-python>=0.2.90

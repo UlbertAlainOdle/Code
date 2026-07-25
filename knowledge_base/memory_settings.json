@@ -1,0 +1,10 @@
+{
+    "auto_save_memories": true,
+    "auto_merge_enabled": false,
+    "auto_merge_days": 7,
+    "last_auto_merge": null,
+    "memory_2_enabled": true,
+    "relevant_memory_count": 8,
+    "include_memory_metadata": true,
+    "local_vector_retrieval_enabled": true
+}

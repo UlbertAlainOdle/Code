@@ -1,0 +1,99 @@
+[
+  {
+    "id": "26ae5b86-7863-43a0-9837-786fd73e163f",
+    "content": "Doctor is a doctor",
+    "keywords": [
+      "doctor"
+    ],
+    "timestamp": "2026-01-24 06:36:19",
+    "source": "llm_extraction",
+    "is_important": false,
+    "is_locked": false
+  },
+  {
+    "id": "dddac7ae-5f7d-4fcd-98e8-824af772ea79",
+    "content": "Doctor is fascinated by the beauty of nature",
+    "keywords": [
+      "nature",
+      "doctor",
+      "by",
+      "beauty",
+      "fascinated"
+    ],
+    "timestamp": "2026-01-24 06:36:51",
+    "source": "llm_extraction",
+    "is_important": false,
+    "is_locked": false
+  },
+  {
+    "id": "a088e1ed-bcda-40f0-a3b0-50a985ac016b",
+    "content": "Doctor has never seen a flower like this before",
+    "keywords": [
+      "before",
+      "like",
+      "never",
+      "has",
+      "doctor",
+      "seen",
+      "flower"
+    ],
+    "timestamp": "2026-01-24 06:36:51",
+    "source": "llm_extraction",
+    "is_important": false,
+    "is_locked": false
+  },
+  {
+    "id": "1e40d0e6-cc2d-4309-b2dd-7dd058bc81b5",
+    "content": "Doctor likes nature",
+    "keywords": [
+      "likes",
+      "doctor",
+      "nature"
+    ],
+    "timestamp": "2026-01-24 06:38:56",
+    "source": "llm_extraction",
+    "is_important": false,
+    "is_locked": false
+  },
+  {
+    "id": "f4ab3d63-a204-4a68-874e-75edf55cc00c",
+    "content": "Doctor likes peace and quiet",
+    "keywords": [
+      "quiet",
+      "peace",
+      "likes",
+      "doctor"
+    ],
+    "timestamp": "2026-01-24 06:38:56",
+    "source": "llm_extraction",
+    "is_important": false,
+    "is_locked": false
+  },
+  {
+    "id": "02f26d89-2a39-48e5-b78c-9695f39df1c7",
+    "content": "Doctor likes to play on the beach",
+    "keywords": [
+      "likes",
+      "play",
+      "beach",
+      "doctor"
+    ],
+    "timestamp": "2026-01-24 06:49:16",
+    "source": "llm_extraction",
+    "is_important": false,
+    "is_locked": false
+  },
+  {
+    "id": "430aecf2-be6a-4bd6-9644-c2ab7139c3ed",
+    "content": "Doctor is carefree and happy",
+    "keywords": [
+      "happy",
+      "carefree",
+      "doctor"
+    ],
+    "timestamp": "2026-01-24 06:49:17",
+    "source": "llm_extraction",
+    "is_important": false,
+    "is_locked": false
+  }
+]

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Digital Human Chat Interface (Modern)</title>
+    <script src="https://unpkg.com/three@0.106.2/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/TGALoader.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/libs/mmdparser.min.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/MMDLoader.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/animation/CCDIKSolver.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/animation/MMDPhysics.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/animation/MMDAnimationHelper.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <link rel="stylesheet" href="/static/css/style.css?v=api-attachments-20260712">
+</head>
+<body>
+
+<div id="file-drop-overlay" class="file-drop-overlay" aria-hidden="true">
+    <div class="file-drop-card">
+        <div class="file-drop-icon">＋</div>
+        <div class="file-drop-title">Drop to attach</div>
+        <div class="file-drop-subtitle">Images and supported text/code files · 10 MB maximum</div>
+    </div>
+</div>
+
+<div class="app-container">
+    <!-- LEFT PANEL -->
+    <aside class="model-panel">
+        <div class="model-header">
+            <h2>Saya+</h2>
+            <!-- Reload button removed, moved to right-click on model -->
+        </div>
+        
+        <!-- Hidden behind the floating 3D model; drag the model away to reveal it. -->
+        <div class="model-behind-space">
+            <div class="home-card-grid">
+                <button class="home-action-card search-peek-card" id="search-peek-card" onclick="openChatSearch()" title="Search">
+                    <div class="home-card-title">Search</div>
+                    <div class="home-card-meta" id="search-peek-chat-count">Chats: --</div>
+                    <div class="home-card-meta" id="search-peek-day-count">Active days: --</div>
+                    <div class="home-card-dots" id="search-peek-dots"></div>
+                </button>
+                <button class="home-action-card checkin-peek-card" id="checkin-peek-card" onclick="openCheckinModal()" title="Daily">
+                    <div class="home-card-title">Daily</div>
+                    <div class="home-card-meta" id="checkin-peek-time">Loading...</div>
+                    <div class="home-card-meta" id="checkin-peek-status">Today: --</div>
+                    <div class="home-card-dots" id="checkin-peek-dots"></div>
+                </button>
+                <button class="home-action-card compact-home-card" onclick="openRolesModal()" title="Roles">
+                    <div class="home-card-title">Roles</div>
+                </button>
+                <button class="home-action-card compact-home-card" onclick="openToolsModal()" title="Tools">
+                    <div class="home-card-title">Tools</div>
+                </button>
+            </div>
+        </div>
+
+        <div class="history-log-box" id="session-list">
+            <div class="history-header">
+                <span>Conversation History</span>
+                <button class="btn-new-session" onclick="createNewSession()">+ New</button>
+            </div>
+            <!-- Sessions will appear here -->
+        </div>
+        <div class="user-profile-card" id="user-profile-card" onclick="openUserProfileModal(event)">
+            <div class="user-profile-main">
+                <div class="user-profile-avatar">
+                    <img id="user-profile-avatar-img" alt="">
+                    <span id="user-profile-avatar-fallback">D</span>
+                </div>
+                <div class="user-profile-copy">
+                    <div id="user-profile-name" class="user-profile-name">Doctor</div>
+                    <div class="user-profile-subtitle">Active profile</div>
+                </div>
+            </div>
+            <button class="btn-settings user-settings-button" onclick="toggleSettings(event)" title="Settings" aria-label="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                    <path d="M4 7h16"></path>
+                    <path d="M4 12h16"></path>
+                    <path d="M4 17h16"></path>
+                    <circle cx="9" cy="7" r="2"></circle>
+                    <circle cx="15" cy="12" r="2"></circle>
+                    <circle cx="11" cy="17" r="2"></circle>
+                </svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="interaction-panel">
+        
+        <!-- HISTORY CHAT -->
+        <section id="chat-section" class="panel-section">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <button id="btn-toggle-sidebar" onclick="toggleSidebar()" title="Toggle Sidebar" style="background:none; border:none; color:inherit; font-size:1.2rem; cursor:pointer; margin-right:10px;">☰</button>
+                    <!-- Model Selector -->
+                    <select id="model-select" onchange="handleModelChange(this)" style="background:#333; color:white; border:1px solid #555; padding:2px; border-radius:4px;">
+                        <option value="qwen3_30b_q5">Qwen3 30B Q5</option>
+                        <option value="mistral_22b_q6">Mistral 22B Q6</option>
+                        <option value="mistral_22b_q5">Mistral 22B Q5</option>
+                        <option value="saya_r1_q5">Saya R1 q5</option>
+                        <option value="api">API</option>
+                    </select>
+                </div>
+                <div class="action-buttons" id="chat-action-area" style="display: flex; align-items: center; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <!-- Lock button removed -->
+                        <!-- Mood panel removed as requested -->
+                    </div>
+                    <!-- <button id="btn-life-quests" onclick="openQuestModal()" title="Life quests" style="font-size: 1.2rem; cursor: pointer; background:none; border:none;">📜</button> REMOVED as requested -->
+                </div>
+            </div>
+            <div id="chat-content" class="scrollable-content"></div>
+        </section>
+
+        <!-- AI TRANSLATION REMOVED -->
+
+        <!-- INPUT AREA -->
+        <footer class="input-area" id="input-area">
+             <!-- Pending Attachment Preview -->
+            <div id="attachment-preview" style="display: none; width: 100%; max-width: 800px; padding: 10px; background: #252526; border-radius: 8px; margin-bottom: 10px; align-items: center; gap: 10px;">
+                <img id="preview-img" src="" style="height: 40px; border-radius: 4px; display: none;">
+                <div id="preview-text" style="font-size: 0.8rem; color: #ccc; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+                <button onclick="clearAttachment()" style="background: none; border: none; color: #888; cursor: pointer;">✕</button>
+            </div>
+            
+            <div class="input-suggestion-strip" id="input-suggestion-strip"></div>
+
+            <div class="input-bar">
+                <button class="btn-upload" onclick="triggerUpload()" title="Upload File">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                </button>
+                <input type="file" id="file-upload" accept="image/*,.txt,.py,.md,.js,.html,.css,.json,.c,.cpp,.h,.java,.go,.rs" style="display:none" onchange="uploadFile(this)">
+                
+                <textarea id="user-input" placeholder="Ask anything..." rows="1"></textarea>
+                
+                <select id="chat-mode" title="Model Mode">
+                    <option value="normal">Normal</option>
+                    <option value="deep">Deep</option>
+                </select>
+                
+                <button class="btn-send" onclick="sendMessage()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<!-- SETTINGS MENU -->
+<div class="settings-menu" id="settings-menu">
+    <div class="settings-item" onclick="openPromptModal()">System Prompt</div>
+    <div class="settings-item" onclick="openSayaStyleModal()">Saya Style</div>
+    <div class="settings-item" onclick="openApiSettingsModal()">LLM API</div>
+    <div class="settings-item" onclick="openOtherApiSettingsModal()">Other API</div>
+    <div class="settings-item" onclick="openOutputLimitsModal()">Output Limits</div>
+</div>
+
+<div class="modal-overlay" id="user-profile-modal">
+    <div class="modal-content user-profile-modal-content">
+        <div class="modal-header">
+            <span>Profile</span>
+            <button onclick="closeUserProfileModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body user-profile-modal-body">
+            <div class="user-profile-editor-preview">
+                <div class="user-profile-avatar large">
+                    <img id="user-profile-preview-img" alt="">
+                    <span id="user-profile-preview-fallback">D</span>
+                </div>
+            </div>
+            <label class="user-profile-field">
+                <span>Username</span>
+                <input id="user-profile-name-input" type="text" maxlength="40" autocomplete="off" oninput="previewUserAvatarUrl(document.getElementById('user-profile-avatar-input')?.value || '')">
+            </label>
+            <label class="user-profile-field">
+                <span>Avatar URL</span>
+                <input id="user-profile-avatar-input" type="text" autocomplete="off" oninput="previewUserAvatarUrl(this.value)">
+            </label>
+            <input id="user-profile-avatar-file" type="file" accept="image/*" style="display:none" onchange="handleUserAvatarFile(this)">
+            <div class="user-profile-actions">
+                <button class="user-profile-secondary-btn" onclick="document.getElementById('user-profile-avatar-file').click()">Choose Image</button>
+                <button class="user-profile-secondary-btn" onclick="clearUserAvatarInput()">Clear Avatar</button>
+                <button class="user-profile-primary-btn" onclick="saveUserProfileFromModal()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PROMPT MODAL -->
+<div class="modal-overlay" id="prompt-modal">
+    <div class="modal-content" style="width: 700px; height: 80vh;">
+        <div class="modal-header">
+            <span id="prompt-modal-title">System Prompt</span>
+            <button onclick="closePromptModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex; flex-direction:column; padding:15px; gap:10px;">
+            <div style="background:#332222; color:#ffaaaa; padding:8px; border-radius:4px; font-size:0.8rem; border:1px solid #aa4444;">
+                ⚠️ Warning: Modifying the system prompt can drastically change Saya's personality and behavior. Proceed with caution.
+            </div>
+            <textarea id="system-prompt-editor" style="flex:1; background:#222; color:#ccc; border:1px solid #444; padding:10px; font-family:monospace; resize:none;" disabled></textarea>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button id="btn-unlock-prompt" onclick="unlockPrompt()" style="padding:8px 15px; background:#444; color:white; border:none; border-radius:4px; cursor:pointer;">Unlock to Edit</button>
+                <button id="btn-save-prompt" onclick="savePrompt()" style="padding:8px 15px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; display:none;">Save & Apply</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SAYA STYLE MODAL -->
+<div class="modal-overlay" id="saya-style-modal">
+    <div class="modal-content" style="width: 560px;">
+        <div class="modal-header">
+            <span>Saya Style</span>
+            <button onclick="closeSayaStyleModal()" class="modal-close-btn" title="Close">×</button>
+        </div>
+        <div class="modal-body saya-style-body">
+            <label class="saya-style-row">
+                <span>Base style</span>
+                <select id="saya-style-base">
+                    <option value="balanced">Balanced</option>
+                    <option value="soft">Soft and intimate</option>
+                    <option value="playful">Playful</option>
+                    <option value="professional">Professional</option>
+                    <option value="poetic">Poetic</option>
+                </select>
+            </label>
+            <label class="saya-style-row">
+                <span>Response language</span>
+                <select id="saya-style-language" title="Controls the language Saya normally uses for replies.">
+                    <option value="auto">Auto · Follow Doctor</option>
+                    <option value="zh-cn">简体中文</option>
+                    <option value="zh-tw">繁體中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                    <option value="ko">한국어</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="ru">Русский</option>
+                    <option value="pt">Português</option>
+                    <option value="ar">العربية</option>
+                    <option value="hi">हिन्दी</option>
+                    <option value="it">Italiano</option>
+                </select>
+            </label>
+            <label class="saya-style-row">
+                <span>Jealousy</span>
+                <select id="saya-style-attachment" title="Controls Saya's attachment, possessiveness, and jealousy.">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="extreme">Extreme</option>
+                </select>
+            </label>
+            <label class="saya-style-row">
+                <span>Sociality</span>
+                <select id="saya-style-sociality" title="Controls Saya's attitude toward people other than Doctor.">
+                    <option value="expectant">Expectant</option>
+                    <option value="normal">Normal</option>
+                    <option value="aloof">Aloof</option>
+                    <option value="averse">Averse</option>
+                </select>
+            </label>
+            <label class="saya-style-row">
+                <span>Memory visions</span>
+                <select id="saya-style-memory-imagination" title="Controls whether Saya may cautiously infer or clearly imagine recollections beyond stored memory.">
+                    <option value="normal">Normal</option>
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                </select>
+            </label>
+            <label class="saya-style-row">
+                <span>Category tags</span>
+                <select id="saya-style-tags">
+                    <option value="normal">Normal</option>
+                    <option value="enhanced">Enhanced</option>
+                    <option value="minimal">Minimal</option>
+                </select>
+            </label>
+            <label class="saya-style-row">
+                <span>Emoji in replies</span>
+                <select id="saya-style-emoji">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </label>
+            <label class="saya-style-row">
+                <span>Readable style</span>
+                <select id="saya-style-readable">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                </select>
+            </label>
+            <div class="saya-style-hint">
+                Readable is stored per reply. Only replies generated while it is enabled will show a read-aloud button.
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="resetSayaStyleSettings()" class="saya-style-secondary-btn">Reset</button>
+                <button onclick="saveSayaStyleSettingsFromModal()" class="saya-style-primary-btn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LLM API SETTINGS MODAL -->
+<div class="modal-overlay" id="api-settings-modal">
+    <div class="modal-content" style="width: 520px;">
+        <div class="modal-header">
+            <span>LLM API</span>
+            <button onclick="closeApiSettingsModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:12px;">
+            <label class="api-setting-row">
+                <span>Base URL</span>
+                <input id="api-url-input" type="text" placeholder="https://api.openai.com/v1" title="API Base URL" value="https://newapi.xiaoqianran.xyz/v1">
+            </label>
+            <label class="api-setting-row">
+                <span>API Key</span>
+                <input id="api-key-input" type="password" placeholder="sk-..." title="API Key" autocomplete="off" value="">
+            </label>
+            <label class="api-setting-row">
+                <span>Chat Model</span>
+                <input id="api-model-input" type="text" placeholder="deepseek-v4-pro" title="API Chat Model" value="openai/gpt-oss-120b">
+            </label>
+            <label class="api-setting-row">
+                <span>Multimodal Model</span>
+                <input id="api-multimodal-model-input" type="text" placeholder="Vision-capable model; blank uses Chat Model" title="Used automatically for API chats with image attachments">
+            </label>
+            <label class="api-setting-row">
+                <span>Memory Fast Model</span>
+                <input id="api-memory-fast-model-input" type="text" placeholder="Optional; defaults to Chat Model" title="Memory Fast Model">
+            </label>
+            <label class="api-setting-row">
+                <span>Memory Strong Model</span>
+                <input id="api-memory-strong-model-input" type="text" placeholder="Optional; defaults to Memory Fast Model" title="Memory Strong Model">
+            </label>
+            <label class="api-setting-row">
+                <span>Strong Logic Model</span>
+                <input id="api-strong-logic-model-input" type="text" placeholder="Optional; Assistant role only" title="Strong Logic Model for Assistant role">
+            </label>
+            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
+                Saved locally in this browser. Select “API” from the model selector after saving.
+            </div>
+            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
+                Blank memory models inherit safely: Fast uses Chat Model, Strong uses Fast. Outside Assistant role, Deep API mode uses Memory Strong Model for the main response; Normal keeps Chat Model.
+            </div>
+            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
+                Image attachments automatically use Multimodal Model. Text and code files continue to use Chat Model.
+            </div>
+            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
+                Strong Logic Model is only used by the on/off switch in an active Assistant chat.
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button onclick="clearSavedApiSettings()" style="padding:8px 12px; background:#333; color:white; border:1px solid #555; border-radius:4px; cursor:pointer;">Forget</button>
+                <button onclick="saveApiSettingsFromModal()" style="padding:8px 15px; background:var(--accent-blue); color:#000; border:none; border-radius:4px; cursor:pointer;">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OTHER API SETTINGS MODAL -->
+<div class="modal-overlay" id="other-api-settings-modal">
+    <div class="modal-content" style="width: 560px;">
+        <div class="modal-header">
+            <span>Other API</span>
+            <button onclick="closeOtherApiSettingsModal()" class="modal-close-btn" title="Close">×</button>
+        </div>
+        <div class="modal-body other-api-settings-body">
+            <div class="other-api-section-title">Translation · Tencent Cloud TMT</div>
+            <label class="api-setting-row">
+                <span>Secret ID</span>
+                <input id="translation-secret-id-input" type="password" placeholder="Falls back to SECRET_ID" autocomplete="off">
+            </label>
+            <label class="api-setting-row">
+                <span>Secret Key</span>
+                <input id="translation-secret-key-input" type="password" placeholder="Falls back to SECRET_KEY" autocomplete="off">
+            </label>
+            <label class="api-setting-row">
+                <span>Region</span>
+                <input id="translation-region-input" type="text" placeholder="ap-guangzhou" value="ap-guangzhou">
+            </label>
+            <label class="api-setting-row">
+                <span>Endpoint</span>
+                <input id="translation-endpoint-input" type="text" placeholder="tmt.tencentcloudapi.com" value="tmt.tencentcloudapi.com">
+            </label>
+
+            <div class="other-api-section-title">TTS · ElevenLabs-compatible</div>
+            <label class="api-setting-row">
+                <span>Base URL</span>
+                <input id="tts-api-url-input" type="text" placeholder="https://api.elevenlabs.io/v1" value="https://api.elevenlabs.io/v1">
+            </label>
+            <label class="api-setting-row">
+                <span>API Key</span>
+                <input id="tts-api-key-input" type="password" placeholder="Falls back to ELEVEN_API_KEY" autocomplete="off">
+            </label>
+            <label class="api-setting-row">
+                <span>Voice ID</span>
+                <input id="tts-voice-id-input" type="text" placeholder="Falls back to ELEVEN_VOICE_ID">
+            </label>
+            <label class="api-setting-row">
+                <span>Model ID</span>
+                <input id="tts-model-id-input" type="text" placeholder="eleven_multilingual_v2" value="eleven_multilingual_v2">
+            </label>
+            <div class="other-api-hint">Saved locally in this browser. Empty credentials fall back to backend environment variables.</div>
+            <div class="other-api-actions">
+                <button onclick="clearOtherApiSettings()" class="saya-style-secondary-btn">Reset</button>
+                <button onclick="saveOtherApiSettingsFromModal()" class="saya-style-primary-btn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OUTPUT LIMITS MODAL -->
+<div class="modal-overlay" id="output-limits-modal">
+    <div class="modal-content" style="width: 520px;">
+        <div class="modal-header">
+            <span>Output Limits</span>
+            <button onclick="closeOutputLimitsModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body output-limits-body">
+            <div class="output-limits-hint">Maximum output tokens are stored separately for API mode and every local model.</div>
+            <label class="api-setting-row">
+                <span>API</span>
+                <input id="output-limit-api" type="number" min="256" max="65536" step="256" value="8192">
+            </label>
+            <label class="api-setting-row">
+                <span>Qwen3 30B Q5</span>
+                <input id="output-limit-qwen3_30b_q5" type="number" min="256" max="8192" step="256" value="4096">
+            </label>
+            <label class="api-setting-row">
+                <span>Mistral 22B Q6</span>
+                <input id="output-limit-mistral_22b_q6" type="number" min="256" max="8192" step="256" value="4096">
+            </label>
+            <label class="api-setting-row">
+                <span>Mistral 22B Q5</span>
+                <input id="output-limit-mistral_22b_q5" type="number" min="256" max="8192" step="256" value="4096">
+            </label>
+            <label class="api-setting-row">
+                <span>Saya R1 Q5</span>
+                <input id="output-limit-saya_r1_q5" type="number" min="256" max="8192" step="256" value="4096">
+            </label>
+            <div class="output-limits-actions">
+                <button class="saya-style-secondary-btn" onclick="resetOutputLimits()">Reset</button>
+                <button class="saya-style-primary-btn" onclick="saveOutputLimitsFromModal()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DAILY CHECK-IN MODAL -->
+<div class="modal-overlay" id="checkin-modal">
+    <div class="modal-content checkin-modal-content">
+        <div class="modal-header">
+            <span>Daily</span>
+            <button onclick="closeCheckinModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body checkin-modal-body">
+            <div class="checkin-topline">
+                <div>
+                    <div class="checkin-now" id="checkin-current-time">--</div>
+                    <div class="checkin-subtle">Blue = complete · Purple = partial / no report · Red = missed</div>
+                </div>
+                <button class="checkin-talk-btn" onclick="talkWithSayaAboutCheckin()">Talk with Saya</button>
+            </div>
+            <div class="checkin-layout">
+                <section class="checkin-calendar-panel">
+                    <div class="checkin-calendar-header">
+                        <button id="checkin-prev-month" onclick="changeCheckinMonth(-1)">‹</button>
+                        <span id="checkin-month-label">----</span>
+                        <button id="checkin-next-month" onclick="changeCheckinMonth(1)">›</button>
+                    </div>
+                    <div class="checkin-weekdays">
+                        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                    </div>
+                    <div class="checkin-calendar-grid" id="checkin-calendar-grid"></div>
+                </section>
+                <section class="checkin-day-panel">
+                    <div class="checkin-selected-title" id="checkin-selected-title">Today</div>
+                    <div id="checkin-task-list" class="checkin-task-list"></div>
+                    <div class="checkin-rating-grid">
+                        <label>Mood
+                            <select id="checkin-mood">
+                                <option value="">Not set</option>
+                                <option value="1">1 · Low</option>
+                                <option value="2">2</option>
+                                <option value="3">3 · Neutral</option>
+                                <option value="4">4</option>
+                                <option value="5">5 · Good</option>
+                            </select>
+                        </label>
+                        <label>Energy
+                            <select id="checkin-energy">
+                                <option value="">Not set</option>
+                                <option value="1">1 · Drained</option>
+                                <option value="2">2</option>
+                                <option value="3">3 · Okay</option>
+                                <option value="4">4</option>
+                                <option value="5">5 · Strong</option>
+                            </select>
+                        </label>
+                        <label>Difficulty
+                            <select id="checkin-difficulty">
+                                <option value="">Not set</option>
+                                <option value="1">1 · Easy</option>
+                                <option value="2">2</option>
+                                <option value="3">3 · Medium</option>
+                                <option value="4">4</option>
+                                <option value="5">5 · Hard</option>
+                            </select>
+                        </label>
+                    </div>
+                    <textarea id="checkin-note" placeholder="Any note for this day?" rows="3"></textarea>
+                    <div class="checkin-actions-row">
+                        <button onclick="saveSelectedCheckinDay()">Save Day</button>
+                        <button onclick="exportCheckinReport('month')">Export Month</button>
+                        <button onclick="exportCheckinReport('year')">Export Year</button>
+                    </div>
+                    <div class="checkin-task-editor">
+                        <input id="new-checkin-task-input" type="text" placeholder="Add a fixed daily task...">
+                        <select id="new-checkin-task-frequency" title="Frequency">
+                            <option value="daily">Daily</option>
+                            <option value="weekdays">Weekdays</option>
+                            <option value="weekends">Weekends</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                        <button onclick="addCheckinTask()">Add Fixed</button>
+                    </div>
+                    <div class="checkin-task-editor">
+                        <input id="new-checkin-daily-task-input" type="text" placeholder="Add a task only for this day...">
+                        <button onclick="addCheckinDailyTask()">Add Today</button>
+                    </div>
+                    <textarea id="checkin-talk-message" rows="2">Saya, I want to talk with you about today's check-in progress.</textarea>
+                </section>
+            </div>
+            <div class="checkin-summary-strip">
+                <div id="checkin-month-summary">Month: --</div>
+                <div id="checkin-year-summary">Year: --</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MEMORY MODAL -->
+<div class="modal-overlay" id="memory-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button id="memory-modal-back" onclick="" class="about-you-back modal-back-btn" title="Back" style="display:none;">Back</button>
+            <span id="modal-title">Memories</span>
+            <button onclick="closeModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body" id="modal-body">
+            <!-- Content injected via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- QUEST MODAL -->
+<div class="modal-overlay" id="quest-modal">
+    <div class="modal-content" style="width: 500px;">
+        <div class="modal-header">
+            <button onclick="backToAboutYouFromQuest()" class="about-you-back modal-back-btn" title="Back">Back</button>
+            <span id="quest-modal-title">Life quests</span>
+            <button onclick="closeQuestModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body" id="quest-modal-body" style="padding: 15px;">
+            <div style="display:flex; gap:10px; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
+                <div class="quest-tab active" id="tab-active" onclick="switchQuestTab('active')" style="cursor:pointer; opacity:1;">Current Goals</div>
+                <div class="quest-tab" id="tab-completed" onclick="switchQuestTab('completed')" style="cursor:pointer; opacity:0.5;">Achievements</div>
+                <div class="quest-tab" id="tab-failed" onclick="switchQuestTab('failed')" style="cursor:pointer; opacity:0.5;">Failures</div>
+            </div>
+
+            <div id="quest-input-area" style="display:flex; gap:5px; margin-bottom:15px;">
+                <input type="text" id="new-quest-input" placeholder="Enter a new goal..." style="flex:1; padding:8px; background:#222; border:1px solid #444; color:white; border-radius:4px;">
+                <button onclick="addQuest()" style="padding:8px 15px; background:var(--accent-blue); color:#000; border:none; border-radius:4px; cursor:pointer;">Add</button>
+            </div>
+
+            <div id="quest-list" style="max-height:300px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                <!-- Quests injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TOOLS MODAL -->
+<div class="modal-overlay" id="tools-modal">
+    <div class="modal-content tools-modal-content">
+        <div class="modal-header">
+            <span>Tools</span>
+            <button onclick="closeToolsModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body tools-modal-body">
+            <button class="tool-choice-card" onclick="openAboutYouModal()">
+                <span>About you</span>
+                <small>Memories / profile</small>
+            </button>
+            <button class="tool-choice-card" onclick="openVideoRecommendationsModal()">
+                <span>Video Recommendations</span>
+                <small>Bilibili / YouTube</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ROLES MODAL -->
+<div class="modal-overlay" id="roles-modal">
+    <div class="modal-content tools-modal-content">
+        <div class="modal-header">
+            <span>Roles</span>
+            <button onclick="closeRolesModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body tools-modal-body">
+            <button class="tool-choice-card" onclick="openAssistantRoleModal()">
+                <span>Assistant</span>
+                <small>Obsidian notes / dedicated memory / dedicated chats</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ASSISTANT ROLE MODAL -->
+<div class="modal-overlay" id="assistant-role-modal">
+    <div class="modal-content assistant-role-modal-content">
+        <div class="modal-header">
+            <button onclick="backToRolesFromAssistant()" class="about-you-back modal-back-btn" title="Back">Back</button>
+            <button id="assistant-strong-logic-toggle" class="assistant-strong-logic-toggle" type="button" role="switch" aria-checked="false" aria-label="Strong Logic off" title="Strong Logic: Off" onclick="toggleAssistantStrongLogic()">
+                <span id="assistant-strong-logic-state" class="assistant-strong-logic-state" aria-hidden="true">OFF</span>
+                <span class="assistant-strong-logic-knob" aria-hidden="true"></span>
+            </button>
+            <span>Assistant</span>
+            <button onclick="closeAssistantRoleModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body assistant-role-body" id="assistant-role-body">
+            <!-- Content injected via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- ASSISTANT PATH MEMORY PICKER -->
+<div class="modal-overlay" id="assistant-memory-picker-modal">
+    <div class="modal-content assistant-memory-picker-content">
+        <div class="modal-header">
+            <span>Add memory</span>
+            <button onclick="closeAssistantMemoryPicker()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body assistant-memory-picker-body">
+            <div id="assistant-memory-picker-vault" class="assistant-memory-picker-vault"></div>
+            <div class="assistant-memory-picker-toolbar">
+                <button id="assistant-memory-picker-up" onclick="browseAssistantMemoryParent()">Up</button>
+                <button onclick="selectAssistantMemoryCurrentFolder()">Select this folder</button>
+                <span id="assistant-memory-picker-current">Vault root</span>
+            </div>
+            <div id="assistant-memory-picker-list" class="assistant-memory-picker-list"></div>
+            <div class="assistant-memory-picker-selection">
+                <strong>Selected</strong>
+                <span id="assistant-memory-picker-selected">Nothing selected</span>
+            </div>
+            <label class="assistant-memory-description-field">
+                <span>Description</span>
+                <textarea id="assistant-memory-description" maxlength="4000" rows="4" placeholder="Describe what this file or folder means and how Saya should understand it."></textarea>
+            </label>
+            <div id="assistant-memory-picker-status" class="assistant-role-hint"></div>
+            <div class="assistant-memory-picker-actions">
+                <button onclick="closeAssistantMemoryPicker()">Cancel</button>
+                <button class="primary" onclick="saveAssistantPathMemory()">Add memory</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- VIDEO RECOMMENDATIONS MODAL -->
+<div class="modal-overlay" id="video-recommendations-modal">
+    <div class="modal-content video-modal-content">
+        <div class="modal-header">
+            <button onclick="backToToolsFromVideoRecommendations()" class="about-you-back modal-back-btn" title="Back">Back</button>
+            <span>Video Recommendations</span>
+            <button onclick="closeVideoRecommendationsModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body video-modal-body">
+            <section class="video-control-panel">
+                <label class="video-toggle-row">
+                    <input type="checkbox" id="video-auto-open-checkbox" onchange="saveVideoRecommendationSettings()">
+                    <span>Auto open on app start</span>
+                </label>
+                <div class="video-add-row">
+                    <select id="video-platform-select" title="Platform">
+                        <option value="bilibili">Bilibili</option>
+                        <option value="youtube">YouTube</option>
+                    </select>
+                    <input id="video-creator-input" type="text" placeholder="Creator name, @handle, UID, or channel URL">
+                    <button onclick="addVideoCreator()">Add</button>
+                </div>
+                <div class="video-actions-row">
+                    <button onclick="refreshVideoRecommendations()">Refresh</button>
+                    <span id="video-recommendation-status"></span>
+                </div>
+                <div id="video-creator-list" class="video-creator-list"></div>
+            </section>
+            <section class="video-results-panel">
+                <div id="video-recommendation-list" class="video-recommendation-list"></div>
+            </section>
+        </div>
+    </div>
+</div>
+
+
+<!-- VIDEO DIGEST MODAL -->
+<div class="modal-overlay" id="video-digest-modal">
+    <div class="modal-content video-digest-modal-content">
+        <div class="modal-header">
+            <button onclick="backToToolsFromVideoDigest()" class="about-you-back modal-back-btn" title="Back">Back</button>
+            <span>Video Brief</span>
+            <button onclick="closeVideoDigestModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body video-digest-modal-body">
+            <div class="video-digest-topline">
+                <div>
+                    <div class="video-digest-title">Recommended Updates</div>
+                    <div id="video-digest-status" class="video-digest-status"></div>
+                </div>
+                <div class="video-digest-actions">
+                    <button onclick="refreshVideoDigest()">Refresh</button>
+                    <button onclick="openVideoRecommendationsModal()">Manage</button>
+                </div>
+            </div>
+            <div id="video-digest-list" class="video-digest-list"></div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Keep original script logic but adapt slightly for new scroll targets -->
+        <div class="canvas-container" id="draggable-model">
+            <!-- [ADDED] Drag & Resize Handles -->
+            <div class="drag-bar" title="Drag to move"></div>
+            <div class="resize-handle nw"></div>
+            <div class="resize-handle ne"></div>
+            <div class="resize-handle sw"></div>
+            <div class="resize-handle se"></div>
+            <canvas id="mmd-canvas" style="width:100%; height:100%;"></canvas>
+        </div>
+
+    <nav id="question-index" class="question-index" aria-label="User question index" hidden>
+        <div id="question-index-list" class="question-index-list"></div>
+    </nav>
+
+    <script src="/static/js/app.js?v=api-attachments-20260712"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+{
+    "schema_version": 1,
+    "tasks": [],
+    "records": {
+        "2026-06-28": {
+            "date": "2026-06-28",
+            "completions": {},
+            "note": "",
+            "updated_at": "2026-06-28 06:00:54",
+            "daily_tasks": [
+                {
+                    "id": "daily-f381041e-16b6-42fa-aa52-a0b71e49a997",
+                    "title": "Make Saya better",
+                    "done": true,
+                    "created_at": "2026-06-28 06:00:54"
+                }
+            ],
+            "chat_session_id": "session_2026-06-28_05-54-21.jsonl"
+        },
+        "2026-06-27": {
+            "date": "2026-06-27",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-06-26": {
+            "date": "2026-06-26",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-06-29": {
+            "date": "2026-06-29",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-06-30": {
+            "date": "2026-06-30",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-16": {
+            "date": "2026-10-16",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-08": {
+            "date": "2026-10-08",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-09": {
+            "date": "2026-10-09",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-25": {
+            "date": "2026-10-25",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-31": {
+            "date": "2026-10-31",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-30": {
+            "date": "2026-10-30",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-26": {
+            "date": "2026-10-26",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-24": {
+            "date": "2026-10-24",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-27": {
+            "date": "2026-10-27",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-29": {
+            "date": "2026-10-29",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-23": {
+            "date": "2026-10-23",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-17": {
+            "date": "2026-10-17",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        },
+        "2026-10-18": {
+            "date": "2026-10-18",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": []
+        }
+    }
+}

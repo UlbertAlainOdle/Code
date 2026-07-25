@@ -1,0 +1,28 @@
+[
+    {
+        "id": "d4d4f87f-ef20-46dd-b2cb-5b251fffcb27",
+        "content": "The User has a cat named Kitty.",
+        "keywords": [
+            "user",
+            "cat",
+            "has",
+            "kitty.",
+            "named"
+        ],
+        "timestamp": "2026-01-24 07:01:32",
+        "source": "rag_auto"
+    },
+    {
+        "id": "f890692f-4de7-442b-b788-dc18efbc3220",
+        "content": "The user has a cat named Hana.",
+        "keywords": [
+            "user",
+            "hana.",
+            "cat",
+            "has",
+            "named"
+        ],
+        "timestamp": "2026-01-24 07:01:57",
+        "source": "rag_auto"
+    }
+]

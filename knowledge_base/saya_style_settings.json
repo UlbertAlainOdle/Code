@@ -1,0 +1,10 @@
+{
+  "base_style": "playful",
+  "response_language": "zh-cn",
+  "attachment_level": "extreme",
+  "sociality": "averse",
+  "memory_imagination": "normal",
+  "tag_mode": "minimal",
+  "allow_emoji": true,
+  "readable": false
+}
