@@ -1,0 +1,470 @@
+INFO:     Started server process [32692]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 76, in collapse_excgroups
+  |     yield
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+  |     recv_stream.close()
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\applications.py", line 112, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+    |     recv_stream.close()
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\contextlib.py", line 137, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 178, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "D:\Dear\Talk\mistral_models\Code\server5-22B----.py", line 246, in add_security_headers_and_block_active_uploads
+    |     response = await call_next(request)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 156, in call_next
+    |     raise app_exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 714, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 734, in app
+    |     await route.handle(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 288, in handle
+    |     await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 76, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 73, in app
+    |     response = await f(request)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 301, in app
+    |     raw_response = await run_endpoint_function(
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    |     return await run_in_threadpool(dependant.call, **values)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\concurrency.py", line 37, in run_in_threadpool
+    |     return await anyio.to_thread.run_sync(func)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 2470, in run_sync_in_worker_thread
+    |     return await future
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    |     result = context.run(func, *args)
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\routers\anki.py", line 22, in get_anki_state
+    |     return anki_service.get_state()
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 183, in get_state
+    |     discovered = self.discover_profiles(self._settings["data_path"])
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 119, in discover_profiles
+    |     for child in sorted(root.iterdir(), key=lambda item: item.name.casefold()):
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\pathlib.py", line 1160, in iterdir
+    |     for name in self._accessor.listdir(self):
+    | PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£: 'C:\\Users\\lll\\AppData\\Roaming\\Anki2'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+    recv_stream.close()
+  File "D:\Program\anaconda3\envs\groundingdino\lib\contextlib.py", line 137, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 178, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "D:\Dear\Talk\mistral_models\Code\server5-22B----.py", line 246, in add_security_headers_and_block_active_uploads
+    response = await call_next(request)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 156, in call_next
+    raise app_exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 714, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 734, in app
+    await route.handle(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\concurrency.py", line 37, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\routers\anki.py", line 22, in get_anki_state
+    return anki_service.get_state()
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 183, in get_state
+    discovered = self.discover_profiles(self._settings["data_path"])
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 119, in discover_profiles
+    for child in sorted(root.iterdir(), key=lambda item: item.name.casefold()):
+  File "D:\Program\anaconda3\envs\groundingdino\lib\pathlib.py", line 1160, in iterdir
+    for name in self._accessor.listdir(self):
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£: 'C:\\Users\\lll\\AppData\\Roaming\\Anki2'
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 76, in collapse_excgroups
+  |     yield
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+  |     recv_stream.close()
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\applications.py", line 112, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+    |     recv_stream.close()
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\contextlib.py", line 137, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 178, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "D:\Dear\Talk\mistral_models\Code\server5-22B----.py", line 246, in add_security_headers_and_block_active_uploads
+    |     response = await call_next(request)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 156, in call_next
+    |     raise app_exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 714, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 734, in app
+    |     await route.handle(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 288, in handle
+    |     await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 76, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 73, in app
+    |     response = await f(request)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 301, in app
+    |     raw_response = await run_endpoint_function(
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    |     return await run_in_threadpool(dependant.call, **values)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\concurrency.py", line 37, in run_in_threadpool
+    |     return await anyio.to_thread.run_sync(func)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 2470, in run_sync_in_worker_thread
+    |     return await future
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    |     result = context.run(func, *args)
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\routers\anki.py", line 22, in get_anki_state
+    |     return anki_service.get_state()
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 183, in get_state
+    |     discovered = self.discover_profiles(self._settings["data_path"])
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 119, in discover_profiles
+    |     for child in sorted(root.iterdir(), key=lambda item: item.name.casefold()):
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\pathlib.py", line 1160, in iterdir
+    |     for name in self._accessor.listdir(self):
+    | PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£: 'C:\\Users\\lll\\AppData\\Roaming\\Anki2'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+    recv_stream.close()
+  File "D:\Program\anaconda3\envs\groundingdino\lib\contextlib.py", line 137, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 178, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "D:\Dear\Talk\mistral_models\Code\server5-22B----.py", line 246, in add_security_headers_and_block_active_uploads
+    response = await call_next(request)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 156, in call_next
+    raise app_exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 714, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 734, in app
+    await route.handle(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\concurrency.py", line 37, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\routers\anki.py", line 22, in get_anki_state
+    return anki_service.get_state()
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 183, in get_state
+    discovered = self.discover_profiles(self._settings["data_path"])
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 119, in discover_profiles
+    for child in sorted(root.iterdir(), key=lambda item: item.name.casefold()):
+  File "D:\Program\anaconda3\envs\groundingdino\lib\pathlib.py", line 1160, in iterdir
+    for name in self._accessor.listdir(self):
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£: 'C:\\Users\\lll\\AppData\\Roaming\\Anki2'
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 76, in collapse_excgroups
+  |     yield
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+  |     recv_stream.close()
+  |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 772, in __aexit__
+  |     raise BaseExceptionGroup(
+  | exceptiongroup.ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    |     return await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\applications.py", line 112, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+    |     recv_stream.close()
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\contextlib.py", line 137, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 178, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |   File "D:\Dear\Talk\mistral_models\Code\server5-22B----.py", line 246, in add_security_headers_and_block_active_uploads
+    |     response = await call_next(request)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 156, in call_next
+    |     raise app_exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 714, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 734, in app
+    |     await route.handle(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 288, in handle
+    |     await self.app(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 76, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 73, in app
+    |     response = await f(request)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 301, in app
+    |     raw_response = await run_endpoint_function(
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    |     return await run_in_threadpool(dependant.call, **values)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\concurrency.py", line 37, in run_in_threadpool
+    |     return await anyio.to_thread.run_sync(func)
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    |     return await get_async_backend().run_sync_in_worker_thread(
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 2470, in run_sync_in_worker_thread
+    |     return await future
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    |     result = context.run(func, *args)
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\routers\anki.py", line 51, in refresh_anki_state
+    |     return _sync_checkin(anki_service.refresh())
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 593, in refresh
+    |     return self.get_state()
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 183, in get_state
+    |     discovered = self.discover_profiles(self._settings["data_path"])
+    |   File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 119, in discover_profiles
+    |     for child in sorted(root.iterdir(), key=lambda item: item.name.casefold()):
+    |   File "D:\Program\anaconda3\envs\groundingdino\lib\pathlib.py", line 1160, in iterdir
+    |     for name in self._accessor.listdir(self):
+    | PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£: 'C:\\Users\\lll\\AppData\\Roaming\\Anki2'
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\protocols\http\h11_impl.py", line 403, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\applications.py", line 112, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 181, in __call__
+    recv_stream.close()
+  File "D:\Program\anaconda3\envs\groundingdino\lib\contextlib.py", line 137, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_utils.py", line 82, in collapse_excgroups
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 178, in __call__
+    response = await self.dispatch_func(request, call_next)
+  File "D:\Dear\Talk\mistral_models\Code\server5-22B----.py", line 246, in add_security_headers_and_block_active_uploads
+    response = await call_next(request)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 156, in call_next
+    raise app_exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\base.py", line 141, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 714, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 734, in app
+    await route.handle(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\starlette\concurrency.py", line 37, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\to_thread.py", line 56, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 2470, in run_sync_in_worker_thread
+    return await future
+  File "D:\Program\anaconda3\envs\groundingdino\lib\site-packages\anyio\_backends\_asyncio.py", line 967, in run
+    result = context.run(func, *args)
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\routers\anki.py", line 51, in refresh_anki_state
+    return _sync_checkin(anki_service.refresh())
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 593, in refresh
+    return self.get_state()
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 183, in get_state
+    discovered = self.discover_profiles(self._settings["data_path"])
+  File "D:\Dear\Talk\mistral_models\Code\saya_app\services\anki.py", line 119, in discover_profiles
+    for child in sorted(root.iterdir(), key=lambda item: item.name.casefold()):
+  File "D:\Program\anaconda3\envs\groundingdino\lib\pathlib.py", line 1160, in iterdir
+    for name in self._accessor.listdir(self):
+PermissionError: [WinError 5] ¾Ü¾ø·ÃÎÊ¡£: 'C:\\Users\\lll\\AppData\\Roaming\\Anki2'

@@ -1,8 +1,32 @@
-fastapi>=0.110
-uvicorn[standard]>=0.27
-requests>=2.31
-python-multipart>=0.0.9
-tencentcloud-sdk-python>=3.0
+# Saya+ runtime dependencies
+#
+# The upper bounds keep a fresh installation on the current major API
+# versions used by the project while still allowing normal patch releases.
+fastapi>=0.110,<1.0
+uvicorn[standard]>=0.27,<1.0
+pydantic>=2.7,<3.0
+requests>=2.31,<3.0
+python-multipart>=0.0.9,<1.0
+tencentcloud-sdk-python>=3.0,<4.0
 
-# Optional: required only for local GGUF models and local image vision.
+# Web research / Learner
+# Trafilatura parses HTML that the application has already downloaded.
+trafilatura>=2.0,<3.0
+# BeautifulSoup + lxml are the deterministic fallback HTML parser.
+beautifulsoup4>=4.12,<5.0
+lxml>=5.0,<6.0
+# PDF text extraction for official reports.
+pypdf>=5.0,<7.0
+
+# Test runner (the repository test suite uses unittest and can also be run
+# through pytest).
+pytest>=8.0,<9.0
+
+# Optional: install only when using local GGUF models or local image vision.
+# The correct wheel/build depends on the local Python, CUDA and CPU setup.
 # llama-cpp-python>=0.2.90
+
+# Optional: install only when Memory 3.0 uses a local sentence-transformers
+# embedding provider. This may download a large model separately; BGE-M3 is
+# intentionally not downloaded automatically by the application.
+# sentence-transformers>=3.0

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from core_services import goal_manager, sync_life_memory
+from core_services import checkin_manager, goal_manager, sync_life_memory
 
 
 router = APIRouter(prefix="/api/goals", tags=["goals"])
@@ -15,7 +15,21 @@ def _sync_life_memory_best_effort():
 
 @router.get("")
 def get_goals():
-    return goal_manager.goals
+    enriched = []
+    for goal in goal_manager.goals:
+        item = dict(goal)
+        end_date = None
+        if item.get("status") == "completed":
+            end_date = item.get("achieved_at") or item.get("completed_at")
+        elif item.get("status") == "failed":
+            end_date = item.get("failed_at") or item.get("completed_at")
+        item["daily_progress"] = checkin_manager.goal_progress(
+            item.get("id"),
+            start_date=item.get("created_at"),
+            end_date=end_date,
+        )
+        enriched.append(item)
+    return enriched
 
 
 @router.post("/add")
@@ -37,4 +51,3 @@ def delete_goal(req: dict):
     goal_manager.delete_goal(req.get("id"))
     _sync_life_memory_best_effort()
     return {"status": "success"}
-

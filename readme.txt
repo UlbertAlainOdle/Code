@@ -1,7 +1,7 @@
 ### Easy start.
-uvicorn server5-22B----:app --host 0.0.0.0 --port 8000
+uvicorn server5-22B----:app --host 127.0.0.1 --port 8000
 
-http://127.0.0.1:8000/static/Chat4o5-Modern.html
+http://127.0.0.1:8000/static/Chat4o5-Modern.html?v=g13-20260811-citation-memory
 
 ### Backend layout notes
 - `server5-22B----.py` is still the active FastAPI entry point.
@@ -29,6 +29,7 @@ Memory entries remain compatible with the old `knowledge.json` format, but now g
 The chat prompt now retrieves relevant memories instead of dumping every memory into context. In the UI:
 - View Memories: search, category filter, archived toggle, rebuild metadata
 - Modify Memory Settings: enable/disable Memory 2.0 retrieval, set relevant-memory count, choose whether prompt metadata is included
+- Conversation "Summarize to Episodic" creates an active Episodic summary. Archive is reserved for retired, compressed, replaced, or manually archived memory records.
 
 Auto-save still only captures explicit requests such as "请记住..." or "remember that..."; it does not guess private facts silently.
 
@@ -53,6 +54,10 @@ Features:
 - month and year summaries
 - month/year report export to Markdown and JSON backup files under knowledge_base/exports
 - "Talk with Saya" sends the current day's check-in plus month/year summary as hidden context, so the visible chat stays natural.
+- The main page maintains one protected current-day memory with check-in progress, page-entry count, and completed conversation count. It updates in place instead of accumulating one important memory per day.
+
+### Web citation verification
+Web-assisted replies are checked after generation without another model call. The local verifier maps each numbered claim to a source, checks lexical and numeric agreement, and stores only a bounded supporting excerpt. Results appear under the answer and are restored with chat history. Because this uses no additional LLM tokens, there is no Mode Setting switch for it.
 
 ### Projects and chat search
 - Sidebar Search searches JSONL chat history and opens matching sessions.

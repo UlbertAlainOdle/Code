@@ -1,0 +1,1260 @@
+﻿{
+    "version":  2,
+    "description":  "Saya MMD motion manifest. Descriptions describe how motions look; local semantic routing maps conversation context to intent/category, then selects concrete VMD files.",
+    "notes":  [
+                  "Do not treat description/source_name/comment as trigger text. They are human-facing annotations only.",
+                  "Loop motions are used for idle, listening, waiting, and processing states. Reaction motions play once and return to idle.",
+                  "Robot_idle_418.vmd is intentionally not listed. The easter_egg logic remains and now uses Fairy/playful actions."
+              ],
+    "motions":  [
+                    {
+                        "id":  "Idle_normal_187",
+                        "file":  "Idle_normal_187.vmd",
+                        "description":  "更好的平常站着。主待机循环，也可作为回答时的稳定动作。",
+                        "comment":  "Current English file name: Idle_normal_187.vmd.",
+                        "kind":  "idle",
+                        "intent":  "neutral_idle",
+                        "categories":  {
+                                           "normal_idle":  25,
+                                           "searching_task":  15,
+                                           "giving_answer":  25,
+                                           "curious_interest":  20,
+                                           "calm_idle":  40
+                                       },
+                        "tags":  [
+                                     "idle",
+                                     "neutral",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "Idle4_157",
+                        "file":  "Idle4_157.vmd",
+                        "description":  "向左右边看看。自然待机与轻度关注。",
+                        "comment":  "Current English file name: Idle4_157.vmd.",
+                        "kind":  "idle",
+                        "intent":  "look_around",
+                        "categories":  {
+                                           "normal_idle":  20,
+                                           "searching_task":  15,
+                                           "giving_answer":  20,
+                                           "happy_mood":  15,
+                                           "praised":  15
+                                       },
+                        "tags":  [
+                                     "idle",
+                                     "look-around",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "a_idle_neutral_loop_88",
+                        "file":  "a_idle_neutral_loop_88.vmd",
+                        "description":  "只是平常站着。普通小概率待机循环。",
+                        "comment":  "Current English file name: a_idle_neutral_loop_88.vmd.",
+                        "kind":  "idle",
+                        "intent":  "neutral_idle",
+                        "categories":  {
+                                           "normal_idle":  20,
+                                           "calm_idle":  60
+                                       },
+                        "tags":  [
+                                     "idle",
+                                     "neutral",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "Idle_341",
+                        "file":  "Idle_341.vmd",
+                        "description":  "左顾右盼。适合聆听、观察、情绪问题。",
+                        "comment":  "Current English file name: Idle_341.vmd.",
+                        "kind":  "idle",
+                        "intent":  "listening",
+                        "categories":  {
+                                           "normal_idle":  15,
+                                           "listening_emotional":  35,
+                                           "giving_answer":  25,
+                                           "sad_emotion":  15,
+                                           "curious_interest":  30,
+                                           "neutral_waiting":  30
+                                       },
+                        "tags":  [
+                                     "listen",
+                                     "look-around",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "lifegurad_idle_272",
+                        "file":  "lifegurad_idle_272.vmd",
+                        "description":  "手放在裙子上倾听。适合情绪倾听和安慰。",
+                        "comment":  "Current English file name: lifegurad_idle_272.vmd.",
+                        "kind":  "idle",
+                        "intent":  "comfort",
+                        "intents":  [
+                                        "listening"
+                                    ],
+                        "categories":  {
+                                           "normal_idle":  10,
+                                           "listening_emotional":  45,
+                                           "sad_emotion":  25,
+                                           "gentle_comfort":  60
+                                       },
+                        "tags":  [
+                                     "listen",
+                                     "comfort",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "wainting_359",
+                        "file":  "wainting_359.vmd",
+                        "description":  "叉腰叹气。适合低落、等待、轻微埋怨。",
+                        "comment":  "Current English file name: wainting_359.vmd.",
+                        "kind":  "idle",
+                        "intent":  "complaint",
+                        "categories":  {
+                                           "normal_idle":  10,
+                                           "sad_emotion":  60,
+                                           "neutral_waiting":  70,
+                                           "complaint":  30
+                                       },
+                        "tags":  [
+                                     "waiting",
+                                     "sad",
+                                     "complain",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "Idle_searchong_173",
+                        "file":  "Idle_searchong_173.vmd",
+                        "description":  "向下查看。任务处理、查询、思考时循环。",
+                        "comment":  "Current English file name: Idle_searchong_173.vmd.",
+                        "kind":  "idle",
+                        "intent":  "thinking",
+                        "categories":  {
+                                           "searching_task":  70,
+                                           "thinking":  20
+                                       },
+                        "tags":  [
+                                     "searching",
+                                     "task",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  2000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "Idle_motion_confident_148",
+                        "file":  "Idle_motion_confident_148.vmd",
+                        "description":  "给出回答时的自信动作。",
+                        "comment":  "Current English file name: Idle_motion_confident_148.vmd.",
+                        "kind":  "idle",
+                        "intent":  "answering",
+                        "categories":  {
+                                           "giving_answer":  30,
+                                           "idea":  15
+                                       },
+                        "tags":  [
+                                     "answer",
+                                     "confident",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "looking_96",
+                        "file":  "looking_96.vmd",
+                        "description":  "向电脑外张望。适合心情好、好奇、轻松互动。",
+                        "comment":  "Current English file name: looking_96.vmd.",
+                        "kind":  "idle",
+                        "intent":  "curious",
+                        "categories":  {
+                                           "happy_mood":  60,
+                                           "praised":  15,
+                                           "curious_interest":  50,
+                                           "playful_magic":  30
+                                       },
+                        "tags":  [
+                                     "happy",
+                                     "curious",
+                                     "look-out"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  3000,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "Fairy_idle_362",
+                        "file":  "Fairy_idle_362.vmd",
+                        "description":  "升起来吓你一下。虽然文件名含 idle，但动作语义是彩蛋/惊吓式反应，更适合播放一次后回到待机。",
+                        "comment":  "Current English file name: Fairy_idle_362.vmd.",
+                        "kind":  "reaction",
+                        "intent":  "easter_egg",
+                        "categories":  {
+                                           "easter_egg":  70,
+                                           "playful_magic":  20
+                                       },
+                        "tags":  [
+                                     "playful",
+                                     "magic",
+                                     "surprise",
+                                     "easter-egg"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  15000,
+                        "priority":  70,
+                        "intent_weight":  70,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "playful_magic"
+                    },
+                    {
+                        "id":  "hold_hands_119",
+                        "file":  "hold_hands_119.vmd",
+                        "description":  "伸手/牵手式回应。适合被夸赞或温柔安抚时播放一次，不作为常驻待机。",
+                        "comment":  "Current English file name: hold_hands_119.vmd.",
+                        "kind":  "reaction",
+                        "intent":  "praised",
+                        "intents":  [
+                                        "comfort",
+                                        "invite",
+                                        "praised"
+                                    ],
+                        "categories":  {
+                                           "praised":  70,
+                                           "gentle_comfort":  25,
+                                           "invitation":  20
+                                       },
+                        "tags":  [
+                                     "praised",
+                                     "shy",
+                                     "comfort"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  70,
+                        "intent_weight":  70,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "praised"
+                    },
+                    {
+                        "id":  "Sleepy_yawn_idle_113",
+                        "file":  "Sleepy_yawn_idle_113.vmd",
+                        "description":  "打哈欠。夜间或困倦时循环。",
+                        "comment":  "Current English file name: Sleepy_yawn_idle_113.vmd.",
+                        "kind":  "idle",
+                        "intent":  "sleepy",
+                        "categories":  {
+                                           "night_sleepy":  1
+                                       },
+                        "tags":  [
+                                     "night",
+                                     "sleepy",
+                                     "yawn",
+                                     "loop"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  300000,
+                        "priority":  25,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "Sleepy_idle_158",
+                        "file":  "Sleepy_idle_158.vmd",
+                        "description":  "困死了被惊醒。语义是被打断后的反应，不适合作为普通夜间循环。",
+                        "comment":  "Current English file name: Sleepy_idle_158.vmd.",
+                        "kind":  "reaction",
+                        "intent":  "sleepy_startled",
+                        "categories":  {
+                                           "sleepy_interruption":  100
+                                       },
+                        "tags":  [
+                                     "night",
+                                     "sleepy",
+                                     "wake"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  180000,
+                        "priority":  65,
+                        "intent_weight":  50,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "intents":  [
+                                        "sleepy_startled"
+                                    ],
+                        "return_category":  "night_sleepy"
+                    },
+                    {
+                        "id":  "farewell_wave",
+                        "file":  "farewell_wave.vmd",
+                        "description":  "拜拜。适合告别、下次见。",
+                        "comment":  "Original Chinese annotation: 拜拜. Current English file name: farewell_wave.vmd.",
+                        "source_name":  "拜拜",
+                        "kind":  "reaction",
+                        "intent":  "farewell",
+                        "categories":  {
+                                           "farewell":  100
+                                       },
+                        "tags":  [
+                                     "farewell",
+                                     "wave",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  90,
+                        "intent_weight":  100,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "normal_idle"
+                    },
+                    {
+                        "id":  "refusal_no",
+                        "file":  "refusal_no.vmd",
+                        "description":  "不行。明确拒绝、不要这样。",
+                        "comment":  "Original Chinese annotation: 不行. Current English file name: refusal_no.vmd.",
+                        "source_name":  "不行",
+                        "kind":  "reaction",
+                        "intent":  "refusal",
+                        "categories":  {
+                                           "refusal":  60
+                                       },
+                        "tags":  [
+                                     "refusal",
+                                     "no",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  70,
+                        "intent_weight":  60,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "neutral_waiting"
+                    },
+                    {
+                        "id":  "refusal_no_alt",
+                        "file":  "refusal_no_alt.vmd",
+                        "description":  "不行_2。拒绝动作的变化版。",
+                        "comment":  "Original Chinese annotation: 不行_2. Current English file name: refusal_no_alt.vmd.",
+                        "source_name":  "不行_2",
+                        "kind":  "reaction",
+                        "intent":  "refusal",
+                        "categories":  {
+                                           "refusal":  40
+                                       },
+                        "tags":  [
+                                     "refusal",
+                                     "no",
+                                     "reaction",
+                                     "alt"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  65,
+                        "intent_weight":  40,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "neutral_waiting"
+                    },
+                    {
+                        "id":  "playful_finger_gun",
+                        "file":  "playful_finger_gun.vmd",
+                        "description":  "朝你开枪（耍可爱）。玩笑、调皮、彩蛋。",
+                        "comment":  "Original Chinese annotation: 朝你开枪（耍可爱）. Current English file name: playful_finger_gun.vmd.",
+                        "source_name":  "朝你开枪（耍可爱）",
+                        "kind":  "reaction",
+                        "intent":  "finger_gun",
+                        "intents":  [
+                                        "playful_tease",
+                                        "easter_egg",
+                                        "finger_gun"
+                                    ],
+                        "categories":  {
+                                           "finger_gun":  100,
+                                           "easter_egg":  30,
+                                           "playful_magic":  20
+                                       },
+                        "tags":  [
+                                     "playful",
+                                     "finger-gun",
+                                     "cute",
+                                     "easter-egg"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  15000,
+                        "priority":  65,
+                        "intent_weight":  55,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "playful_magic"
+                    },
+                    {
+                        "id":  "jealous_pout",
+                        "file":  "jealous_pout.vmd",
+                        "description":  "吃醋了。适合吃醋、占有欲玩笑。",
+                        "comment":  "Original Chinese annotation: 吃醋了. Current English file name: jealous_pout.vmd.",
+                        "source_name":  "吃醋了",
+                        "kind":  "reaction",
+                        "intent":  "jealous_pout",
+                        "intents":  [
+                                        "jealousy"
+                                    ],
+                        "categories":  {
+                                           "jealousy":  100
+                                       },
+                        "tags":  [
+                                     "jealous",
+                                     "pout",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  18000,
+                        "priority":  75,
+                        "intent_weight":  100,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "sad_emotion"
+                    },
+                    {
+                        "id":  "surprised_small",
+                        "file":  "surprised_small.vmd",
+                        "description":  "吃惊。轻度惊讶。",
+                        "comment":  "Original Chinese annotation: 吃惊. Current English file name: surprised_small.vmd.",
+                        "source_name":  "吃惊",
+                        "kind":  "reaction",
+                        "intent":  "surprise",
+                        "categories":  {
+                                           "surprise":  50,
+                                           "curious_interest":  10
+                                       },
+                        "tags":  [
+                                     "surprise",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  60,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "curious_interest",
+                        "intents":  [
+                                        "surprise"
+                                    ]
+                    },
+                    {
+                        "id":  "bold_snicker",
+                        "file":  "bold_snicker.vmd",
+                        "description":  "大胆偷笑。玩笑、坏笑、轻松互动。",
+                        "comment":  "Original Chinese annotation: 大胆偷笑. Current English file name: bold_snicker.vmd.",
+                        "source_name":  "大胆偷笑",
+                        "kind":  "reaction",
+                        "intent":  "snicker",
+                        "intents":  [
+                                        "playful_tease",
+                                        "laugh",
+                                        "snicker"
+                                    ],
+                        "categories":  {
+                                           "snicker":  100,
+                                           "playful_magic":  20,
+                                           "happy_mood":  10
+                                       },
+                        "tags":  [
+                                     "playful",
+                                     "snicker",
+                                     "laugh",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  55,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "playful_magic"
+                    },
+                    {
+                        "id":  "loud_greeting",
+                        "file":  "loud_greeting.vmd",
+                        "description":  "大声打招呼。适合见面、回来、呼唤。",
+                        "comment":  "Original Chinese annotation: 大声打招呼. Current English file name: loud_greeting.vmd.",
+                        "source_name":  "大声打招呼",
+                        "kind":  "reaction",
+                        "intent":  "greeting",
+                        "categories":  {
+                                           "greeting":  100
+                                       },
+                        "tags":  [
+                                     "greeting",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  80,
+                        "intent_weight":  100,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "happy_mood"
+                    },
+                    {
+                        "id":  "apologizing",
+                        "file":  "apologizing.vmd",
+                        "description":  "道歉。仅用于 Saya 的回复语义确实是在道歉、承认说错或被要求道歉，不用于用户道歉时。",
+                        "comment":  "Original Chinese annotation: 道歉. Current English file name: apologizing.vmd.",
+                        "source_name":  "道歉",
+                        "kind":  "reaction",
+                        "intent":  "apology_from_saya",
+                        "categories":  {
+                                           "apology":  100
+                                       },
+                        "tags":  [
+                                     "apology",
+                                     "sorry",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  18000,
+                        "priority":  95,
+                        "intent_weight":  100,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "gentle_comfort"
+                    },
+                    {
+                        "id":  "detective_thinking",
+                        "file":  "detective_thinking.vmd",
+                        "description":  "福尔摩斯思考。适合推理/分析期间维持思考状态，可循环。",
+                        "comment":  "Original Chinese annotation: 福尔摩斯思考. Current English file name: detective_thinking.vmd.",
+                        "source_name":  "福尔摩斯思考",
+                        "kind":  "processing_loop",
+                        "intent":  "deep_thinking",
+                        "intents":  [
+                                        "thinking"
+                                    ],
+                        "categories":  {
+                                           "searching_task":  35,
+                                           "thinking":  60
+                                       },
+                        "tags":  [
+                                     "thinking",
+                                     "detective",
+                                     "reasoning",
+                                     "reaction"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  4000,
+                        "priority":  65,
+                        "intent_weight":  55,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "delighted_surprise",
+                        "file":  "delighted_surprise.vmd",
+                        "description":  "感到惊喜。开心的惊讶。",
+                        "comment":  "Original Chinese annotation: 感到惊喜. Current English file name: delighted_surprise.vmd.",
+                        "source_name":  "感到惊喜",
+                        "kind":  "reaction",
+                        "intent":  "delighted_surprise",
+                        "intents":  [
+                                        "surprise",
+                                        "praised",
+                                        "laugh"
+                                    ],
+                        "categories":  {
+                                           "surprise":  35,
+                                           "happy_mood":  25,
+                                           "praised":  15
+                                       },
+                        "tags":  [
+                                     "surprise",
+                                     "delighted",
+                                     "happy",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  65,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "happy_mood"
+                    },
+                    {
+                        "id":  "hearty_laugh",
+                        "file":  "hearty_laugh.vmd",
+                        "description":  "哈哈大笑。明显开心或觉得好笑。",
+                        "comment":  "Original Chinese annotation: 哈哈大笑. Current English file name: hearty_laugh.vmd.",
+                        "source_name":  "哈哈大笑",
+                        "kind":  "reaction",
+                        "intent":  "laugh",
+                        "intents":  [
+                                        "praised",
+                                        "laugh",
+                                        "snicker"
+                                    ],
+                        "categories":  {
+                                           "happy_mood":  35,
+                                           "praised":  25
+                                       },
+                        "tags":  [
+                                     "laugh",
+                                     "happy",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  60,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "happy_mood"
+                    },
+                    {
+                        "id":  "shy_blush",
+                        "file":  "shy_blush.vmd",
+                        "description":  "害羞脸红。被表白、夸赞或亲密表达时。",
+                        "comment":  "Original Chinese annotation: 害羞脸红. Current English file name: shy_blush.vmd.",
+                        "source_name":  "害羞脸红",
+                        "kind":  "reaction",
+                        "intent":  "shy_blush",
+                        "categories":  {
+                                           "shy_reaction":  100,
+                                           "praised":  35
+                                       },
+                        "tags":  [
+                                     "shy",
+                                     "blush",
+                                     "praised",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  16000,
+                        "priority":  80,
+                        "intent_weight":  100,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "praised"
+                    },
+                    {
+                        "id":  "surprised_big",
+                        "file":  "surprised_big.vmd",
+                        "description":  "很吃惊。强烈惊讶。",
+                        "comment":  "Original Chinese annotation: 很吃惊. Current English file name: surprised_big.vmd.",
+                        "source_name":  "很吃惊",
+                        "kind":  "reaction",
+                        "intent":  "surprise_big",
+                        "intents":  [
+                                        "surprise",
+                                        "surprise_big"
+                                    ],
+                        "categories":  {
+                                           "surprise":  50
+                                       },
+                        "tags":  [
+                                     "surprise",
+                                     "strong",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  70,
+                        "intent_weight":  50,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "curious_interest"
+                    },
+                    {
+                        "id":  "confused_head_scratch_right",
+                        "file":  "confused_head_scratch_right.vmd",
+                        "description":  "困惑挠头右。疑惑、不懂、思考卡住。",
+                        "comment":  "Original Chinese annotation: 困惑挠头右. Current English file name: confused_head_scratch_right.vmd.",
+                        "source_name":  "困惑挠头右",
+                        "kind":  "reaction",
+                        "intent":  "confused",
+                        "categories":  {
+                                           "confused_reaction":  35,
+                                           "curious_interest":  15
+                                       },
+                        "tags":  [
+                                     "confused",
+                                     "scratch-head",
+                                     "right",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  60,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "curious_interest"
+                    },
+                    {
+                        "id":  "confused_head_scratch_left",
+                        "file":  "confused_head_scratch_left.vmd",
+                        "description":  "困惑挠头左。疑惑、不懂、思考卡住。",
+                        "comment":  "Original Chinese annotation: 困惑挠头左. Current English file name: confused_head_scratch_left.vmd.",
+                        "source_name":  "困惑挠头左",
+                        "kind":  "reaction",
+                        "intent":  "confused",
+                        "categories":  {
+                                           "confused_reaction":  35,
+                                           "curious_interest":  15
+                                       },
+                        "tags":  [
+                                     "confused",
+                                     "scratch-head",
+                                     "left",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  58,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "curious_interest"
+                    },
+                    {
+                        "id":  "sleepy_tired",
+                        "file":  "sleepy_tired.vmd",
+                        "description":  "困了。更像困倦表达/过渡反应，播放一次后回到夜间待机。",
+                        "comment":  "Original Chinese annotation: 困了. Current English file name: sleepy_tired.vmd.",
+                        "source_name":  "困了",
+                        "kind":  "reaction",
+                        "intent":  "sleepy",
+                        "categories":  {
+                                           "night_sleepy":  1
+                                       },
+                        "tags":  [
+                                     "night",
+                                     "sleepy",
+                                     "routine"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  180000,
+                        "priority":  50,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "night_sleepy",
+                        "intents":  [
+                                        "sleepy"
+                                    ]
+                    },
+                    {
+                        "id":  "sleepy_eyes_closed",
+                        "file":  "sleepy_eyes_closed.vmd",
+                        "description":  "困了闭眼。适合夜间或困倦状态下维持循环。",
+                        "comment":  "Original Chinese annotation: 困了闭眼. Current English file name: sleepy_eyes_closed.vmd.",
+                        "source_name":  "困了闭眼",
+                        "kind":  "idle",
+                        "intent":  "sleepy_idle",
+                        "categories":  {
+                                           "night_sleepy":  1,
+                                           "sleepy_idle":  60
+                                       },
+                        "tags":  [
+                                     "sleepy",
+                                     "eyes-closed",
+                                     "reaction"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  180000,
+                        "priority":  55,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "intents":  [
+                                        "sleepy"
+                                    ]
+                    },
+                    {
+                        "id":  "reassuring_nevermind",
+                        "file":  "reassuring_nevermind.vmd",
+                        "description":  "没关系啊。仅用于用户道歉、自责或请求原谅时，Saya 做安抚/原谅回应；不等同于 Saya 道歉。",
+                        "comment":  "Original Chinese annotation: 没关系啊. Current English file name: reassuring_nevermind.vmd.",
+                        "source_name":  "没关系啊",
+                        "kind":  "reaction",
+                        "intent":  "forgive_doctor",
+                        "categories":  {
+                                           "reassurance":  100
+                                       },
+                        "tags":  [
+                                     "reassurance",
+                                     "forgive",
+                                     "comfort",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  16000,
+                        "priority":  95,
+                        "intent_weight":  100,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "gentle_comfort"
+                    },
+                    {
+                        "id":  "confused_cheek_scratch",
+                        "file":  "confused_cheek_scratch.vmd",
+                        "description":  "挠脸（困惑）。轻微困惑或不好意思。",
+                        "comment":  "Original Chinese annotation: 挠脸（困惑）. Current English file name: confused_cheek_scratch.vmd.",
+                        "source_name":  "挠脸（困惑）",
+                        "kind":  "reaction",
+                        "intent":  "confused",
+                        "categories":  {
+                                           "confused_reaction":  30,
+                                           "curious_interest":  10
+                                       },
+                        "tags":  [
+                                     "confused",
+                                     "cheek-scratch",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  55,
+                        "intent_weight":  40,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "curious_interest",
+                        "intents":  [
+                                        "confused"
+                                    ]
+                    },
+                    {
+                        "id":  "teasing_are_you_picking_a_fight",
+                        "file":  "teasing_are_you_picking_a_fight.vmd",
+                        "description":  "你是在找茬吗。玩笑式挑衅或吐槽。",
+                        "comment":  "Original Chinese annotation: 你是在找茬吗. Current English file name: teasing_are_you_picking_a_fight.vmd.",
+                        "source_name":  "你是在找茬吗",
+                        "kind":  "reaction",
+                        "intent":  "picking_a_fight",
+                        "intents":  [
+                                        "playful_tease",
+                                        "picking_a_fight",
+                                        "complaint"
+                                    ],
+                        "categories":  {
+                                           "picking_a_fight":  100,
+                                           "playful_magic":  15
+                                       },
+                        "tags":  [
+                                     "teasing",
+                                     "playful",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  16000,
+                        "priority":  80,
+                        "intent_weight":  70,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "playful_magic"
+                    },
+                    {
+                        "id":  "door_knock",
+                        "file":  "door_knock.vmd",
+                        "description":  "敲门。呼唤、打招呼、提醒注意；可作为 greeting 的变化。",
+                        "comment":  "Original Chinese annotation: 敲门. Current English file name: door_knock.vmd.",
+                        "source_name":  "敲门",
+                        "kind":  "reaction",
+                        "intent":  "attention_call",
+                        "categories":  {
+                                           "attention_call":  100,
+                                           "greeting":  20
+                                       },
+                        "tags":  [
+                                     "knock",
+                                     "attention",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  60,
+                        "intent_weight":  40,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "normal_idle",
+                        "intents":  [
+                                        "greeting",
+                                        "attention_call"
+                                    ]
+                    },
+                    {
+                        "id":  "coquettish_you_are_bad",
+                        "file":  "coquettish_you_are_bad.vmd",
+                        "description":  "撒娇（你坏坏）。亲密玩笑、撒娇。",
+                        "comment":  "Original Chinese annotation: 撒娇（你坏坏）. Current English file name: coquettish_you_are_bad.vmd.",
+                        "source_name":  "撒娇（你坏坏）",
+                        "kind":  "reaction",
+                        "intent":  "coquettish_tease",
+                        "intents":  [
+                                        "playful_tease",
+                                        "coquettish_tease",
+                                        "shy_blush"
+                                    ],
+                        "categories":  {
+                                           "coquettish_tease":  100,
+                                           "playful_magic":  15,
+                                           "shy_reaction":  10
+                                       },
+                        "tags":  [
+                                     "coquettish",
+                                     "playful",
+                                     "shy",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  16000,
+                        "priority":  75,
+                        "intent_weight":  65,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "playful_magic"
+                    },
+                    {
+                        "id":  "inviting_left_hand",
+                        "file":  "inviting_left_hand.vmd",
+                        "description":  "伸出左手（邀请）。牵手、邀请、靠近。",
+                        "comment":  "Original Chinese annotation: 伸出左手（邀请）. Current English file name: inviting_left_hand.vmd.",
+                        "source_name":  "伸出左手（邀请）",
+                        "kind":  "reaction",
+                        "intent":  "invite",
+                        "categories":  {
+                                           "invitation":  100
+                                       },
+                        "tags":  [
+                                     "invite",
+                                     "hand",
+                                     "comfort",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  16000,
+                        "priority":  80,
+                        "intent_weight":  100,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "gentle_comfort"
+                    },
+                    {
+                        "id":  "arms_crossed_front",
+                        "file":  "arms_crossed_front.vmd",
+                        "description":  "双臂插胸前。姿态型等待/不满动作，适合短时间循环维持情绪。",
+                        "comment":  "Original Chinese annotation: 双臂插胸前. Current English file name: arms_crossed_front.vmd.",
+                        "source_name":  "双臂插胸前",
+                        "kind":  "idle",
+                        "intent":  "complaint_idle",
+                        "intents":  [
+                                        "complaint",
+                                        "refusal"
+                                    ],
+                        "categories":  {
+                                           "neutral_waiting":  45,
+                                           "complaint":  50,
+                                           "sad_emotion":  20
+                                       },
+                        "tags":  [
+                                     "arms-crossed",
+                                     "complaint",
+                                     "reaction"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  5000,
+                        "priority":  55,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "thinking",
+                        "file":  "thinking.vmd",
+                        "description":  "思考。普通思考/处理中动作，适合循环。",
+                        "comment":  "Original Chinese annotation: 思考. Current English file name: thinking.vmd.",
+                        "source_name":  "思考",
+                        "kind":  "processing_loop",
+                        "intent":  "thinking",
+                        "categories":  {
+                                           "searching_task":  45,
+                                           "thinking":  55
+                                       },
+                        "tags":  [
+                                     "thinking",
+                                     "reaction"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  4000,
+                        "priority":  65,
+                        "intent_weight":  50,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category"
+                    },
+                    {
+                        "id":  "pout_turn_head_hmph",
+                        "file":  "pout_turn_head_hmph.vmd",
+                        "description":  "头扭到一边（哼）。撒娇式不满/委屈；也可作为吃醋语义的低概率变化。",
+                        "comment":  "Original Chinese annotation: 头扭到一边（哼）. Current English file name: pout_turn_head_hmph.vmd.",
+                        "source_name":  "头扭到一边（哼）",
+                        "kind":  "reaction",
+                        "intent":  "complaint",
+                        "categories":  {
+                                           "complaint_reaction":  100,
+                                           "playful_tease":  10
+                                       },
+                        "tags":  [
+                                     "pout",
+                                     "complaint",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "end_hold_seconds":  1,
+                        "cooldown_ms":  16000,
+                        "priority":  65,
+                        "intent_weight":  35,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "sad_emotion",
+                        "intents":  [
+                                        "complaint",
+                                        "jealous_pout",
+                                        "playful_tease"
+                                    ]
+                    },
+                    {
+                        "id":  "helpless_listening_look",
+                        "file":  "helpless_listening_look.vmd",
+                        "description":  "无奈看着你（听你说）。是持续倾听/陪伴姿态，适合作为情绪聆听循环。",
+                        "comment":  "Original Chinese annotation: 无奈看着你（听你说）. Current English file name: helpless_listening_look.vmd.",
+                        "source_name":  "无奈看着你（听你说）",
+                        "kind":  "listening_loop",
+                        "intent":  "listening_support",
+                        "categories":  {
+                                           "listening_emotional":  60,
+                                           "gentle_comfort":  35,
+                                           "neutral_waiting":  15
+                                       },
+                        "tags":  [
+                                     "helpless",
+                                     "listening",
+                                     "comfort",
+                                     "reaction"
+                                 ],
+                        "playback":  "loop",
+                        "cooldown_ms":  5000,
+                        "priority":  60,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "intents":  [
+                                        "comfort",
+                                        "listening"
+                                    ]
+                    },
+                    {
+                        "id":  "cautious_smile",
+                        "file":  "cautious_smile.vmd",
+                        "description":  "小心地笑。轻柔开心、安抚、缓和气氛；用于夸赞/安慰的轻量变化。",
+                        "comment":  "Original Chinese annotation: 小心地笑. Current English file name: cautious_smile.vmd.",
+                        "source_name":  "小心地笑",
+                        "kind":  "reaction",
+                        "intent":  "cautious_smile",
+                        "intents":  [
+                                        "praised",
+                                        "comfort",
+                                        "shy_blush"
+                                    ],
+                        "categories":  {
+                                           "happy_mood":  15,
+                                           "praised":  25,
+                                           "gentle_comfort":  15
+                                       },
+                        "tags":  [
+                                     "smile",
+                                     "gentle",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  50,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "happy_mood"
+                    },
+                    {
+                        "id":  "got_an_idea",
+                        "file":  "got_an_idea.vmd",
+                        "description":  "有办法了。想到方案或准备给答案。",
+                        "comment":  "Original Chinese annotation: 有办法了. Current English file name: got_an_idea.vmd.",
+                        "source_name":  "有办法了",
+                        "kind":  "reaction",
+                        "intent":  "idea",
+                        "categories":  {
+                                           "idea":  60,
+                                           "giving_answer":  25
+                                       },
+                        "tags":  [
+                                     "idea",
+                                     "answer",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  70,
+                        "intent_weight":  60,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "giving_answer"
+                    },
+                    {
+                        "id":  "got_an_idea_alt",
+                        "file":  "got_an_idea_alt.vmd",
+                        "description":  "有办法了_2。想到方案的变化版。",
+                        "comment":  "Original Chinese annotation: 有办法了_2. Current English file name: got_an_idea_alt.vmd.",
+                        "source_name":  "有办法了_2",
+                        "kind":  "reaction",
+                        "intent":  "idea",
+                        "categories":  {
+                                           "idea":  40,
+                                           "giving_answer":  20
+                                       },
+                        "tags":  [
+                                     "idea",
+                                     "answer",
+                                     "reaction",
+                                     "alt"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  10000,
+                        "priority":  65,
+                        "intent_weight":  40,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "giving_answer"
+                    },
+                    {
+                        "id":  "timid_door_knock",
+                        "file":  "timid_door_knock.vmd",
+                        "description":  "有点害怕的敲门。害怕、小心试探。",
+                        "comment":  "Original Chinese annotation: 有点害怕的敲门. Current English file name: timid_door_knock.vmd.",
+                        "source_name":  "有点害怕的敲门",
+                        "kind":  "reaction",
+                        "intent":  "timid_knock",
+                        "categories":  {
+                                           "timid_knock":  100,
+                                           "fear":  60
+                                       },
+                        "tags":  [
+                                     "timid",
+                                     "knock",
+                                     "fear",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  16000,
+                        "priority":  65,
+                        "intent_weight":  60,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "gentle_comfort"
+                    },
+                    {
+                        "id":  "pointing_to_self_me",
+                        "file":  "pointing_to_self_me.vmd",
+                        "description":  "指向自己（我吗？）。疑问是不是自己、被点名。",
+                        "comment":  "Original Chinese annotation: 指向自己（我吗？）. Current English file name: pointing_to_self_me.vmd.",
+                        "source_name":  "指向自己（我吗？）",
+                        "kind":  "reaction",
+                        "intent":  "self_question",
+                        "intents":  [
+                                        "confused"
+                                    ],
+                        "categories":  {
+                                           "self_question":  100,
+                                           "confused_reaction":  20
+                                       },
+                        "tags":  [
+                                     "self-question",
+                                     "confused",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  65,
+                        "intent_weight":  70,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "curious_interest"
+                    },
+                    {
+                        "id":  "troubled_left_head_scratch",
+                        "file":  "troubled_left_head_scratch.vmd",
+                        "description":  "左手挠头（困扰）。困扰、纠结、麻烦。",
+                        "comment":  "Original Chinese annotation: 左手挠头（困扰）. Current English file name: troubled_left_head_scratch.vmd.",
+                        "source_name":  "左手挠头（困扰）",
+                        "kind":  "reaction",
+                        "intent":  "troubled",
+                        "intents":  [
+                                        "confused",
+                                        "troubled"
+                                    ],
+                        "categories":  {
+                                           "troubled":  100,
+                                           "confused_reaction":  25,
+                                           "listening_emotional":  10
+                                       },
+                        "tags":  [
+                                     "troubled",
+                                     "scratch-head",
+                                     "reaction"
+                                 ],
+                        "playback":  "once_then_idle",
+                        "cooldown_ms":  12000,
+                        "priority":  55,
+                        "intent_weight":  45,
+                        "enabled":  true,
+                        "selection_basis":  "semantic_intent_or_category",
+                        "return_category":  "searching_task"
+                    }
+                ]
+}

@@ -1,0 +1,66 @@
+
+==================================================
+Please select the model to load:
+1. Qwen3 30B Q5
+2. Mistral 22B Q6
+3. Mistral 22B Q5
+4. Saya R1 q5
+5. API Mode (newapi.xiaoqianran.xyz)
+==================================================
+Non-interactive mode detected (or not a TTY). Defaulting to qwen3_30b_q5.
+Selected local model qwen3_30b_q5; it will load on first use.
+Loading conversation history from memory...
+History initialized.
+INFO:     127.0.0.1:50873 - "GET /api/checkins/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50874 - "GET /api/checkins/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50877 - "GET /api/checkins/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50878 - "GET /api/checkins/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50879 - "GET /api/checkins/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65080 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51001 - "GET /static/Chat4o5-Modern.html?v=daily-fix-20260817 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51001 - "GET /static/css/style.css?v=g22-20260811-ai-memory-compression-g26-anki-daily-preset-g42-memory-network-3d-scale-g43-three-r106-fix-g44-memory-graph-surface-fix-g45-memory-graph-display-controls-g46-independent-display-settings-g47-memory-graph-text-scale-g48-persist-display-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51986 - "GET /static/js/app.js?v=g22-20260811-ai-memory-compression-g41-anki-daily-preset-g42-memory-network-3d-scale-g43-three-r106-fix-g44-memory-graph-surface-fix-g45-memory-graph-display-controls-g46-independent-display-settings-g47-memory-graph-text-scale-g48-persist-display-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51986 - "GET /api/kb/candidates?status=pending&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51001 - "GET /api/user-profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "GET /static/uploads/avatars/avatar_9c9c4d70c21a4b36b1527e224edb7440.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51001 - "GET /get_motion_config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60799 - "GET /api/current_model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52223 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60387 - "GET /api/checkins/status?year=2026&month=8&selected_date=2026-08-17 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60799 - "GET /api/anki/state HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:60387 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF.pmx HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51986 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51001 - "GET /api/sessions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52223 - "GET /api/daily_brief?refresh_videos=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57403 - "POST /api/checkins/activity/enter HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56809 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56809 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56809 - "GET /api/sessions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56809 - "GET /get_vmd_files HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56809 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_Skin.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:57403 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Sph_Clothes.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52223 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Sph_Skin.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51986 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_Clothes.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60387 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Toon_Clothes.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51001 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Toon_Skin.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60387 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_pantsu.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51001 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Sph_Panel.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52223 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_Headset.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51986 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Sph_Clothes2.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:60387 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Toon_Hair.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51986 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Sph_Headset.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51001 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Sph_Hair.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52223 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_Hair.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51986 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_Face.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51001 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_Expression.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52223 - "GET /MMD/%E3%81%92%E3%81%AE%E3%81%92%E5%BC%8F%E5%88%9D%E9%9F%B3%E3%83%9F%E3%82%AF/Tex_Miku/Miku_Eyes.png HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52223 - "GET /MMD/motion/door_knock.vmd HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:52223 - "GET /api/kb/maintenance/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57915 - "GET /MMD/motion/sleepy_tired.vmd HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51172 - "GET /MMD/motion/sleepy_eyes_closed.vmd HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:51188 - "GET /api/anki/state HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:51189 - "POST /api/anki/refresh HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:53134 - "GET /api/learner/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53134 - "GET /api/learner/runs/1b7b744e-9d5e-4cd0-8276-f129419cfac9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54619 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59217 - "POST /api/learner/start HTTP/1.1" 200 OK

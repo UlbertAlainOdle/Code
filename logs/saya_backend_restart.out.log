@@ -1,0 +1,26 @@
+
+==================================================
+Please select the model to load:
+1. Qwen3 30B Q5
+2. Mistral 22B Q6
+3. Mistral 22B Q5
+4. Saya R1 q5
+5. API Mode (newapi.xiaoqianran.xyz)
+==================================================
+Waiting for input...
+Enter number (1-5): Input error: EOF when reading a line. Defaulting to Qwen3 30B Q5.
+Selected local model qwen3_30b_q5; it will load on first use.
+Loading conversation history from memory...
+History initialized.
+INFO:     127.0.0.1:63667 - "GET /api/learner/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63667 - "GET /api/current_model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62223 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49182 - "GET /api/current_model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49213 - "POST /api/model/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49213 - "GET /api/current_model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49213 - "GET /api/learner/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57623 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60018 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60612 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55809 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56816 - "POST /api/learner/start HTTP/1.1" 200 OK

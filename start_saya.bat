@@ -50,13 +50,13 @@ if defined YOUTUBE_API_KEY (
 
 :: Start backend in a separate window so the script can continue and open the browser
 echo [2/3] Starting Backend Server in a new window...
-start "Saya+ Backend Server" cmd /k "conda activate groundingdino && uvicorn server5-22B----:app --host 0.0.0.0 --port 8000"
+start "Saya+ Backend Server" cmd /k "conda activate groundingdino && uvicorn server5-22B----:app --host 127.0.0.1 --port 8000"
 
 echo [3/3] Waiting for server to initialize (8 seconds)...
 timeout /t 8 /nobreak > nul
 
 echo Opening Browser...
-start http://127.0.0.1:8000/static/Chat4o5-Modern.html
+start http://127.0.0.1:8000/static/Chat4o5-Modern.html?v=g13-20260811-citation-memory
 
 echo.
 echo Done! The backend is running in the new command window.

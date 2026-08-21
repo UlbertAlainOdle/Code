@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MMD Try Showcase</title>
+    <script src="/static/libs/three-r106/three.min.js"></script>
+    <script src="/static/libs/three-r106/TGALoader.js"></script>
+    <script src="/static/libs/three-r106/OrbitControls.js"></script>
+    <script src="/static/libs/three-r106/mmdparser.min.js"></script>
+    <script src="/static/libs/three-r106/MMDLoader.js"></script>
+    <script src="/static/libs/three-r106/CCDIKSolver.js"></script>
+    <script src="/static/libs/three-r106/MMDPhysics.js"></script>
+    <script src="/static/libs/three-r106/MMDAnimationHelper.js"></script>
+    <script src="/static/libs/three-r106/ammo.js"></script>
+    <link rel="stylesheet" href="/static/css/mmd_try_showcase.css?v=20260729-notes1">
+</head>
+<body>
+    <main class="showcase-shell">
+        <div class="canvas-container" id="draggable-model">
+            <div class="drag-bar" title="Drag to move"></div>
+            <div class="resize-handle nw"></div>
+            <div class="resize-handle ne"></div>
+            <div class="resize-handle sw"></div>
+            <div class="resize-handle se"></div>
+            <canvas id="mmd-canvas"></canvas>
+        </div>
+
+        <section class="showcase-hud" aria-label="Motion controls">
+            <div class="motion-info">
+                <div class="motion-name" id="motion-name">Loading model...</div>
+                <div class="motion-detail" id="motion-detail">Preparing MMD runtime</div>
+            </div>
+            <div class="motion-actions">
+                <button class="motion-list-toggle" id="motion-list-toggle" type="button" disabled>Motions</button>
+                <button class="export-motions" id="export-checked-motions" type="button" disabled>Export</button>
+                <button class="next-motion" id="next-motion" type="button" disabled>Next</button>
+            </div>
+        </section>
+
+        <section class="motion-list-panel hidden" id="motion-list-panel" aria-label="Motion list">
+            <div class="motion-list-header">
+                <span id="motion-list-title">Motions</span>
+                <button class="motion-list-close" id="motion-list-close" type="button" aria-label="Close">x</button>
+            </div>
+            <div class="motion-list" id="motion-list"></div>
+        </section>
+
+        <div class="loading-panel" id="loading-panel">
+            <div class="loading-title" id="loading-title">Loading model...</div>
+            <div class="loading-detail" id="loading-detail">Please wait</div>
+        </div>
+    </main>
+
+    <script src="/static/js/mmd_try_showcase.js?v=20260729-notes1"></script>
+</body>
+</html>

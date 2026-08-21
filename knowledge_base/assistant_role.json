@@ -1,9 +1,9 @@
 {
-  "schema_version": 1,
-  "vault_path": "F:\\IKN",
-  "read_mode": "detailed",
-  "last_read_at": "2026-07-10 06:26:58",
-  "file_count": 60,
+  "schema_version": 4,
+  "vault_path": "F:\\Obsidian\\Obsidian Vault",
+  "read_mode": "rough",
+  "last_read_at": "2026-08-02 06:36:59",
+  "file_count": 62,
   "memories": [
     {
       "id": "53383a29e5a42d6e",
@@ -13,8 +13,8 @@
       "top_group": "Algorithm",
       "headings": [],
       "tags": [],
-      "content": "File: Algorithm/Array.md\nFolder: Algorithm\nTitle: Array\nSignals: TQ_show_task_count:",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Algorithm/Array.md\nFolder: Algorithm\nTitle: Array",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "ef48f4c844f5a290",
@@ -25,7 +25,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Algorithm/Backtrack.md\nFolder: Algorithm\nTitle: Backtrack",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "babd02950019c943",
@@ -35,8 +35,8 @@
       "top_group": "Algorithm",
       "headings": [],
       "tags": [],
-      "content": "File: Algorithm/Dp.md\nFolder: Algorithm\nTitle: Dp\nSignals: [[Summary]] ，[[Ch5：1动态规划]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Algorithm/Dp.md\nFolder: Algorithm\nTitle: Dp",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "eb88ae81180ab417",
@@ -47,7 +47,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Algorithm/Linked lists.md\nFolder: Algorithm\nTitle: Linked lists",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "239e46309b2cdc4d",
@@ -58,7 +58,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Algorithm/Sort.md\nFolder: Algorithm\nTitle: Sort",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "6025f1b46cfe9947",
@@ -69,7 +69,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Algorithm/Summary.md\nFolder: Algorithm\nTitle: Summary",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "0383c6363b2aef85",
@@ -80,7 +80,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Algorithm/Tree.md\nFolder: Algorithm\nTitle: Tree",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "6541e449e0b95851",
@@ -91,7 +91,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Algorithm/Tulum.md\nFolder: Algorithm\nTitle: Tulum",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "ac6c3321311c3a34",
@@ -101,8 +101,8 @@
       "top_group": "Criticism and self-criticism",
       "headings": [],
       "tags": [],
-      "content": "File: Criticism and self-criticism/Me.md\nFolder: Criticism and self-criticism\nTitle: Me\nSignals: 不可被控制的强大力量才是真正的威胁。",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Criticism and self-criticism/Me.md\nFolder: Criticism and self-criticism\nTitle: Me",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "95f20cb56d4b91a7",
@@ -113,7 +113,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Criticism and self-criticism/Other.md\nFolder: Criticism and self-criticism\nTitle: Other",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "c2eb5119aa38ef16",
@@ -124,7 +124,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Deeplearning/A.Summary.md\nFolder: Deeplearning\nTitle: A.Summary",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "887290196411b430",
@@ -134,8 +134,8 @@
       "top_group": "Deeplearning",
       "headings": [],
       "tags": [],
-      "content": "File: Deeplearning/Ch1：Logistic.md\nFolder: Deeplearning\nTitle: Ch1：Logistic\nSignals: [[2.Neural network(Include CNN)]] | ![[Screenshot 2025-07-07 101437.png]]![[Screenshot 2025-07-07 101457.png]] | 图片 64 x 64 会被处理为 64 x 64 x 3 (RGB)，然后会按照 RGB 顺序归一化为（1，64 x 64 x 3）的向量，成为一个数据。",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Deeplearning/Ch1：Logistic.md\nFolder: Deeplearning\nTitle: Ch1：Logistic",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "a1fe235b6fd76122",
@@ -145,8 +145,8 @@
       "top_group": "Deeplearning",
       "headings": [],
       "tags": [],
-      "content": "File: Deeplearning/Ch2：神经网络基础知识.md\nFolder: Deeplearning\nTitle: Ch2：神经网络基础知识\nSignals: [[Ch1：Logistic]] ] [[2.Neural network(Include CNN)]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Deeplearning/Ch2：神经网络基础知识.md\nFolder: Deeplearning\nTitle: Ch2：神经网络基础知识",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "64a43452b3671a27",
@@ -157,7 +157,7 @@
       "headings": [],
       "tags": [],
       "content": "File: Deeplearning/D.Thinking.md\nFolder: Deeplearning\nTitle: D.Thinking",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "f9f62571ba9f69af",
@@ -167,8 +167,8 @@
       "top_group": "Future plan",
       "headings": [],
       "tags": [],
-      "content": "File: Future plan/8.更多互动.md\nFolder: Future plan\nTitle: 8.更多互动\nSignals: 1.感知现实世界的沉浸式智能体 | “你看到那个，那些东西了嘛？” | Grounding DINO训练用的是非常大量但有限的图文+检测数据，通过弱监督生成伪标签，并且靠文本特征空间的连续性，实现了在推理时几乎无限开放词汇的能力。",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Future plan/8.更多互动.md\nFolder: Future plan\nTitle: 8.更多互动",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "90984b2aadd99e7d",
@@ -177,12 +177,9 @@
       "folder": "Future plan",
       "top_group": "Future plan",
       "headings": [],
-      "tags": [
-        "Learn",
-        "Need"
-      ],
-      "content": "File: Future plan/ARC 2024 - 2025.md\nFolder: Future plan\nTitle: ARC 2024 - 2025\nTags: Learn, Need",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Future plan/ARC 2024 - 2025.md\nFolder: Future plan\nTitle: ARC 2024 - 2025",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "314179d27a0eabb8",
@@ -192,8 +189,8 @@
       "top_group": "Future plan",
       "headings": [],
       "tags": [],
-      "content": "File: Future plan/Dear - Like nureosama.md\nFolder: Future plan\nTitle: Dear - Like nureosama\nSignals: Using Mistral 22 B 6-L | | 模块 | 说明 | 技术关键词 | | | -------- | ------------------------- | ----------------------------------------- |",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Future plan/Dear - Like nureosama.md\nFolder: Future plan\nTitle: Dear - Like nureosama",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "5bfb6cc44178bd3f",
@@ -203,47 +200,30 @@
       "top_group": "Future plan",
       "headings": [],
       "tags": [],
-      "content": "File: Future plan/Little story.md\nFolder: Future plan\nTitle: Little story\nSignals: **片段一：贫困中的理想与初衷** | 他出生在社会的底层，家庭贫困且充满艰辛。自小生活在艰难的环境中，他目睹了社会的不公和不平等，心中埋下了改变世界的理想。即便生活如此困苦，他仍抱有一个单纯的信念——通过努力与奋斗，自己能够成为推动社会变革的一部分，为底层人争取更多的公平与机会。他天真地相信，只要坚持自己的信念，世界就会变得不同。 | **片段二：理想的碰壁与孤独**",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Future plan/Little story.md\nFolder: Future plan\nTitle: Little story",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "c1e31abb5abd4f79",
-      "title": "1. Creating, Reading and Writing",
+      "title": "推荐：读取时直接指定某列为索引",
       "file": "Kaggle cources/Pandas.md",
       "folder": "Kaggle cources",
       "top_group": "Kaggle cources",
       "headings": [
-        "### 1. Creating, Reading and Writing",
-        "#### 核心数据结构",
-        "#### 读取数据 (最佳实践)",
         "# 推荐：读取时直接指定某列为索引",
-        "#### 保存数据",
         "# 保存时通常不需要保存自动生成的数字索引（如果索引没有意义）",
-        "### 2. 索引、选择与赋值 (Indexing, Selecting & Assigning)",
-        "#### 基础选择",
-        "#### 基于位置的选择：`.iloc` (Index Location)",
         "# 选择第一行",
         "# 选择第一列",
         "# 选择前三行",
-        "#### 基于标签的选择：`.loc` (Label Location)",
         "# 选择索引为 0 的行，且列名为 'country' 的数据",
         "# 选择所有列名为 'taster_name', 'taster_twitter_handle', 'points' 的数据",
-        "#### 条件选择 (Conditional Selection) —— 数据分析最常用的功能",
         "# 单一条件：找出意大利的酒",
         "# 多重条件：(必背：必须用括号包裹每个条件，且用 & 代替 and, | 代替 or)",
-        "# 找出意大利 且 分数 >= 90 的酒",
-        "# 使用 isin 选择列表中的值",
-        "# 过滤空值 (Not Null)",
-        "#### 赋值",
-        "# 将所有人的名字改为 'Unknown'",
-        "### 3. 摘要函数与映射 (Summary Functions and Maps)"
+        "# 找出意大利 且 分数 >= 90 的酒"
       ],
-      "tags": [
-        "4bacc6",
-        "this"
-      ],
-      "content": "File: Kaggle cources/Pandas.md\nFolder: Kaggle cources\nTitle: 1. Creating, Reading and Writing\nHeadings: ### 1. Creating, Reading and Writing / #### 核心数据结构 / #### 读取数据 (最佳实践) / # 推荐：读取时直接指定某列为索引 / #### 保存数据 / # 保存时通常不需要保存自动生成的数字索引（如果索引没有意义） / ### 2. 索引、选择与赋值 (Indexing, Selecting & Assigning) / #### 基础选择 / #### 基于位置的选择：`.iloc` (Index Location) / # 选择第一行 / # 选择第一列 / # 选择前三行\nTags: 4bacc6, this\nSignals: **DataFrame (表):** 类似于 Excel 表格，包含行和列。 | pd.DataFrame({'Bob': [131, 143], 'Sue': [150, 154]}, index=['Product A', 'Product B']) | **Series (序列):** DataFrame 中的**一列**，本质上是带索引的列表。",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Kaggle cources/Pandas.md\nFolder: Kaggle cources\nTitle: 推荐：读取时直接指定某列为索引\nHeadings: # 推荐：读取时直接指定某列为索引 / # 保存时通常不需要保存自动生成的数字索引（如果索引没有意义） / # 选择第一行 / # 选择第一列 / # 选择前三行 / # 选择索引为 0 的行，且列名为 'country' 的数据 / # 选择所有列名为 'taster_name', 'taster_twitter_handle', 'points' 的数据 / # 单一条件：找出意大利的酒 / # 多重条件：(必背：必须用括号包裹每个条件，且用 & 代替 and, | 代替 or) / # 找出意大利 且 分数 >= 90 的酒",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "85f3245d8dae4daf",
@@ -252,12 +232,9 @@
       "folder": "Machine learning",
       "top_group": "Machine learning",
       "headings": [],
-      "tags": [
-        "00b0f0",
-        "4bacc6"
-      ],
-      "content": "File: Machine learning/1.Linear and Logistic Regression.md\nFolder: Machine learning\nTitle: 1.Linear and Logistic Regression\nTags: 00b0f0, 4bacc6\nSignals: TQ_show_task_count: | ![[IMG_2802.jpeg]] | ![[IMG_2803.jpeg]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Machine learning/1.Linear and Logistic Regression.md\nFolder: Machine learning\nTitle: 1.Linear and Logistic Regression",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "55287d768f5b0ab9",
@@ -266,14 +243,9 @@
       "folder": "Machine learning",
       "top_group": "Machine learning",
       "headings": [],
-      "tags": [
-        "00b050",
-        "00b0f0",
-        "4f81bd",
-        "ff0000"
-      ],
-      "content": "File: Machine learning/2.Neural network(Include CNN).md\nFolder: Machine learning\nTitle: 2.Neural network(Include CNN)\nTags: 00b050, 00b0f0, 4f81bd, ff0000\nSignals: TQ_show_created_date: true | [[1.Linear and Logistic Regression]] | ![[Screenshot 2025-07-19 201432 1.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Machine learning/2.Neural network(Include CNN).md\nFolder: Machine learning\nTitle: 2.Neural network(Include CNN)",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "5d9779963cace6da",
@@ -282,12 +254,9 @@
       "folder": "Machine learning",
       "top_group": "Machine learning",
       "headings": [],
-      "tags": [
-        "92d050",
-        "ff0000"
-      ],
-      "content": "File: Machine learning/3.Decision Tree.md\nFolder: Machine learning\nTitle: 3.Decision Tree\nTags: 92d050, ff0000\nSignals: TQ_show_task_count: | ![[Screenshot 2025-06-07 022433.png]] | <font color=\"#ff0000\">（分类树）</font>从图中不难看出决策树每一层需要选择一个特征作为评判，那么如何选择就成为问题。（后面<font color=\"#92d050\">熵</font>）",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Machine learning/3.Decision Tree.md\nFolder: Machine learning\nTitle: 3.Decision Tree",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "00a22877930be119",
@@ -297,8 +266,8 @@
       "top_group": "Machine learning",
       "headings": [],
       "tags": [],
-      "content": "File: Machine learning/4.Unsupervised learning.md\nFolder: Machine learning\nTitle: 4.Unsupervised learning\nSignals: TQ_show_task_count: | 概念过程： ![[Screenshot 2025-06-09 214950 1.png]] | ![[Screenshot 2025-06-09 215016.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Machine learning/4.Unsupervised learning.md\nFolder: Machine learning\nTitle: 4.Unsupervised learning",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "2d0b48d53d447997",
@@ -307,11 +276,9 @@
       "folder": "Machine learning",
       "top_group": "Machine learning",
       "headings": [],
-      "tags": [
-        "00b0f0"
-      ],
-      "content": "File: Machine learning/5.Anomaly detection.md\nFolder: Machine learning\nTitle: 5.Anomaly detection\nTags: 00b0f0\nSignals: TQ_show_task_count: | Density-based Anomaly Detection（基于密度的异常检测方法） | ![[Screenshot 2025-07-07 163037.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Machine learning/5.Anomaly detection.md\nFolder: Machine learning\nTitle: 5.Anomaly detection",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "60873cb1902a8f2a",
@@ -320,12 +287,9 @@
       "folder": "Machine learning",
       "top_group": "Machine learning",
       "headings": [],
-      "tags": [
-        "4bacc6",
-        "ff0000"
-      ],
-      "content": "File: Machine learning/6.Recommender Systems.md\nFolder: Machine learning\nTitle: 6.Recommender Systems\nTags: 4bacc6, ff0000\nSignals: TQ_show_task_count: | [[1.Linear and Logistic Regression]] | ![[Screenshot 2025-07-20 084537.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Machine learning/6.Recommender Systems.md\nFolder: Machine learning\nTitle: 6.Recommender Systems",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "349708a84be34ea3",
@@ -335,8 +299,8 @@
       "top_group": "Machine learning",
       "headings": [],
       "tags": [],
-      "content": "File: Machine learning/Summarry.md\nFolder: Machine learning\nTitle: Summarry\nSignals: TQ_show_task_count: false | Important: [[1.Linear and Logistic Regression]]，[[2.Neural network(Include CNN)]]，[[3.Decision Tree]]，[[6.Recommender Systems]] | Brief：[[4.Unsupervised learning]]， [[5.Anomaly detection]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Machine learning/Summarry.md\nFolder: Machine learning\nTitle: Summarry",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "7da0f9d24e46ddac",
@@ -345,13 +309,9 @@
       "folder": "NLP",
       "top_group": "NLP",
       "headings": [],
-      "tags": [
-        "eeece1",
-        "ff0000",
-        "ffffff"
-      ],
-      "content": "File: NLP/1.Logistic regression.md\nFolder: NLP\nTitle: 1.Logistic regression\nTags: eeece1, ff0000, ffffff\nSignals: TQ_show_task_count: | 本章包括了<font color=\"#ff0000\">预处理</font>的基本知识 | 和 machine 中的 Logistic 原理类似，判断是积极还是消极，通过对文本提取特征，然后做出一个二分的判断。",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: NLP/1.Logistic regression.md\nFolder: NLP\nTitle: 1.Logistic regression",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "958ced39764ec8f6",
@@ -361,8 +321,8 @@
       "top_group": "NLP",
       "headings": [],
       "tags": [],
-      "content": "File: NLP/2.Naive Bayes model.md\nFolder: NLP\nTitle: 2.Naive Bayes model\nSignals: TQ_show_task_count: | ![[Pasted image 20250806111507.png]] | 二. 朴素贝叶斯的二元分类",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: NLP/2.Naive Bayes model.md\nFolder: NLP\nTitle: 2.Naive Bayes model",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "c4235c61ae66a7d5",
@@ -371,27 +331,20 @@
       "folder": "NLP",
       "top_group": "NLP",
       "headings": [],
-      "tags": [
-        "ff0000"
-      ],
-      "content": "File: NLP/3.Vector spaces and word vectors.md\nFolder: NLP\nTitle: 3.Vector spaces and word vectors\nTags: ff0000\nSignals: TQ_show_task_count: | Plus：本章节为向量空间和词向量，另外还会学习两种比较词向量的方式：欧几里得距离和余弦相似度，以及相似词的聚集。 | 一.Vector spaces model",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: NLP/3.Vector spaces and word vectors.md\nFolder: NLP\nTitle: 3.Vector spaces and word vectors",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "f55388b35ad8a781",
-      "title": "ANN 与 KNN 的关系",
+      "title": "4.ANN KNN",
       "file": "NLP/4.ANN KNN.md",
       "folder": "NLP",
       "top_group": "NLP",
-      "headings": [
-        "### ANN 与 KNN 的关系"
-      ],
-      "tags": [
-        "00b0f0",
-        "ff0000"
-      ],
-      "content": "File: NLP/4.ANN KNN.md\nFolder: NLP\nTitle: ANN 与 KNN 的关系\nHeadings: ### ANN 与 KNN 的关系\nTags: 00b0f0, ff0000\nSignals: TQ_show_task_count: | <center>Past title：Machine translation and document search</center> | ![[QQ截图20250811025244.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "headings": [],
+      "tags": [],
+      "content": "File: NLP/4.ANN KNN.md\nFolder: NLP\nTitle: 4.ANN KNN",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "cc1ff050ef870358",
@@ -401,8 +354,8 @@
       "top_group": "NLP",
       "headings": [],
       "tags": [],
-      "content": "File: NLP/5.Autocorrect.md\nFolder: NLP\nTitle: 5.Autocorrect\nSignals: TQ_show_task_count: | ![[Pasted image 20250813135421.png]] | 一. 自动纠错_介绍（Building the model）",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: NLP/5.Autocorrect.md\nFolder: NLP\nTitle: 5.Autocorrect",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "c84f17b6ced19e46",
@@ -412,8 +365,8 @@
       "top_group": "NLP",
       "headings": [],
       "tags": [],
-      "content": "File: NLP/6.Speech tagging.md\nFolder: NLP\nTitle: 6.Speech tagging\nSignals: 标注词性，辅助模型理解代词所指，辅助自动纠错 | ![[IMG_4541.jpeg]] | 👈为马尔可夫，右侧为转移矩阵，initial 解决第一个词这种情况。",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: NLP/6.Speech tagging.md\nFolder: NLP\nTitle: 6.Speech tagging",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "6fee30f5eb8ee9e0",
@@ -423,8 +376,8 @@
       "top_group": "NLP",
       "headings": [],
       "tags": [],
-      "content": "File: NLP/7.N-grams.md\nFolder: NLP\nTitle: 7.N-grams\nSignals: ![[IMG_4589.jpeg]] | 一.N-grams 及其概率 | ![[IMG_4611.jpeg]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: NLP/7.N-grams.md\nFolder: NLP\nTitle: 7.N-grams",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "7be774fc2b77875e",
@@ -434,8 +387,8 @@
       "top_group": "NLP",
       "headings": [],
       "tags": [],
-      "content": "File: NLP/8.Word vectors.md\nFolder: NLP\nTitle: 8.Word vectors\nSignals: 一. One-hot vectors | ![[Pasted image 20251005131017.png]] | 指向明确，但是会很大且没有任何含义",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: NLP/8.Word vectors.md\nFolder: NLP\nTitle: 8.Word vectors",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "0ed22f62b1720918",
@@ -445,8 +398,8 @@
       "top_group": "Principles of computer composition",
       "headings": [],
       "tags": [],
-      "content": "File: Principles of computer composition/USTS.md\nFolder: Principles of computer composition\nTitle: USTS\nSignals: ![[Screenshot 2025-06-10 221845.png]] | 1-1 概论知识点（背） | ![[Screenshot 2025-06-10 223736.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Principles of computer composition/USTS.md\nFolder: Principles of computer composition\nTitle: USTS",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "3df32f7e5f2e77b8",
@@ -456,8 +409,8 @@
       "top_group": "RL",
       "headings": [],
       "tags": [],
-      "content": "File: RL/A.Summary.md\nFolder: RL\nTitle: A.Summary\nSignals: 重点 章节 : [[Ch2：1多臂赌博机]] , [[Ch3：1MDP 马尔可夫决策]] , [[Ch4：1贝尔曼方程]] , [[Ch4：2最优性(贝尔曼最优方程)]] , [[Ch5：2网格范例]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/A.Summary.md\nFolder: RL\nTitle: A.Summary",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "6875c19144383b68",
@@ -468,17 +421,11 @@
       "headings": [
         "# 强化学习导论 Ch 2：多臂赌博机 (Multi-armed Bandits)",
         "## 1. 通用学习引擎：价值更新公式",
-        "### 两种环境设置",
-        "## 2. 策略工具箱：算法家族谱系",
-        "### 2.1 第一派系：数值调整 (Numerical Tweaks)",
-        "### 2.2 第二派系：逻辑变革 (Logic Shifts)",
-        "#### 2.2.1 上置信界 (UCB - Upper Confidence Bound)——改良",
-        "#### 2.2.2 梯度赌博机 (Gradient Bandits)——革命",
-        "### 🎯 总结：三大算法实战选型"
+        "## 2. 策略工具箱：算法家族谱系"
       ],
       "tags": [],
-      "content": "File: RL/Ch2：1多臂赌博机.md\nFolder: RL\nTitle: 强化学习导论 Ch 2：多臂赌博机 (Multi-armed Bandits)\nHeadings: # 强化学习导论 Ch 2：多臂赌博机 (Multi-armed Bandits) / ## 1. 通用学习引擎：价值更新公式 / ### 两种环境设置 / ## 2. 策略工具箱：算法家族谱系 / ### 2.1 第一派系：数值调整 (Numerical Tweaks) / ### 2.2 第二派系：逻辑变革 (Logic Shifts) / #### 2.2.1 上置信界 (UCB - Upper Confidence Bound)——改良 / #### 2.2.2 梯度赌博机 (Gradient Bandits)——革命 / ### 🎯 总结：三大算法实战选型\nSignals: ReinforcementLearning | Date: 2026-01-22 | Status: 🟢 完成",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/Ch2：1多臂赌博机.md\nFolder: RL\nTitle: 强化学习导论 Ch 2：多臂赌博机 (Multi-armed Bandits)\nHeadings: # 强化学习导论 Ch 2：多臂赌博机 (Multi-armed Bandits) / ## 1. 通用学习引擎：价值更新公式 / ## 2. 策略工具箱：算法家族谱系",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "53085819f11afd42",
@@ -490,14 +437,11 @@
         "# 现实世界强化学习与情境强盗",
         "## 1. 核心背景：模拟器 vs. 现实世界 (Core Background)",
         "## 2. 技术定位：什么是“情境强盗”？ (What is Contextual Bandits?)",
-        "### 定义流程",
-        "### 核心假设 (关键区别)",
-        "## 3. 三种学习模式对比图谱 (Comparison Matrix)",
-        "### 关键落地技术"
+        "## 3. 三种学习模式对比图谱 (Comparison Matrix)"
       ],
       "tags": [],
-      "content": "File: RL/Ch2：2情境强盗(Speech).md\nFolder: RL\nTitle: 现实世界强化学习与情境强盗\nHeadings: # 现实世界强化学习与情境强盗 / ## 1. 核心背景：模拟器 vs. 现实世界 (Core Background) / ## 2. 技术定位：什么是“情境强盗”？ (What is Contextual Bandits?) / ### 定义流程 / ### 核心假设 (关键区别) / ## 3. 三种学习模式对比图谱 (Comparison Matrix) / ### 关键落地技术\nSignals: REINFORCEMENTLEARNING | ContextualBandits | Date: 2026-01-25",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/Ch2：2情境强盗(Speech).md\nFolder: RL\nTitle: 现实世界强化学习与情境强盗\nHeadings: # 现实世界强化学习与情境强盗 / ## 1. 核心背景：模拟器 vs. 现实世界 (Core Background) / ## 2. 技术定位：什么是“情境强盗”？ (What is Contextual Bandits?) / ## 3. 三种学习模式对比图谱 (Comparison Matrix)",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "fee8c8074fed7f04",
@@ -508,7 +452,7 @@
       "headings": [],
       "tags": [],
       "content": "File: RL/Ch2：3代码题目.md\nFolder: RL\nTitle: Ch2：3代码题目",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "c385791632a8c3bf",
@@ -519,63 +463,44 @@
       "headings": [
         "# RLbook Ch 3.3: Returns and Episodes （Coursera knowledge added）",
         "## 1. 核心概念精华 (Key Concepts)",
-        "### 🎯 核心目标：回报 (Returns)",
-        "### 🔄 任务分类",
-        "### 🔗 递归关系 (Recursive Relation) ⭐重要",
-        "## 2. 练习 3.8：反向计算回报 (Exercise 3.8)",
-        "### 重点补充：马尔可夫性质（Markov Property）",
-        "#### 1 . **数学严谨定义**",
-        "#### 2 . 数学定义的边界特例 (Degenerate Cases)"
+        "## 2. 练习 3.8：反向计算回报 (Exercise 3.8)"
       ],
-      "tags": [
-        "ff0000"
-      ],
-      "content": "File: RL/Ch3：1MDP 马尔可夫决策.md\nFolder: RL\nTitle: RLbook Ch 3.3: Returns and Episodes （Coursera knowledge added）\nHeadings: # RLbook Ch 3.3: Returns and Episodes （Coursera knowledge added） / ## 1. 核心概念精华 (Key Concepts) / ### 🎯 核心目标：回报 (Returns) / ### 🔄 任务分类 / ### 🔗 递归关系 (Recursive Relation) ⭐重要 / ## 2. 练习 3.8：反向计算回报 (Exercise 3.8) / ### 重点补充：马尔可夫性质（Markov Property） / #### 1 . **数学严谨定义** / #### 2 . 数学定义的边界特例 (Degenerate Cases)\nTags: ff0000\nSignals: ReinforcementLearning | Date: 2026/01/31 | Status: 🟢 完成",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: RL/Ch3：1MDP 马尔可夫决策.md\nFolder: RL\nTitle: RLbook Ch 3.3: Returns and Episodes （Coursera knowledge added）\nHeadings: # RLbook Ch 3.3: Returns and Episodes （Coursera knowledge added） / ## 1. 核心概念精华 (Key Concepts) / ## 2. 练习 3.8：反向计算回报 (Exercise 3.8)",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "2567ecb1f3e14b83",
-      "title": "💡 核心概念“大白话”翻译",
+      "title": "Ch4：1贝尔曼方程",
       "file": "RL/Ch4：1贝尔曼方程.md",
       "folder": "RL",
       "top_group": "RL",
-      "headings": [
-        "### 💡 核心概念“大白话”翻译",
-        "### 🔑 贝尔曼方程：双重“加权平均”的决策树"
-      ],
+      "headings": [],
       "tags": [],
-      "content": "File: RL/Ch4：1贝尔曼方程.md\nFolder: RL\nTitle: 💡 核心概念“大白话”翻译\nHeadings: ### 💡 核心概念“大白话”翻译 / ### 🔑 贝尔曼方程：双重“加权平均”的决策树\nSignals: ReinforcementLearning | DynamicProgramming | Date: 2026-04-01",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/Ch4：1贝尔曼方程.md\nFolder: RL\nTitle: Ch4：1贝尔曼方程",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "2e75a34b9181e0c7",
-      "title": "👑 前言：最优策略与最优价值 (Ch 3.6)",
+      "title": "Ch4：2最优性(贝尔曼最优方程)",
       "file": "RL/Ch4：2最优性(贝尔曼最优方程).md",
       "folder": "RL",
       "top_group": "RL",
-      "headings": [
-        "### 👑 前言：最优策略与最优价值 (Ch 3.6)",
-        "### ⚡ 贝尔曼最优方程 (Bellman Optimality Equation)",
-        "### 🧱 局限：维数灾难与近似 (Ch 3.7 - 3.8)",
-        "### 🎮 实战演练：网格世界的最优策略与最优价值（最优性）"
-      ],
+      "headings": [],
       "tags": [],
-      "content": "File: RL/Ch4：2最优性(贝尔曼最优方程).md\nFolder: RL\nTitle: 👑 前言：最优策略与最优价值 (Ch 3.6)\nHeadings: ### 👑 前言：最优策略与最优价值 (Ch 3.6) / ### ⚡ 贝尔曼最优方程 (Bellman Optimality Equation) / ### 🧱 局限：维数灾难与近似 (Ch 3.7 - 3.8) / ### 🎮 实战演练：网格世界的最优策略与最优价值（最优性）\nSignals: ReinforcementLearning | DynamicProgramming | Date: 2026-04-01",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/Ch4：2最优性(贝尔曼最优方程).md\nFolder: RL\nTitle: Ch4：2最优性(贝尔曼最优方程)",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "3840306d6bd8b6fe",
-      "title": "⚠️ 考点拾遗与易错知识点补充",
+      "title": "Ch4：3补充信息",
       "file": "RL/Ch4：3补充信息.md",
       "folder": "RL",
       "top_group": "RL",
-      "headings": [
-        "### ⚠️ 考点拾遗与易错知识点补充",
-        "### 📖 考试术语与符号完整版备忘录 (Cheat Sheet)"
-      ],
+      "headings": [],
       "tags": [],
-      "content": "File: RL/Ch4：3补充信息.md\nFolder: RL\nTitle: ⚠️ 考点拾遗与易错知识点补充\nHeadings: ### ⚠️ 考点拾遗与易错知识点补充 / ### 📖 考试术语与符号完整版备忘录 (Cheat Sheet)\nSignals: ReinforcementLearning | DynamicProgramming | Date: 2026-04-01",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/Ch4：3补充信息.md\nFolder: RL\nTitle: Ch4：3补充信息",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "d06766c070b4c0d1",
@@ -586,18 +511,12 @@
       "headings": [
         "# 动态规划 (Dynamic Programming, DP) 核心框架与进阶",
         "## 第一部分：核心理论基石 (策略评估与改进)",
-        "### 1. 策略评估 (Policy Evaluation) —— 计分员",
-        "### 2. 策略改进 (Policy Improvement) —— 指挥官",
-        "### 3. 策略迭代 (Policy Iteration, PI) —— 严格交替",
         "## 第二部分：建立在基石之上的进阶与优化",
-        "### 1. 广义策略迭代 (Generalized Policy Iteration, GPI)",
-        "### 2. 价值迭代 (Value Iteration, VI) —— 极端截断的 PI",
-        "### 3. 同步 DP vs 异步 DP (内存与信息的竞速)",
         "## 第三部分：核心概念辨析"
       ],
       "tags": [],
-      "content": "File: RL/Ch5：1动态规划.md\nFolder: RL\nTitle: 动态规划 (Dynamic Programming, DP) 核心框架与进阶\nHeadings: # 动态规划 (Dynamic Programming, DP) 核心框架与进阶 / ## 第一部分：核心理论基石 (策略评估与改进) / ### 1. 策略评估 (Policy Evaluation) —— 计分员 / ### 2. 策略改进 (Policy Improvement) —— 指挥官 / ### 3. 策略迭代 (Policy Iteration, PI) —— 严格交替 / ## 第二部分：建立在基石之上的进阶与优化 / ### 1. 广义策略迭代 (Generalized Policy Iteration, GPI) / ### 2. 价值迭代 (Value Iteration, VI) —— 极端截断的 PI / ### 3. 同步 DP vs 异步 DP (内存与信息的竞速) / ## 第三部分：核心概念辨析\nSignals: ReinforcementLearning | DynamicProgramming | Date: 2026-04-07",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/Ch5：1动态规划.md\nFolder: RL\nTitle: 动态规划 (Dynamic Programming, DP) 核心框架与进阶\nHeadings: # 动态规划 (Dynamic Programming, DP) 核心框架与进阶 / ## 第一部分：核心理论基石 (策略评估与改进) / ## 第二部分：建立在基石之上的进阶与优化 / ## 第三部分：核心概念辨析",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "e5e5a3b411c0a30e",
@@ -608,15 +527,11 @@
       "headings": [
         "# 经典案例：3 x 3 网格“刷金币漩涡” (无终止状态)",
         "## 算法一：策略迭代 (Policy Iteration) —— 代数解环",
-        "### 第 1 轮：发现漩涡",
-        "### 第 2 轮：解联立方程与漏斗成型 (高能)",
-        "## 算法二：价值迭代 (Value Iteration) —— 螺旋升天",
-        "### 扫描过程 (Sweeps)",
-        "### 收敛与提取"
+        "## 算法二：价值迭代 (Value Iteration) —— 螺旋升天"
       ],
       "tags": [],
-      "content": "File: RL/Ch5：2网格范例.md\nFolder: RL\nTitle: 经典案例：3 x 3 网格“刷金币漩涡” (无终止状态)\nHeadings: # 经典案例：3 x 3 网格“刷金币漩涡” (无终止状态) / ## 算法一：策略迭代 (Policy Iteration) —— 代数解环 / ### 第 1 轮：发现漩涡 / ### 第 2 轮：解联立方程与漏斗成型 (高能) / ## 算法二：价值迭代 (Value Iteration) —— 螺旋升天 / ### 扫描过程 (Sweeps) / ### 收敛与提取\nSignals: ReinforcementLearning | DynamicProgramming | Date: 2026-04-07",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/Ch5：2网格范例.md\nFolder: RL\nTitle: 经典案例：3 x 3 网格“刷金币漩涡” (无终止状态)\nHeadings: # 经典案例：3 x 3 网格“刷金币漩涡” (无终止状态) / ## 算法一：策略迭代 (Policy Iteration) —— 代数解环 / ## 算法二：价值迭代 (Value Iteration) —— 螺旋升天",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "2db4bf051ea980a7",
@@ -628,13 +543,11 @@
         "# 强化学习基因突变：从动态规划到 Q-Learning",
         "## 一、 “纸上谈兵”的困境：状态价值 ($V$) 与 策略迭代 (PI)",
         "## 二、 “实战派”的诞生：动作价值 ($Q$) 与 价值迭代 (VI)",
-        "## 三、 知识延伸：开启深度强化学习 (Deep RL) 的大门",
-        "### 路线 A：顺着 $Q$ 表和 VI 继续往下走 (Value-Based 方法)",
-        "### 路线 B：顺着 $V$ 表和 PI 继续往下走 (Policy-Based 方法)"
+        "## 三、 知识延伸：开启深度强化学习 (Deep RL) 的大门"
       ],
       "tags": [],
-      "content": "File: RL/D.Thinking.md\nFolder: RL\nTitle: 强化学习基因突变：从动态规划到 Q-Learning\nHeadings: # 强化学习基因突变：从动态规划到 Q-Learning / ## 一、 “纸上谈兵”的困境：状态价值 ($V$) 与 策略迭代 (PI) / ## 二、 “实战派”的诞生：动作价值 ($Q$) 与 价值迭代 (VI) / ## 三、 知识延伸：开启深度强化学习 (Deep RL) 的大门 / ### 路线 A：顺着 $Q$ 表和 VI 继续往下走 (Value-Based 方法) / ### 路线 B：顺着 $V$ 表和 PI 继续往下走 (Policy-Based 方法)\nSignals: ReinforcementLearning | V 表与 Q 表的本质差异 | 从动态规划到 Q-Learning 的进化",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: RL/D.Thinking.md\nFolder: RL\nTitle: 强化学习基因突变：从动态规划到 Q-Learning\nHeadings: # 强化学习基因突变：从动态规划到 Q-Learning / ## 一、 “纸上谈兵”的困境：状态价值 ($V$) 与 策略迭代 (PI) / ## 二、 “实战派”的诞生：动作价值 ($Q$) 与 价值迭代 (VI) / ## 三、 知识延伸：开启深度强化学习 (Deep RL) 的大门",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "f70379160dc2e1c8",
@@ -644,8 +557,8 @@
       "top_group": "Review",
       "headings": [],
       "tags": [],
-      "content": "File: Review/Severstal steel.md\nFolder: Review\nTitle: Severstal steel\nSignals: [[Ch2：神经网络基础知识]] ] [[Deeplearning/D.Thinking|D.Thinking]] | A.有关 segformer 的使用 | a.强烈有效的设置（显性）",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Review/Severstal steel.md\nFolder: Review\nTitle: Severstal steel",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "62f73be2a78df1ef",
@@ -657,8 +570,8 @@
         "## **Bias and Varience:**"
       ],
       "tags": [],
-      "content": "File: Scoring/ML.md\nFolder: Scoring\nTitle: **Bias and Varience:**\nHeadings: ## **Bias and Varience:**\nSignals: 单个测试样本 \\(x_i\\) 的平均预测： | \\bar{p}_i = \\frac{1}{B}\\sum_{b=1}^{B}\\hat{p}_{b,i} | 单个测试样本 \\(x_i\\) 的偏差平方：",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Scoring/ML.md\nFolder: Scoring\nTitle: **Bias and Varience:**\nHeadings: ## **Bias and Varience:**",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "c288375483a99ad4",
@@ -668,79 +581,53 @@
       "top_group": "TOFEL",
       "headings": [],
       "tags": [],
-      "content": "File: TOFEL/Reading 1.md\nFolder: TOFEL\nTitle: Reading 1\nSignals: ![[Screenshot 2026-05-11 194403.png]] | ![[Screenshot 2026-05-11 195749.png]] | ![[Screenshot 2026-05-11 200511.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: TOFEL/Reading 1.md\nFolder: TOFEL\nTitle: Reading 1",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "1d1c5745105afdc9",
-      "title": "<font color=\"#ff0000\">指代题</font>",
+      "title": "Reading 2",
       "file": "TOFEL/Reading 2.md",
       "folder": "TOFEL",
       "top_group": "TOFEL",
-      "headings": [
-        "### <font color=\"#ff0000\">指代题</font>",
-        "### 关于<font color=\"#ff0000\">细节题</font>："
-      ],
-      "tags": [
-        "ff0000"
-      ],
-      "content": "File: TOFEL/Reading 2.md\nFolder: TOFEL\nTitle: <font color=\"#ff0000\">指代题</font>\nHeadings: ### <font color=\"#ff0000\">指代题</font> / ### 关于<font color=\"#ff0000\">细节题</font>：\nTags: ff0000\nSignals: ![[Screenshot 2026-05-11 204823.png|390]] ![[Screenshot 2026-05-11 205910.png|215]] ![[Screenshot 2026-05-11 211655.png|233]] ![[Screenshot 2026-05-11 212548.png|304]] | ![[Screenshot 2026-05-15 134643.png|145]] | ![[Screenshot 2026-05-15 134802.png]]![[Screenshot 2026-05-15 134838.png]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "headings": [],
+      "tags": [],
+      "content": "File: TOFEL/Reading 2.md\nFolder: TOFEL\nTitle: Reading 2",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "0b43c11add01dda0",
-      "title": "Q 1Q 2:",
+      "title": "雅思口语万能佳句分类",
       "file": "TOFEL/Speaking.md",
       "folder": "TOFEL",
       "top_group": "TOFEL",
       "headings": [
-        "### Q 1Q 2:",
         "# 雅思口语万能佳句分类",
         "## 1. Relax 放松类",
         "## 2. Relationship 人际关系类",
-        "### 新人关系",
-        "### 熟人关系",
         "## 3. Convenient 便利类",
         "## 4. Money 金钱类",
-        "### 省钱",
-        "### 花钱",
         "## 5. Time 时间类",
         "## 6. Health 健康类",
-        "### 身体健康",
-        "### 心理健康",
-        "## 7. Efficiency 效率类",
-        "### Q 3Q 4:",
-        "### Q 3 Q 4 真题"
+        "## 7. Efficiency 效率类"
       ],
-      "tags": [
-        "ff0000"
-      ],
-      "content": "File: TOFEL/Speaking.md\nFolder: TOFEL\nTitle: Q 1Q 2:\nHeadings: ### Q 1Q 2: / # 雅思口语万能佳句分类 / ## 1. Relax 放松类 / ## 2. Relationship 人际关系类 / ### 新人关系 / ### 熟人关系 / ## 3. Convenient 便利类 / ## 4. Money 金钱类 / ### 省钱 / ### 花钱 / ## 5. Time 时间类 / ## 6. Health 健康类\nTags: ff0000\nSignals: 关于之前：注意介词连读，以及语速把握，注意短暂停顿如...emm，是被允许的 | ![[Pasted image 20260523110229.png]] | 为了说的更多一些，可以进行下面的方法",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: TOFEL/Speaking.md\nFolder: TOFEL\nTitle: 雅思口语万能佳句分类\nHeadings: # 雅思口语万能佳句分类 / ## 1. Relax 放松类 / ## 2. Relationship 人际关系类 / ## 3. Convenient 便利类 / ## 4. Money 金钱类 / ## 5. Time 时间类 / ## 6. Health 健康类 / ## 7. Efficiency 效率类",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "77a21594439fb5c8",
-      "title": "<font color=\"#ff0000\">一</font><font color=\"#ff0000\">. 关于邮件写作：</font>",
+      "title": "一. 关于邮件写作：",
       "file": "TOFEL/Writing.md",
       "folder": "TOFEL",
       "top_group": "TOFEL",
       "headings": [
-        "## <font color=\"#ff0000\">一</font><font color=\"#ff0000\">. 关于邮件写作：</font>",
-        "## <font color=\"#ff0000\">二.</font> <font color=\"#ff0000\">邮件写作分类</font>",
-        "### <font color=\"#ff0000\">1.建议类</font>",
-        "### <font color=\"#ff0000\">2.请求类</font>",
-        "### <font color=\"#ff0000\">3.邀请类</font>",
-        "### <font color=\"#ff0000\">4. 意见类</font>",
-        "### <font color=\"#ff0000\">5.学术讨论</font>",
-        "#### <font color=\"#ff0000\">A.介绍</font>",
-        "#### <font color=\"#ff0000\">B.语句 </font>关于学术讨论的论点展开，下面是一些知识点：",
-        "#### <font color=\"#ff0000\">C.方法论</font>"
+        "## 一. 关于邮件写作：",
+        "## 二. 邮件写作分类"
       ],
-      "tags": [
-        "ff0000"
-      ],
-      "content": "File: TOFEL/Writing.md\nFolder: TOFEL\nTitle: <font color=\"#ff0000\">一</font><font color=\"#ff0000\">. 关于邮件写作：</font>\nHeadings: ## <font color=\"#ff0000\">一</font><font color=\"#ff0000\">. 关于邮件写作：</font> / ## <font color=\"#ff0000\">二.</font> <font color=\"#ff0000\">邮件写作分类</font> / ### <font color=\"#ff0000\">1.建议类</font> / ### <font color=\"#ff0000\">2.请求类</font> / ### <font color=\"#ff0000\">3.邀请类</font> / ### <font color=\"#ff0000\">4. 意见类</font> / ### <font color=\"#ff0000\">5.学术讨论</font> / #### <font color=\"#ff0000\">A.介绍</font> / #### <font color=\"#ff0000\">B.语句 </font>关于学术讨论的论点展开，下面是一些知识点： / #### <font color=\"#ff0000\">C.方法论</font>\nTags: ff0000\nSignals: **1. 读题，字数按照时间来定，一分钟至少 10+词数** | ![[Pasted image 20260511192701.png]] | **2.邮件写作分数标准**",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: TOFEL/Writing.md\nFolder: TOFEL\nTitle: 一. 关于邮件写作：\nHeadings: ## 一. 关于邮件写作： / ## 二. 邮件写作分类",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "c0af922b6743e2df",
@@ -749,16 +636,11 @@
       "folder": "TRY",
       "top_group": "TRY",
       "headings": [
-        "# 《万分之一的安眠：感知的囚笼》",
-        "### 第一章：入场券与血色序幕",
-        "### 第二章：杀戮即是“存储权限”",
-        "### 第三章：心脏移植与认知的极寒",
-        "### 第四章：邪教的谎言与高层的诱饵",
-        "### 第五章：真结局——莫比乌斯环的闭合"
+        "# 《万分之一的安眠：感知的囚笼》"
       ],
       "tags": [],
-      "content": "File: TRY/Words.md\nFolder: TRY\nTitle: 《万分之一的安眠：感知的囚笼》\nHeadings: # 《万分之一的安眠：感知的囚笼》 / ### 第一章：入场券与血色序幕 / ### 第二章：杀戮即是“存储权限” / ### 第三章：心脏移植与认知的极寒 / ### 第四章：邪教的谎言与高层的诱饵 / ### 第五章：真结局——莫比乌斯环的闭合\nSignals: 一个人必须在孤独中成长为自己 | 做配得上你的事情，不要让一切变得不值得 | 那是你一辈子都没有尝试过的，没有到极限你甘心放弃吗",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: TRY/Words.md\nFolder: TRY\nTitle: 《万分之一的安眠：感知的囚笼》\nHeadings: # 《万分之一的安眠：感知的囚笼》",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "0ae88497b252896c",
@@ -767,11 +649,25 @@
       "folder": "Test",
       "top_group": "Test",
       "headings": [],
-      "tags": [
-        "1H"
+      "tags": [],
+      "content": "File: Test/USTS 2025.md\nFolder: Test\nTitle: USTS 2025",
+      "updated_at": "2026-08-02 06:36:59"
+    },
+    {
+      "id": "f5451478e6afabaf",
+      "title": "1. 数据条件与工程特性对比",
+      "file": "Tree-based models/0. Tree-based Rank.md",
+      "folder": "Tree-based models",
+      "top_group": "Tree-based models",
+      "headings": [
+        "## 1. 数据条件与工程特性对比",
+        "## 2. 数据类型与任务类型对比",
+        "## 3. 快速选择结论",
+        "## 4. 临床小样本数据建议"
       ],
-      "content": "File: Test/USTS 2025.md\nFolder: Test\nTitle: USTS 2025\nTags: 1H\nSignals: ![[Screenshot 2025-09-04 012949.png]] | ![[Screenshot 2025-09-04 013000.png]] | 机器字长等于内部寄存器的大小",
-      "updated_at": "2026-07-10 06:26:58"
+      "tags": [],
+      "content": "File: Tree-based models/0. Tree-based Rank.md\nFolder: Tree-based models\nTitle: 1. 数据条件与工程特性对比\nHeadings: ## 1. 数据条件与工程特性对比 / ## 2. 数据类型与任务类型对比 / ## 3. 快速选择结论 / ## 4. 临床小样本数据建议",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "f6a74dabebb780a9",
@@ -786,28 +682,14 @@
         "## 4. 分类树如何建立？",
         "## 5. 什么叫好的切分？",
         "## 6. Gini 和 Entropy",
-        "### 6.1 作用",
-        "### 6.2 Gini impurity",
-        "### 6.3 Entropy 和 Information Gain",
         "## 7. 回归树",
         "## 8. MSE 是什么？",
         "## 9. MSE 的两种身份",
-        "## 10. 为什么回归树叶子节点输出平均值？",
-        "## 11. 分类树和回归树的对应关系",
-        "## 12. 为什么树能学习非线性？",
-        "## 13. 单棵树为什么容易过拟合？",
-        "## 14. 剪枝",
-        "## 15. 单棵决策树的优缺点",
-        "### 优点",
-        "### 缺点",
-        "## 16. 随机森林",
-        "## 17. GBDT",
-        "## 18. 随机森林 vs GBDT",
-        "## 19. GBDT 和 MSE 的关系"
+        "## 10. 为什么回归树叶子节点输出平均值？"
       ],
       "tags": [],
-      "content": "File: Tree-based models/1. Basic knowledge.md\nFolder: Tree-based models\nTitle: 1. 树模型的核心思想\nHeadings: ## 1. 树模型的核心思想 / ## 2. 一棵决策树是什么？ / ## 3. 决策树的基本组成 / ## 4. 分类树如何建立？ / ## 5. 什么叫好的切分？ / ## 6. Gini 和 Entropy / ### 6.1 作用 / ### 6.2 Gini impurity / ### 6.3 Entropy 和 Information Gain / ## 7. 回归树 / ## 8. MSE 是什么？ / ## 9. MSE 的两种身份\nSignals: MachineLearning | DecisionTree | RandomForest",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Tree-based models/1. Basic knowledge.md\nFolder: Tree-based models\nTitle: 1. 树模型的核心思想\nHeadings: ## 1. 树模型的核心思想 / ## 2. 一棵决策树是什么？ / ## 3. 决策树的基本组成 / ## 4. 分类树如何建立？ / ## 5. 什么叫好的切分？ / ## 6. Gini 和 Entropy / ## 7. 回归树 / ## 8. MSE 是什么？ / ## 9. MSE 的两种身份 / ## 10. 为什么回归树叶子节点输出平均值？",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "3350f4140f456edf",
@@ -825,25 +707,49 @@
         "## 6. RandomForest 为什么能降低方差？",
         "## 7. OOB Error 是什么？",
         "## 8. RandomForest 的主要参数",
-        "### 8.1 n_estimators",
-        "### 8.2 max_depth",
-        "### 8.3 max_features",
-        "### 8.4 min_samples_leaf",
-        "## 9. RandomForest 的适用场景",
-        "# 2.2. GBDT",
-        "## 10. GBDT 是什么？",
-        "## 11. 用回归任务理解 GBDT",
-        "## 12. GBDT 中的 Gradient 是什么意思？",
-        "## 13. GBDT 为什么比 RandomForest 拟合能力更强？",
-        "## 14. Learning_rate 为什么重要？",
-        "## 15. N_estimators 在 GBDT 中是什么意思？",
-        "## 16. GBDT 为什么通常使用浅树？",
-        "## 17. GBDT 的适用场景",
-        "# 2.3. RandomForest vs GBDT"
+        "## 9. RandomForest 的适用场景"
       ],
       "tags": [],
-      "content": "File: Tree-based models/2. RF and GBDT.md\nFolder: Tree-based models\nTitle: 2.1. RandomForest\nHeadings: # 2.1. RandomForest / ## 1. RandomForest 是什么？ / ## 2. RandomForest 为什么需要很多棵树？ / ## 3. RandomForest 为什么每棵树会不一样？ / ## 4. 样本随机：Bootstrap Sampling / ## 5. 特征随机：每次 split 只看部分特征 / ## 6. RandomForest 为什么能降低方差？ / ## 7. OOB Error 是什么？ / ## 8. RandomForest 的主要参数 / ### 8.1 n_estimators / ### 8.2 max_depth / ### 8.3 max_features\nSignals: MachineLearning | EnsembleLearning | RandomForest",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Tree-based models/2. RF and GBDT.md\nFolder: Tree-based models\nTitle: 2.1. RandomForest\nHeadings: # 2.1. RandomForest / ## 1. RandomForest 是什么？ / ## 2. RandomForest 为什么需要很多棵树？ / ## 3. RandomForest 为什么每棵树会不一样？ / ## 4. 样本随机：Bootstrap Sampling / ## 5. 特征随机：每次 split 只看部分特征 / ## 6. RandomForest 为什么能降低方差？ / ## 7. OOB Error 是什么？ / ## 8. RandomForest 的主要参数 / ## 9. RandomForest 的适用场景",
+      "updated_at": "2026-08-02 06:36:59"
+    },
+    {
+      "id": "8178305adb2d5ea5",
+      "title": "1. XGBoost 是什么？",
+      "file": "Tree-based models/3. XGBoost.md",
+      "folder": "Tree-based models",
+      "top_group": "Tree-based models",
+      "headings": [
+        "## 1. XGBoost 是什么？",
+        "## 2. XGBoost 是一个加法模型",
+        "## 3. 二分类中累加的不是概率",
+        "## 4. 二分类损失函数",
+        "## 5. 第 $t$ 棵树要解决什么问题？",
+        "## 6. 为什么会出现 $g_i$ 和 $h_i$？",
+        "## 7. 为什么要进行二阶泰勒展开？",
+        "## 8. 二分类中的 $g_i$ 和 $h_i$",
+        "## 9. $g_i$ 如何表示修正方向？",
+        "## 10. 为什么当前损失可以被去掉？"
+      ],
+      "tags": [],
+      "content": "File: Tree-based models/3. XGBoost.md\nFolder: Tree-based models\nTitle: 1. XGBoost 是什么？\nHeadings: ## 1. XGBoost 是什么？ / ## 2. XGBoost 是一个加法模型 / ## 3. 二分类中累加的不是概率 / ## 4. 二分类损失函数 / ## 5. 第 $t$ 棵树要解决什么问题？ / ## 6. 为什么会出现 $g_i$ 和 $h_i$？ / ## 7. 为什么要进行二阶泰勒展开？ / ## 8. 二分类中的 $g_i$ 和 $h_i$ / ## 9. $g_i$ 如何表示修正方向？ / ## 10. 为什么当前损失可以被去掉？",
+      "updated_at": "2026-08-02 06:36:59"
+    },
+    {
+      "id": "3d31d31c3c03ecff",
+      "title": "1. 传统 GBDT",
+      "file": "Tree-based models/4. LightGBM and CatBoost.md",
+      "folder": "Tree-based models",
+      "top_group": "Tree-based models",
+      "headings": [
+        "## 1. 传统 GBDT",
+        "## 2. LightGBM 与传统 GBDT 的不同",
+        "## 3. CatBoost 与传统 GBDT 的不同",
+        "## 4. 最终对比"
+      ],
+      "tags": [],
+      "content": "File: Tree-based models/4. LightGBM and CatBoost.md\nFolder: Tree-based models\nTitle: 1. 传统 GBDT\nHeadings: ## 1. 传统 GBDT / ## 2. LightGBM 与传统 GBDT 的不同 / ## 3. CatBoost 与传统 GBDT 的不同 / ## 4. 最终对比",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "bd74bd1e3e6eb373",
@@ -861,29 +767,11 @@
         "## Q 6：分类树和回归树的切分标准有什么区别？",
         "## Q 7：为什么回归树叶子节点输出平均值？",
         "## Q 8：为什么树模型可以学习非线性？",
-        "## Q 9：单棵树为什么容易过拟合？",
-        "## Q 10：随机森林和 GBDT 的区别是什么？",
-        "## Q 11：XGBoost、LightGBM、CatBoost 和 GBDT 是什么关系？",
-        "## Q 12：CatBoost 的 Cat 是什么意思？",
-        "## Q 13：为什么 CatBoost 有时比较难跑通？",
-        "## Q 14：Gini、Entropy、MSE 是不是同一类东西？",
-        "## Q 15：当前阶段理解树模型时，最应该抓住什么？",
-        "## 最终压缩"
+        "## Q 9：单棵树为什么容易过拟合？"
       ],
       "tags": [],
-      "content": "File: Tree-based models/Questions.md\nFolder: Tree-based models\nTitle: 树模型疑惑与纠偏\nHeadings: # 树模型疑惑与纠偏 / ## Q 1：GBDT 是选择树根节点的方法吗？ / ## Q 2：Gini / Entropy 是一棵树切分时使用的分数吗？ / ## Q 3：MSE 是评价预测值和真实值相差多大的分数吗？ / ## Q 4：为什么 MSE 既是评价指标，又会出现在训练过程中？ / ## Q 5：为什么多棵树模型里也会看到 MSE？ / ## Q 6：分类树和回归树的切分标准有什么区别？ / ## Q 7：为什么回归树叶子节点输出平均值？ / ## Q 8：为什么树模型可以学习非线性？ / ## Q 9：单棵树为什么容易过拟合？ / ## Q 10：随机森林和 GBDT 的区别是什么？ / ## Q 11：XGBoost、LightGBM、CatBoost 和 GBDT 是什么关系？\nSignals: MachineLearning | DecisionTree | RandomForest",
-      "updated_at": "2026-07-10 06:26:58"
-    },
-    {
-      "id": "d888e9577b8d3a63",
-      "title": "XGBoost",
-      "file": "Tree-based models/XGBoost.md",
-      "folder": "Tree-based models",
-      "top_group": "Tree-based models",
-      "headings": [],
-      "tags": [],
-      "content": "File: Tree-based models/XGBoost.md\nFolder: Tree-based models\nTitle: XGBoost\nSignals: [[3.Decision Tree]]",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: Tree-based models/Questions.md\nFolder: Tree-based models\nTitle: 树模型疑惑与纠偏\nHeadings: # 树模型疑惑与纠偏 / ## Q 1：GBDT 是选择树根节点的方法吗？ / ## Q 2：Gini / Entropy 是一棵树切分时使用的分数吗？ / ## Q 3：MSE 是评价预测值和真实值相差多大的分数吗？ / ## Q 4：为什么 MSE 既是评价指标，又会出现在训练过程中？ / ## Q 5：为什么多棵树模型里也会看到 MSE？ / ## Q 6：分类树和回归树的切分标准有什么区别？ / ## Q 7：为什么回归树叶子节点输出平均值？ / ## Q 8：为什么树模型可以学习非线性？ / ## Q 9：单棵树为什么容易过拟合？",
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "4a6b132450608e29",
@@ -894,7 +782,7 @@
       "headings": [],
       "tags": [],
       "content": "File: [Ch4：2最优性(贝尔曼最优方程).md\nFolder: Vault root\nTitle: [Ch4：2最优性(贝尔曼最优方程)",
-      "updated_at": "2026-07-10 06:26:58"
+      "updated_at": "2026-08-02 06:36:59"
     },
     {
       "id": "ebad2acfcdea5192",
@@ -904,8 +792,8 @@
       "top_group": "Vault root",
       "headings": [],
       "tags": [],
-      "content": "File: 欢迎.md\nFolder: Vault root\nTitle: 欢迎\nSignals: 写点笔记，[[创建链接]]，或者试一试[导入器](https://help.obsidian.md/Plugins/Importer)插件! | 当你准备好了，就将该笔记文件删除，使这个仓库为你所用。",
-      "updated_at": "2026-07-10 06:26:58"
+      "content": "File: 欢迎.md\nFolder: Vault root\nTitle: 欢迎",
+      "updated_at": "2026-08-02 06:36:59"
     }
   ],
   "chapter_summary": [
@@ -918,9 +806,9 @@
         "现实世界强化学习与情境强盗",
         "Ch2：3代码题目",
         "RLbook Ch 3.3: Returns and Episodes （Coursera knowledge added）",
-        "💡 核心概念“大白话”翻译",
-        "👑 前言：最优策略与最优价值 (Ch 3.6)",
-        "⚠️ 考点拾遗与易错知识点补充",
+        "Ch4：1贝尔曼方程",
+        "Ch4：2最优性(贝尔曼最优方程)",
+        "Ch4：3补充信息",
         "动态规划 (Dynamic Programming, DP) 核心框架与进阶",
         "经典案例：3 x 3 网格“刷金币漩涡” (无终止状态)",
         "强化学习基因突变：从动态规划到 Q-Learning"
@@ -928,16 +816,16 @@
       "headings": [
         "# 强化学习导论 Ch 2：多臂赌博机 (Multi-armed Bandits)",
         "## 1. 通用学习引擎：价值更新公式",
-        "### 两种环境设置",
         "## 2. 策略工具箱：算法家族谱系",
         "# 现实世界强化学习与情境强盗",
         "## 1. 核心背景：模拟器 vs. 现实世界 (Core Background)",
         "## 2. 技术定位：什么是“情境强盗”？ (What is Contextual Bandits?)",
-        "### 定义流程",
+        "## 3. 三种学习模式对比图谱 (Comparison Matrix)",
         "# RLbook Ch 3.3: Returns and Episodes （Coursera knowledge added）",
         "## 1. 核心概念精华 (Key Concepts)",
-        "### 🎯 核心目标：回报 (Returns)",
-        "### 🔄 任务分类"
+        "## 2. 练习 3.8：反向计算回报 (Exercise 3.8)",
+        "# 动态规划 (Dynamic Programming, DP) 核心框架与进阶",
+        "## 第一部分：核心理论基石 (策略评估与改进)"
       ]
     },
     {
@@ -962,15 +850,13 @@
         "1.Logistic regression",
         "2.Naive Bayes model",
         "3.Vector spaces and word vectors",
-        "ANN 与 KNN 的关系",
+        "4.ANN KNN",
         "5.Autocorrect",
         "6.Speech tagging",
         "7.N-grams",
         "8.Word vectors"
       ],
-      "headings": [
-        "### ANN 与 KNN 的关系"
-      ]
+      "headings": []
     },
     {
       "name": "Machine learning",
@@ -985,6 +871,32 @@
         "Summarry"
       ],
       "headings": []
+    },
+    {
+      "name": "Tree-based models",
+      "note_count": 6,
+      "titles": [
+        "1. 数据条件与工程特性对比",
+        "1. 树模型的核心思想",
+        "2.1. RandomForest",
+        "1. XGBoost 是什么？",
+        "1. 传统 GBDT",
+        "树模型疑惑与纠偏"
+      ],
+      "headings": [
+        "## 1. 数据条件与工程特性对比",
+        "## 2. 数据类型与任务类型对比",
+        "## 3. 快速选择结论",
+        "## 4. 临床小样本数据建议",
+        "## 1. 树模型的核心思想",
+        "## 2. 一棵决策树是什么？",
+        "## 3. 决策树的基本组成",
+        "## 4. 分类树如何建立？",
+        "# 2.1. RandomForest",
+        "## 1. RandomForest 是什么？",
+        "## 2. RandomForest 为什么需要很多棵树？",
+        "## 3. RandomForest 为什么每棵树会不一样？"
+      ]
     },
     {
       "name": "Deeplearning",
@@ -1013,45 +925,17 @@
       "note_count": 4,
       "titles": [
         "Reading 1",
-        "<font color=\"#ff0000\">指代题</font>",
-        "Q 1Q 2:",
-        "<font color=\"#ff0000\">一</font><font color=\"#ff0000\">. 关于邮件写作：</font>"
+        "Reading 2",
+        "雅思口语万能佳句分类",
+        "一. 关于邮件写作："
       ],
       "headings": [
-        "### <font color=\"#ff0000\">指代题</font>",
-        "### 关于<font color=\"#ff0000\">细节题</font>：",
-        "### Q 1Q 2:",
         "# 雅思口语万能佳句分类",
         "## 1. Relax 放松类",
         "## 2. Relationship 人际关系类",
-        "## <font color=\"#ff0000\">一</font><font color=\"#ff0000\">. 关于邮件写作：</font>",
-        "## <font color=\"#ff0000\">二.</font> <font color=\"#ff0000\">邮件写作分类</font>",
-        "### <font color=\"#ff0000\">1.建议类</font>",
-        "### <font color=\"#ff0000\">2.请求类</font>"
-      ]
-    },
-    {
-      "name": "Tree-based models",
-      "note_count": 4,
-      "titles": [
-        "1. 树模型的核心思想",
-        "2.1. RandomForest",
-        "树模型疑惑与纠偏",
-        "XGBoost"
-      ],
-      "headings": [
-        "## 1. 树模型的核心思想",
-        "## 2. 一棵决策树是什么？",
-        "## 3. 决策树的基本组成",
-        "## 4. 分类树如何建立？",
-        "# 2.1. RandomForest",
-        "## 1. RandomForest 是什么？",
-        "## 2. RandomForest 为什么需要很多棵树？",
-        "## 3. RandomForest 为什么每棵树会不一样？",
-        "# 树模型疑惑与纠偏",
-        "## Q 1：GBDT 是选择树根节点的方法吗？",
-        "## Q 2：Gini / Entropy 是一棵树切分时使用的分数吗？",
-        "## Q 3：MSE 是评价预测值和真实值相差多大的分数吗？"
+        "## 3. Convenient 便利类",
+        "## 一. 关于邮件写作：",
+        "## 二. 邮件写作分类"
       ]
     },
     {
@@ -1076,13 +960,13 @@
       "name": "Kaggle cources",
       "note_count": 1,
       "titles": [
-        "1. Creating, Reading and Writing"
+        "推荐：读取时直接指定某列为索引"
       ],
       "headings": [
-        "### 1. Creating, Reading and Writing",
-        "#### 核心数据结构",
-        "#### 读取数据 (最佳实践)",
-        "# 推荐：读取时直接指定某列为索引"
+        "# 推荐：读取时直接指定某列为索引",
+        "# 保存时通常不需要保存自动生成的数字索引（如果索引没有意义）",
+        "# 选择第一行",
+        "# 选择第一列"
       ]
     },
     {
@@ -1118,10 +1002,7 @@
         "《万分之一的安眠：感知的囚笼》"
       ],
       "headings": [
-        "# 《万分之一的安眠：感知的囚笼》",
-        "### 第一章：入场券与血色序幕",
-        "### 第二章：杀戮即是“存储权限”",
-        "### 第三章：心脏移植与认知的极寒"
+        "# 《万分之一的安眠：感知的囚笼》"
       ]
     },
     {
@@ -1136,5 +1017,8 @@
   "path_memories": [],
   "session_ids": [
     "session_2026-07-10_06-10-01.jsonl"
-  ]
+  ],
+  "curated_extractions": [],
+  "normal_memory_sync_version": 4,
+  "normal_memory_synced_at": "2026-08-13 03:56:42"
 }

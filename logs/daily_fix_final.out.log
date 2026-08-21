@@ -1,0 +1,44 @@
+
+==================================================
+Please select the model to load:
+1. Qwen3 30B Q5
+2. Mistral 22B Q6
+3. Mistral 22B Q5
+4. Saya R1 q5
+5. API Mode (newapi.xiaoqianran.xyz)
+==================================================
+Non-interactive mode detected (or not a TTY). Defaulting to qwen3_30b_q5.
+Selected local model qwen3_30b_q5; it will load on first use.
+Loading conversation history from memory...
+History initialized.
+INFO:     127.0.0.1:55063 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55075 - "GET /api/checkins/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55078 - "GET /api/anki/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62833 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60254 - "GET /api/learner/runs/1b7b744e-9d5e-4cd0-8276-f129419cfac9 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /static/Chat4o5-Modern.html?v=daily-fix-final-20260817 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /static/css/style.css?v=g22-20260811-ai-memory-compression-g26-anki-daily-preset-g42-memory-network-3d-scale-g43-three-r106-fix-g44-memory-graph-surface-fix-g45-memory-graph-display-controls-g46-independent-display-settings-g47-memory-graph-text-scale-g48-persist-display-settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50817 - "GET /static/js/app.js?v=g22-20260811-ai-memory-compression-g41-anki-daily-preset-g42-memory-network-3d-scale-g43-three-r106-fix-g44-memory-graph-surface-fix-g45-memory-graph-display-controls-g46-independent-display-settings-g47-memory-graph-text-scale-g48-persist-display-settings-g49-daily-unblock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50817 - "GET /api/kb/candidates?status=pending&limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /api/user-profile HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50817 - "GET /get_motion_config HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63087 - "GET /api/current_model HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58500 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52178 - "GET /api/checkins/status?year=2026&month=8&selected_date=2026-08-17 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58500 - "GET /api/anki/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50817 - "GET /api/sessions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50776 - "GET /api/sessions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63087 - "GET /api/daily_brief?refresh_videos=false HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "POST /api/checkins/activity/enter HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /get_vmd_files HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63087 - "GET /api/projects HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50817 - "GET /api/kb/maintenance/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50776 - "GET /MMD/motion/apologizing.vmd HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:61856 - "POST /api/anki/refresh HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61856 - "GET /api/sessions/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63170 - "GET /api/learner/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61833 - "GET /MMD/motion/pout_turn_head_hmph.vmd HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50505 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52803 - "GET /MMD/motion/jealous_pout.vmd HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52803 - "POST /api/learner/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53049 - "POST /api/learner/start HTTP/1.1" 200 OK

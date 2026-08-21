@@ -1,6 +1,43 @@
 {
     "schema_version": 1,
-    "tasks": [],
+    "tasks": [
+        {
+            "id": "2c396d66-7244-4c2a-964c-3d08e79ba7e7",
+            "title": "Efficiency",
+            "frequency": "daily",
+            "order": 0,
+            "active": true,
+            "created_at": "2026-08-01 04:25:33"
+        },
+        {
+            "id": "021502f2-25b5-4607-bcae-d661133a1474",
+            "title": "Study",
+            "frequency": "daily",
+            "order": 1,
+            "active": true,
+            "created_at": "2026-08-01 04:27:07"
+        },
+        {
+            "id": "87d1a2ce-e372-41a4-8aa0-1b69d3709901",
+            "title": "Gym",
+            "frequency": "daily",
+            "order": 2,
+            "active": true,
+            "created_at": "2026-08-01 04:25:16"
+        },
+        {
+            "id": "e1e5c328-aa60-4863-890d-80022cf6e329",
+            "title": "Anki",
+            "frequency": "daily",
+            "goal_id": null,
+            "order": 3,
+            "active": true,
+            "created_at": "2026-08-19 16:01:05",
+            "preset": "anki",
+            "completion_mode": "automatic",
+            "completion_source": "anki"
+        }
+    ],
     "records": {
         "2026-06-28": {
             "date": "2026-06-28",
@@ -15,126 +52,558 @@
                     "created_at": "2026-06-28 06:00:54"
                 }
             ],
-            "chat_session_id": "session_2026-06-28_05-54-21.jsonl"
+            "chat_session_id": "session_2026-06-28_05-54-21.jsonl",
+            "automatic_completions": {}
         },
         "2026-06-27": {
             "date": "2026-06-27",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-06-26": {
             "date": "2026-06-26",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-06-29": {
             "date": "2026-06-29",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-06-30": {
             "date": "2026-06-30",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-16": {
             "date": "2026-10-16",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-08": {
             "date": "2026-10-08",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-09": {
             "date": "2026-10-09",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-25": {
             "date": "2026-10-25",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-31": {
             "date": "2026-10-31",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-30": {
             "date": "2026-10-30",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-26": {
             "date": "2026-10-26",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-24": {
             "date": "2026-10-24",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-27": {
             "date": "2026-10-27",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-29": {
             "date": "2026-10-29",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-23": {
             "date": "2026-10-23",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-17": {
             "date": "2026-10-17",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
         },
         "2026-10-18": {
             "date": "2026-10-18",
             "completions": {},
             "note": "",
             "updated_at": null,
-            "daily_tasks": []
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-01": {
+            "date": "2026-08-01",
+            "completions": {
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true
+            },
+            "note": "",
+            "updated_at": "2026-08-02 05:06:43",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-02": {
+            "date": "2026-08-02",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-05 05:14:06",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-09": {
+            "date": "2026-08-09",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-10 23:53:19",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-07": {
+            "date": "2026-08-07",
+            "completions": {
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true
+            },
+            "note": "",
+            "updated_at": "2026-08-08 00:11:30",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-06": {
+            "date": "2026-08-06",
+            "completions": {
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true
+            },
+            "note": "",
+            "updated_at": "2026-08-08 00:11:28",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-05": {
+            "date": "2026-08-05",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true
+            },
+            "note": "",
+            "updated_at": "2026-08-05 20:27:53",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-04": {
+            "date": "2026-08-04",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-05 05:14:12",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-03": {
+            "date": "2026-08-03",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-05 05:14:10",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-08": {
+            "date": "2026-08-08",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-09 01:52:05",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-10": {
+            "date": "2026-08-10",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true
+            },
+            "note": "",
+            "updated_at": "2026-08-11 03:23:28",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-11": {
+            "date": "2026-08-11",
+            "completions": {
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true
+            },
+            "note": "",
+            "updated_at": "2026-08-11 03:59:58",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-12": {
+            "date": "2026-08-12",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true
+            },
+            "note": "",
+            "updated_at": "2026-08-12 20:14:14",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-13": {
+            "date": "2026-08-13",
+            "completions": {
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-13 03:56:57",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-14": {
+            "date": "2026-08-14",
+            "completions": {
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "d12b2978-931c-4c08-a300-2f59c310ab98": false
+            },
+            "note": "",
+            "updated_at": "2026-08-14 19:37:33",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "d12b2978-931c-4c08-a300-2f59c310ab98": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 6,
+                    "today_cards": 6,
+                    "source_modified_at": "2026-08-14T19:00:18+08:00"
+                }
+            }
+        },
+        "2026-08-15": {
+            "date": "2026-08-15",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-15 13:48:01",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-16": {
+            "date": "2026-08-16",
+            "completions": {
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true
+            },
+            "note": "",
+            "updated_at": "2026-08-16 01:37:18",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-17": {
+            "date": "2026-08-17",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true
+            },
+            "note": "",
+            "updated_at": "2026-08-18 04:45:32",
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-08-18": {
+            "date": "2026-08-18",
+            "completions": {
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true
+            },
+            "note": "",
+            "updated_at": "2026-08-19 16:01:01",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "4f40c6d2-6879-4d46-a8e5-f8582659524f": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-08-18T04:44:52+08:00"
+                }
+            }
+        },
+        "2026-08-19": {
+            "date": "2026-08-19",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "e1e5c328-aa60-4863-890d-80022cf6e329": true
+            },
+            "note": "",
+            "updated_at": "2026-08-20 13:07:57",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "4f40c6d2-6879-4d46-a8e5-f8582659524f": {
+                    "preset": "anki",
+                    "completed": true,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [
+                        "托福绿宝书"
+                    ],
+                    "today_reviews": 128,
+                    "today_cards": 79,
+                    "source_modified_at": "2026-08-19T16:00:47+08:00"
+                },
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": true,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [
+                        "托福绿宝书"
+                    ],
+                    "today_reviews": 128,
+                    "today_cards": 79,
+                    "source_modified_at": "2026-08-19T16:00:47+08:00"
+                }
+            }
+        },
+        "2026-08-20": {
+            "date": "2026-08-20",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "e1e5c328-aa60-4863-890d-80022cf6e329": true
+            },
+            "note": "",
+            "updated_at": "2026-08-20 13:08:00",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": true,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [
+                        "托福绿宝书"
+                    ],
+                    "today_reviews": 77,
+                    "today_cards": 45,
+                    "source_modified_at": "2026-08-20T13:07:45+08:00"
+                }
+            }
+        },
+        "2026-08-21": {
+            "date": "2026-08-21",
+            "completions": {
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-08-21 03:26:21",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-08-20T13:07:45+08:00"
+                }
+            }
+        },
+        "2026-08-22": {
+            "date": "2026-08-22",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-08-22 00:27:15",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-08-20T13:07:45+08:00"
+                }
+            }
         }
+    },
+    "activity": {
+        "2026-08-11": {
+            "date": "2026-08-11",
+            "entry_count": 12,
+            "last_entry_at": "2026-08-11 07:39:33"
+        },
+        "2026-08-12": {
+            "date": "2026-08-12",
+            "entry_count": 38,
+            "last_entry_at": "2026-08-12 23:44:54"
+        },
+        "2026-08-13": {
+            "date": "2026-08-13",
+            "entry_count": 30,
+            "last_entry_at": "2026-08-13 23:30:01"
+        },
+        "2026-08-14": {
+            "date": "2026-08-14",
+            "entry_count": 15,
+            "last_entry_at": "2026-08-14 19:35:46"
+        },
+        "2026-08-15": {
+            "date": "2026-08-15",
+            "entry_count": 10,
+            "last_entry_at": "2026-08-15 14:56:37"
+        },
+        "2026-08-16": {
+            "date": "2026-08-16",
+            "entry_count": 9,
+            "last_entry_at": "2026-08-16 23:17:36"
+        },
+        "2026-08-17": {
+            "date": "2026-08-17",
+            "entry_count": 11,
+            "last_entry_at": "2026-08-17 22:41:08"
+        },
+        "2026-08-18": {
+            "date": "2026-08-18",
+            "entry_count": 7,
+            "last_entry_at": "2026-08-18 04:45:07"
+        },
+        "2026-08-19": {
+            "date": "2026-08-19",
+            "entry_count": 1,
+            "last_entry_at": "2026-08-19 16:00:39"
+        },
+        "2026-08-20": {
+            "date": "2026-08-20",
+            "entry_count": 1,
+            "last_entry_at": "2026-08-20 13:07:44"
+        },
+        "2026-08-21": {
+            "date": "2026-08-21",
+            "entry_count": 9,
+            "last_entry_at": "2026-08-21 23:39:35"
+        },
+        "2026-08-22": {
+            "date": "2026-08-22",
+            "entry_count": 5,
+            "last_entry_at": "2026-08-22 00:59:23"
+        }
+    },
+    "auto_reports": {
+        "months": {},
+        "years": {}
     }
 }

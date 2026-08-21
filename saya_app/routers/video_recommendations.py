@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from saya_app.services.video_recommendations import video_recommendation_service
+from saya_app.services.video_recommendations import VideoNetworkError, video_recommendation_service
 
 
 router = APIRouter(prefix="/api/video_recommendations", tags=["video_recommendations"])
@@ -63,4 +63,16 @@ def discuss_video(req: dict):
             video_id=req.get("id"),
         )
     except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/videos/discuss-captions")
+def discuss_video_with_captions(req: dict):
+    try:
+        return video_recommendation_service.prepare_caption_discussion(
+            video_id=req.get("id"),
+        )
+    except VideoNetworkError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+    except (ValueError, RuntimeError) as exc:
         raise HTTPException(status_code=400, detail=str(exc))

@@ -2,9 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
     <title>Digital Human Chat Interface (Modern)</title>
     <script src="https://unpkg.com/three@0.106.2/build/three.min.js"></script>
     <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/TGALoader.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/RGBELoader.js"></script>
+    <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/EXRLoader.js"></script>
     <script src="https://unpkg.com/three@0.106.2/examples/js/controls/OrbitControls.js"></script>
     <script src="https://unpkg.com/three@0.106.2/examples/js/libs/mmdparser.min.js"></script>
     <script src="https://unpkg.com/three@0.106.2/examples/js/loaders/MMDLoader.js"></script>
@@ -14,7 +19,7 @@
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
-    <link rel="stylesheet" href="/static/css/style.css?v=api-attachments-20260712">
+    <link rel="stylesheet" href="/static/css/style.css?v=g22-20260811-ai-memory-compression-g26-anki-daily-preset-g42-memory-network-3d-scale-g43-three-r106-fix-g44-memory-graph-surface-fix-g45-memory-graph-display-controls-g46-independent-display-settings-g47-memory-graph-text-scale-g48-persist-display-settings">
 </head>
 <body>
 
@@ -107,6 +112,18 @@
                     </select>
                 </div>
                 <div class="action-buttons" id="chat-action-area" style="display: flex; align-items: center; gap: 15px;">
+                    <button id="learner-activity-button" class="learner-activity-button" type="button" onclick="openLearnerActivityModal()" title="Learner activity" aria-label="Open Learner activity">
+                        <span class="learner-activity-icon" id="learner-activity-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false">
+                                <path d="M4.25 6.25c2.75-.45 5.15.05 7.75 1.72v10.28c-2.6-1.67-5-2.17-7.75-1.72V6.25Z"></path>
+                                <path d="M19.75 6.25c-2.75-.45-5.15.05-7.75 1.72v10.28c2.6-1.67 5-2.17 7.75-1.72V6.25Z"></path>
+                                <path class="learner-spark" d="M18.4 2.75v2.5M17.15 4h2.5"></path>
+                            </svg>
+                            <i id="learner-activity-dot"></i>
+                        </span>
+                        <span class="learner-activity-copy"><span id="learner-activity-label">Learner</span><small id="learner-activity-subtitle">All caught up</small></span>
+                        <strong id="learner-activity-count" hidden>0</strong>
+                    </button>
                     <div style="display: flex; align-items: center; gap: 5px;">
                         <!-- Lock button removed -->
                         <!-- Mood panel removed as requested -->
@@ -138,11 +155,27 @@
                 
                 <textarea id="user-input" placeholder="Ask anything..." rows="1"></textarea>
                 
-                <select id="chat-mode" title="Model Mode">
-                    <option value="normal">Normal</option>
-                    <option value="deep">Deep</option>
-                </select>
-                
+                <div class="mode-ring-wrapper">
+                    <svg class="mode-progress-ring" width="18" height="18" viewBox="0 0 20 20" title="对话进度">
+                        <circle class="mode-ring-bg" cx="10" cy="10" r="9" fill="none" stroke-width="3"/>
+                        <circle class="mode-ring-fg" cx="10" cy="10" r="9" fill="none" stroke-width="3" id="mode-progress-circle"/>
+                    </svg>
+                    <span class="mode-ring-pct" id="mode-ring-pct">0%</span>
+                    <div class="mode-dropdown" id="mode-dropdown">
+                        <button class="mode-dropdown-trigger" id="mode-dropdown-trigger" type="button">off · off</button>
+                        <div class="mode-dropdown-panel" id="mode-dropdown-panel">
+                            <div class="mode-dropdown-group-label">Recall</div>
+                            <div class="mode-dropdown-item" data-part="recall" data-val="off">off</div>
+                            <div class="mode-dropdown-item" data-part="recall" data-val="auto">auto</div>
+                            <div class="mode-dropdown-item" data-part="recall" data-val="on">on</div>
+                            <div class="mode-dropdown-group-label">Search</div>
+                            <div class="mode-dropdown-item" data-part="search" data-val="off">off</div>
+                            <div class="mode-dropdown-item" data-part="search" data-val="auto">auto</div>
+                            <div class="mode-dropdown-item" data-part="search" data-val="on">on</div>
+                        </div>
+                    </div>
+                </div>
+
                 <button class="btn-send" onclick="sendMessage()">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                 </button>
@@ -157,7 +190,38 @@
     <div class="settings-item" onclick="openSayaStyleModal()">Saya Style</div>
     <div class="settings-item" onclick="openApiSettingsModal()">LLM API</div>
     <div class="settings-item" onclick="openOtherApiSettingsModal()">Other API</div>
-    <div class="settings-item" onclick="openOutputLimitsModal()">Output Limits</div>
+    <div class="settings-item" onclick="openTokenLimitsModal()">Token Limits</div>
+    <div class="settings-item" onclick="openModeSettingModal()">Mode Setting</div>
+    <div class="settings-item" onclick="openBackupRestoreModal()">Backup & Restore</div>
+</div>
+
+<div class="modal-overlay" id="backup-restore-modal">
+    <div class="modal-content advanced-modal-content backup-workspace-content">
+        <div class="modal-header">
+            <span>Backup & Restore</span>
+            <button onclick="closeBackupRestoreModal()" class="modal-close-btn" title="Close">×</button>
+        </div>
+        <div class="modal-body backup-workspace-body">
+            <div class="workspace-hero workspace-hero-purple compact">
+                <div><span class="workspace-kicker">LOCAL DATA SAFETY</span><h3>Choose what to protect</h3><p>Backups exclude API keys, browser cookies and generated search indexes.</p></div>
+                <span class="workspace-status-pill">Selective restore</span>
+            </div>
+            <div class="backup-scope-grid" id="backup-scope-grid">
+                <label><input type="checkbox" value="memories" checked> Memories</label>
+                <label><input type="checkbox" value="conversations" checked> Conversations</label>
+                <label><input type="checkbox" value="checkins" checked> Check-ins & goals</label>
+                <label><input type="checkbox" value="projects" checked> Projects</label>
+                <label><input type="checkbox" value="preferences" checked> Preferences</label>
+            </div>
+            <div class="backup-toolbar">
+                <button type="button" class="workspace-primary-action" onclick="createSayaBackup()">Create backup</button>
+                <button type="button" class="workspace-secondary-action" onclick="loadSayaBackups()">Refresh list</button>
+            </div>
+            <div id="backup-restore-status" class="backup-restore-status" role="status" aria-live="polite"></div>
+            <div id="backup-list" class="backup-list"></div>
+            <div id="backup-preview" class="backup-preview" hidden></div>
+        </div>
+    </div>
 </div>
 
 <div class="modal-overlay" id="user-profile-modal">
@@ -177,15 +241,24 @@
                 <span>Username</span>
                 <input id="user-profile-name-input" type="text" maxlength="40" autocomplete="off" oninput="previewUserAvatarUrl(document.getElementById('user-profile-avatar-input')?.value || '')">
             </label>
-            <label class="user-profile-field">
-                <span>Avatar URL</span>
-                <input id="user-profile-avatar-input" type="text" autocomplete="off" oninput="previewUserAvatarUrl(this.value)">
-            </label>
+            <input id="user-profile-avatar-input" type="hidden">
             <input id="user-profile-avatar-file" type="file" accept="image/*" style="display:none" onchange="handleUserAvatarFile(this)">
+            <div class="user-profile-avatar-history-section">
+                <div class="user-profile-avatar-history-header">
+                    <div class="user-profile-avatar-history-heading">
+                        <span class="user-profile-avatar-history-eyebrow">PROFILE ARCHIVE</span>
+                        <strong>Recent avatars</strong>
+                        <small>Synced across browsers · latest three retained</small>
+                    </div>
+                    <span id="user-profile-avatar-history-count" class="user-profile-avatar-history-count">0 / 3</span>
+                </div>
+                <div id="user-profile-avatar-history" class="user-profile-avatar-history"></div>
+            </div>
+            <div id="user-profile-status" class="user-profile-status" role="status" aria-live="polite"></div>
             <div class="user-profile-actions">
-                <button class="user-profile-secondary-btn" onclick="document.getElementById('user-profile-avatar-file').click()">Choose Image</button>
-                <button class="user-profile-secondary-btn" onclick="clearUserAvatarInput()">Clear Avatar</button>
-                <button class="user-profile-primary-btn" onclick="saveUserProfileFromModal()">Save</button>
+                <button type="button" class="user-profile-secondary-btn" onclick="document.getElementById('user-profile-avatar-file').click()">Choose Image</button>
+                <button type="button" class="user-profile-secondary-btn" onclick="clearUserAvatarInput()">Clear Avatar</button>
+                <button type="button" class="user-profile-primary-btn" onclick="saveUserProfileFromModal()">Save</button>
             </div>
         </div>
     </div>
@@ -193,19 +266,23 @@
 
 <!-- PROMPT MODAL -->
 <div class="modal-overlay" id="prompt-modal">
-    <div class="modal-content" style="width: 700px; height: 80vh;">
+    <div class="modal-content advanced-modal-content prompt-workspace-content">
         <div class="modal-header">
             <span id="prompt-modal-title">System Prompt</span>
             <button onclick="closePromptModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
         </div>
-        <div class="modal-body" style="display:flex; flex-direction:column; padding:15px; gap:10px;">
-            <div style="background:#332222; color:#ffaaaa; padding:8px; border-radius:4px; font-size:0.8rem; border:1px solid #aa4444;">
-                ⚠️ Warning: Modifying the system prompt can drastically change Saya's personality and behavior. Proceed with caution.
+        <div class="modal-body prompt-workspace-body">
+            <div class="workspace-hero workspace-hero-crimson compact">
+                <div><span class="workspace-kicker">Behavior foundation</span><h3>System Prompt</h3><p>The highest-impact instruction layer for Saya's identity, boundaries and behavior.</p></div>
+                <span class="workspace-status-pill danger">Protected</span>
             </div>
-            <textarea id="system-prompt-editor" style="flex:1; background:#222; color:#ccc; border:1px solid #444; padding:10px; font-family:monospace; resize:none;" disabled></textarea>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button id="btn-unlock-prompt" onclick="unlockPrompt()" style="padding:8px 15px; background:#444; color:white; border:none; border-radius:4px; cursor:pointer;">Unlock to Edit</button>
-                <button id="btn-save-prompt" onclick="savePrompt()" style="padding:8px 15px; background:var(--accent-blue); color:white; border:none; border-radius:4px; cursor:pointer; display:none;">Save & Apply</button>
+            <div class="workspace-warning crimson">
+                Modifying this foundation can significantly change Saya's personality and behavior. Unlock only when you intend to revise it.
+            </div>
+            <textarea id="system-prompt-editor" class="workspace-code-editor" disabled></textarea>
+            <div class="workspace-form-actions">
+                <button id="btn-unlock-prompt" onclick="unlockPrompt()" class="workspace-secondary-action">Unlock to Edit</button>
+                <button id="btn-save-prompt" onclick="savePrompt()" class="workspace-primary-action" style="display:none;">Save & Apply</button>
             </div>
         </div>
     </div>
@@ -213,12 +290,16 @@
 
 <!-- SAYA STYLE MODAL -->
 <div class="modal-overlay" id="saya-style-modal">
-    <div class="modal-content" style="width: 560px;">
+    <div class="modal-content advanced-modal-content style-workspace-content">
         <div class="modal-header">
             <span>Saya Style</span>
             <button onclick="closeSayaStyleModal()" class="modal-close-btn" title="Close">×</button>
         </div>
         <div class="modal-body saya-style-body">
+            <div class="workspace-hero workspace-hero-purple compact">
+                <div><span class="workspace-kicker">Persona controls</span><h3>Expression & relationship style</h3><p>Shape how Saya speaks, relates and presents remembered context without changing stored facts.</p></div>
+                <span class="workspace-status-pill">8 controls</span>
+            </div>
             <label class="saya-style-row">
                 <span>Base style</span>
                 <select id="saya-style-base">
@@ -309,12 +390,16 @@
 
 <!-- LLM API SETTINGS MODAL -->
 <div class="modal-overlay" id="api-settings-modal">
-    <div class="modal-content" style="width: 520px;">
+    <div class="modal-content advanced-modal-content api-workspace-content">
         <div class="modal-header">
             <span>LLM API</span>
             <button onclick="closeApiSettingsModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
         </div>
-        <div class="modal-body" style="display:flex; flex-direction:column; gap:12px;">
+        <div class="modal-body api-workspace-body">
+            <div class="workspace-hero workspace-hero-blue compact">
+                <div><span class="workspace-kicker">Model routing</span><h3>LLM API workspace</h3><p>Route chat, vision, memory maintenance and reasoning to different DeepSeek-compatible models.</p></div>
+                <div class="workspace-mini-metrics"><span><strong>Chat</strong>default</span><span><strong>Memory</strong>tiered</span><span><strong>Vision</strong>optional</span></div>
+            </div>
             <label class="api-setting-row">
                 <span>Base URL</span>
                 <input id="api-url-input" type="text" placeholder="https://api.openai.com/v1" title="API Base URL" value="https://newapi.xiaoqianran.xyz/v1">
@@ -332,32 +417,36 @@
                 <input id="api-multimodal-model-input" type="text" placeholder="Vision-capable model; blank uses Chat Model" title="Used automatically for API chats with image attachments">
             </label>
             <label class="api-setting-row">
-                <span>Memory Fast Model</span>
-                <input id="api-memory-fast-model-input" type="text" placeholder="Optional; defaults to Chat Model" title="Memory Fast Model">
+                <span>Autonomous Memory Model</span>
+                <input id="api-autonomous-memory-model-input" type="text" placeholder="Lightweight model; blank uses Chat Model" title="Used for autonomous memory suggestions">
             </label>
             <label class="api-setting-row">
                 <span>Memory Strong Model</span>
-                <input id="api-memory-strong-model-input" type="text" placeholder="Optional; defaults to Memory Fast Model" title="Memory Strong Model">
+                <input id="api-memory-strong-model-input" type="text" placeholder="Optional; defaults to Chat Model" title="Memory Strong Model">
             </label>
             <label class="api-setting-row">
                 <span>Strong Logic Model</span>
                 <input id="api-strong-logic-model-input" type="text" placeholder="Optional; Assistant role only" title="Strong Logic Model for Assistant role">
             </label>
-            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
-                Saved locally in this browser. Select “API” from the model selector after saving.
+            <label class="api-setting-row">
+                <span>Brave Search API Key</span>
+                <input id="brave-search-key-input" type="password" placeholder="Optional; for web search" title="Brave Search API Key (web research)" autocomplete="off" value="">
+            </label>
+            <div class="workspace-hint">
+                Saved locally in this browser. Select "API" from the model selector after saving.
             </div>
-            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
-                Blank memory models inherit safely: Fast uses Chat Model, Strong uses Fast. Outside Assistant role, Deep API mode uses Memory Strong Model for the main response; Normal keeps Chat Model.
+            <div class="workspace-hint">
+                Autonomous Memory Model handles lightweight memory suggestions. Blank uses Chat Model. Memory Strong Model is used for heavier memory maintenance and Deep API responses outside Assistant role.
             </div>
-            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
+            <div class="workspace-hint">
                 Image attachments automatically use Multimodal Model. Text and code files continue to use Chat Model.
             </div>
-            <div style="font-size:0.78rem; color:#888; line-height:1.5;">
+            <div class="workspace-hint">
                 Strong Logic Model is only used by the on/off switch in an active Assistant chat.
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="clearSavedApiSettings()" style="padding:8px 12px; background:#333; color:white; border:1px solid #555; border-radius:4px; cursor:pointer;">Forget</button>
-                <button onclick="saveApiSettingsFromModal()" style="padding:8px 15px; background:var(--accent-blue); color:#000; border:none; border-radius:4px; cursor:pointer;">Save</button>
+            <div class="workspace-form-actions">
+                <button onclick="clearSavedApiSettings()" class="workspace-secondary-action">Forget</button>
+                <button onclick="saveApiSettingsFromModal()" class="workspace-primary-action">Save routing</button>
             </div>
         </div>
     </div>
@@ -365,12 +454,16 @@
 
 <!-- OTHER API SETTINGS MODAL -->
 <div class="modal-overlay" id="other-api-settings-modal">
-    <div class="modal-content" style="width: 560px;">
+    <div class="modal-content advanced-modal-content integrations-workspace-content">
         <div class="modal-header">
             <span>Other API</span>
             <button onclick="closeOtherApiSettingsModal()" class="modal-close-btn" title="Close">×</button>
         </div>
         <div class="modal-body other-api-settings-body">
+            <div class="workspace-hero workspace-hero-crimson compact">
+                <div><span class="workspace-kicker">External services</span><h3>Voice & translation</h3><p>Keep communication services separate from the main conversation model and its memory routing.</p></div>
+                <span class="workspace-status-pill">2 services</span>
+            </div>
             <div class="other-api-section-title">Translation · Tencent Cloud TMT</div>
             <label class="api-setting-row">
                 <span>Secret ID</span>
@@ -415,18 +508,23 @@
     </div>
 </div>
 
-<!-- OUTPUT LIMITS MODAL -->
-<div class="modal-overlay" id="output-limits-modal">
-    <div class="modal-content" style="width: 520px;">
+<!-- TOKEN LIMITS MODAL (merged Input + Output) -->
+<div class="modal-overlay" id="token-limits-modal">
+    <div class="modal-content advanced-modal-content limits-workspace-content">
         <div class="modal-header">
-            <span>Output Limits</span>
-            <button onclick="closeOutputLimitsModal()" class="modal-close-btn" title="Close">x</button>
+            <span>Token Limits</span>
+            <button onclick="closeTokenLimitsModal()" class="modal-close-btn" title="Close">x</button>
         </div>
         <div class="modal-body output-limits-body">
-            <div class="output-limits-hint">Maximum output tokens are stored separately for API mode and every local model.</div>
+            <!-- Output section -->
+            <div class="workspace-hero workspace-hero-purple compact">
+                <div><span class="workspace-kicker">Cost & latency guardrail</span><h3>Output limits</h3><p>Higher API limits allow longer answers but can increase latency and usage cost.</p></div>
+                <span id="output-cost-tier" class="workspace-status-pill cost">Balanced</span>
+            </div>
+            <div id="output-cost-guidance" class="output-limits-hint">Maximum output tokens are stored separately for API mode and every local model.</div>
             <label class="api-setting-row">
                 <span>API</span>
-                <input id="output-limit-api" type="number" min="256" max="65536" step="256" value="8192">
+                <input id="output-limit-api" type="number" min="256" max="65536" step="256" value="8192" oninput="updateOutputCostPreview()">
             </label>
             <label class="api-setting-row">
                 <span>Qwen3 30B Q5</span>
@@ -444,23 +542,142 @@
                 <span>Saya R1 Q5</span>
                 <input id="output-limit-saya_r1_q5" type="number" min="256" max="8192" step="256" value="4096">
             </label>
+
+            <!-- Input section -->
+            <div class="workspace-hero workspace-hero-blue compact" style="margin-top:18px;">
+                <div><span class="workspace-kicker">Context guardrail</span><h3>Input limits</h3><p>Control how much conversation history Saya sees. Fewer turns save context window; more turns preserve continuity.</p></div>
+            </div>
+            <label class="api-setting-row">
+                <span>History Turns</span>
+                <select id="input-history-turns-select" title="每条消息包含的最近对话轮数">
+                    <option value="2">2 轮（最省）</option>
+                    <option value="4">4 轮</option>
+                    <option value="6">6 轮</option>
+                    <option value="8">8 轮</option>
+                    <option value="10" selected>10 轮（默认）</option>
+                    <option value="15">15 轮</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>Max Conversations</span>
+                <select id="input-max-conversations-select" title="单会话保留的最大对话轮数上限">
+                    <option value="20">20 轮</option>
+                    <option value="30">30 轮</option>
+                    <option value="50" selected>50 轮（默认）</option>
+                    <option value="100">100 轮</option>
+                </select>
+            </label>
+            <div class="workspace-hint">
+                History Turns controls how many recent exchanges enter the prompt. Max Conversations is the hard limit before oldest messages are dropped from the session file.
+            </div>
             <div class="output-limits-actions">
-                <button class="saya-style-secondary-btn" onclick="resetOutputLimits()">Reset</button>
-                <button class="saya-style-primary-btn" onclick="saveOutputLimitsFromModal()">Save</button>
+                <button class="saya-style-secondary-btn" onclick="resetTokenLimits()">Reset</button>
+                <button class="saya-style-primary-btn" onclick="saveTokenLimitsFromModal()">Save</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- MODE SETTING MODAL -->
+<div class="modal-overlay" id="mode-setting-modal">
+    <div class="modal-content advanced-modal-content api-workspace-content">
+        <div class="modal-header">
+            <span>Mode Setting</span>
+            <button onclick="closeModeSettingModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
+        </div>
+        <div class="modal-body api-workspace-body">
+            <div class="workspace-hero workspace-hero-blue compact">
+                <div><span class="workspace-kicker">Behavior defaults</span><h3>Search &amp; Recall</h3><p>Control how Saya searches the web and recalls memories. Changes apply to the next message.</p></div>
+            </div>
+            <label class="api-setting-row">
+                <span>Web Search Depth</span>
+                <select id="web-search-preset-select" title="候选网页数量与最终引用数量；候选会先经过来源质量重排">
+                    <option value="quick">快速（候选 6 / 最多引用 2）</option>
+                    <option value="standard" selected>标准（候选 10 / 最多引用 3）</option>
+                    <option value="deep">深度（候选 16 / 最多引用 5）</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>Source Preference</span>
+                <select id="web-source-strategy-select" title="控制官方资料、一般网页与社区经验的排序优先级">
+                    <option value="official_first" selected>官方 / 一手来源优先</option>
+                    <option value="balanced">平衡来源</option>
+                    <option value="community">社区经验优先</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>Recall Depth</span>
+                <select id="recall-preset-select" title="回忆记忆条数的预设组合">
+                    <option value="quick">快速（3 条）</option>
+                    <option value="standard" selected>标准（8 条）</option>
+                    <option value="deep">深度（15 条）</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>Graph Recall</span>
+                <select id="graph-recall-mode-select" title="Expand recalled memories through typed project, session, entity and topic relationships">
+                    <option value="off">Off — no relationship expansion</option>
+                    <option value="auto" selected>Auto — limited high-confidence expansion</option>
+                    <option value="deep">Deep — wider relationship expansion</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>Default Search Mode</span>
+                <select id="default-search-mode-select" title="Search 下拉的默认值">
+                    <option value="off">off</option>
+                    <option value="auto" selected>auto</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>Default Recall Mode</span>
+                <select id="default-recall-mode-select" title="Recall 下拉的默认值">
+                    <option value="off">off</option>
+                    <option value="auto" selected>auto</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>Safe Search</span>
+                <select id="safe-search-select" title="Brave 搜索安全级别">
+                    <option value="moderate" selected>moderate</option>
+                    <option value="off">off</option>
+                    <option value="strict">strict</option>
+                </select>
+            </label>
+            <label class="api-setting-row">
+                <span>AI Memory Compression</span>
+                <input id="ai-memory-compression-toggle" type="checkbox" title="Allow only user-confirmed DeepSeek compression after a scoped token estimate">
+            </label>
+            <div class="workspace-hint">
+                Web Search Depth controls the candidate pool and final citations. AI Memory Compression is never automatic: Saya shows a scoped DeepSeek token estimate and waits for confirmation before every run.
+            </div>
+            <div class="workspace-form-actions">
+                <button onclick="resetModeSettings()" class="workspace-secondary-action">Reset</button>
+                <button onclick="saveModeSettingsFromModal()" class="workspace-primary-action">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRMED AI MEMORY COMPRESSION -->
+<div class="modal-overlay" id="ai-memory-compression-modal">
+    <div class="modal-content advanced-modal-content ai-memory-compression-content">
+        <div class="modal-header">
+            <span>AI Memory Compression</span>
+            <button onclick="closeAiMemoryCompressionPlanner()" class="modal-close-btn" title="Close">×</button>
+        </div>
+        <div class="modal-body" id="ai-memory-compression-body"></div>
+    </div>
+</div>
+
 <!-- DAILY CHECK-IN MODAL -->
 <div class="modal-overlay" id="checkin-modal">
-    <div class="modal-content checkin-modal-content">
+    <div class="modal-content checkin-modal-content advanced-modal-content checkin-workspace-content">
         <div class="modal-header">
             <span>Daily</span>
             <button onclick="closeCheckinModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
         </div>
         <div class="modal-body checkin-modal-body">
-            <div class="checkin-topline">
+            <div class="checkin-topline workspace-customizable-hero workspace-hero-tools" data-workspace-theme="daily-checkin">
                 <div>
                     <div class="checkin-now" id="checkin-current-time">--</div>
                     <div class="checkin-subtle">Blue = complete · Purple = partial / no report · Red = missed</div>
@@ -529,10 +746,24 @@
                             <option value="weekly">Weekly</option>
                             <option value="monthly">Monthly</option>
                         </select>
+                        <select id="new-checkin-task-goal" title="Related Life Quest">
+                            <option value="">No related quest</option>
+                        </select>
                         <button onclick="addCheckinTask()">Add Fixed</button>
                     </div>
-                    <div class="checkin-task-editor">
+                    <div class="checkin-task-editor checkin-preset-editor">
+                        <select id="new-checkin-task-preset" title="Optional automatically verified task preset">
+                            <option value="">Choose a preset task...</option>
+                            <option value="anki">Anki · read study status</option>
+                        </select>
+                        <button onclick="addCheckinPresetTask()">Add Preset</button>
+                        <small>Not enabled by default. Anki completion is read-only and cannot be checked manually.</small>
+                    </div>
+                    <div class="checkin-task-editor daily-task-editor">
                         <input id="new-checkin-daily-task-input" type="text" placeholder="Add a task only for this day...">
+                        <select id="new-checkin-daily-task-goal" title="Related Life Quest">
+                            <option value="">No related quest</option>
+                        </select>
                         <button onclick="addCheckinDailyTask()">Add Today</button>
                     </div>
                     <textarea id="checkin-talk-message" rows="2">Saya, I want to talk with you about today's check-in progress.</textarea>
@@ -548,7 +779,7 @@
 
 <!-- MEMORY MODAL -->
 <div class="modal-overlay" id="memory-modal">
-    <div class="modal-content">
+    <div class="modal-content memory-modal-content advanced-modal-content memory-workspace-content">
         <div class="modal-header">
             <button id="memory-modal-back" onclick="" class="about-you-back modal-back-btn" title="Back" style="display:none;">Back</button>
             <span id="modal-title">Memories</span>
@@ -560,19 +791,53 @@
     </div>
 </div>
 
+<!-- CONVERSATION SUMMARY SELECTION MODAL -->
+<div class="modal-overlay" id="archive-selection-modal">
+    <div class="modal-content archive-selection-content advanced-modal-content archive-workspace-content">
+        <div class="modal-header">
+            <span>Summarize conversation to Episodic memory</span>
+            <button onclick="closeArchiveSelectionModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body archive-selection-body">
+            <div class="archive-selection-intro">
+                <div><strong>Select useful exchanges</strong><small>The result becomes an active Episodic summary. It is not moved into the retired Archive layer.</small></div>
+                <div class="archive-selection-tools">
+                    <button onclick="setAllArchiveExchanges(true)">Select all</button>
+                    <button onclick="setAllArchiveExchanges(false)">Clear</button>
+                </div>
+            </div>
+            <div id="archive-selection-list" class="archive-selection-list">
+                <div class="about-you-empty">Loading conversation...</div>
+            </div>
+            <div id="archive-selection-status" class="archive-selection-status"></div>
+            <div class="archive-selection-footer">
+                <span id="archive-selection-count">0 selected</span>
+                <div>
+                    <button onclick="closeArchiveSelectionModal()">Cancel</button>
+                    <button id="archive-selection-submit" class="primary workspace-cost-action" onclick="submitArchiveSelection()">Summarize selected</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- QUEST MODAL -->
 <div class="modal-overlay" id="quest-modal">
-    <div class="modal-content" style="width: 500px;">
+    <div class="modal-content advanced-modal-content quest-modal-content">
         <div class="modal-header">
             <button onclick="backToAboutYouFromQuest()" class="about-you-back modal-back-btn" title="Back">Back</button>
             <span id="quest-modal-title">Life quests</span>
             <button onclick="closeQuestModal()" style="background:none; border:none; color:inherit; cursor:pointer;">✕</button>
         </div>
-        <div class="modal-body" id="quest-modal-body" style="padding: 15px;">
-            <div style="display:flex; gap:10px; margin-bottom:15px; border-bottom:1px solid #444; padding-bottom:10px;">
-                <div class="quest-tab active" id="tab-active" onclick="switchQuestTab('active')" style="cursor:pointer; opacity:1;">Current Goals</div>
-                <div class="quest-tab" id="tab-completed" onclick="switchQuestTab('completed')" style="cursor:pointer; opacity:0.5;">Achievements</div>
-                <div class="quest-tab" id="tab-failed" onclick="switchQuestTab('failed')" style="cursor:pointer; opacity:0.5;">Failures</div>
+        <div class="modal-body quest-modal-body" id="quest-modal-body">
+            <div class="workspace-hero workspace-hero-tools compact quest-workspace-hero" data-workspace-theme="life-quests">
+                <div><span class="workspace-kicker">Long-range direction</span><h3>Life Quests</h3><p>Goals, outcomes and reflections sync into one protected managed memory.</p></div>
+                <span class="workspace-status-pill">Managed</span>
+            </div>
+            <div class="quest-tabs" role="tablist" aria-label="Life Quest status">
+                <button class="quest-tab active" id="tab-active" role="tab" aria-selected="true" onclick="switchQuestTab('active')">Current Goals</button>
+                <button class="quest-tab" id="tab-completed" role="tab" aria-selected="false" onclick="switchQuestTab('completed')">Achievements</button>
+                <button class="quest-tab" id="tab-failed" role="tab" aria-selected="false" onclick="switchQuestTab('failed')">Failures</button>
             </div>
 
             <div id="quest-input-area" style="display:flex; gap:5px; margin-bottom:15px;">
@@ -589,19 +854,26 @@
 
 <!-- TOOLS MODAL -->
 <div class="modal-overlay" id="tools-modal">
-    <div class="modal-content tools-modal-content">
+    <div class="modal-content tools-modal-content advanced-modal-content navigation-workspace-content">
         <div class="modal-header">
             <span>Tools</span>
             <button onclick="closeToolsModal()" class="modal-close-btn" title="Close">x</button>
         </div>
         <div class="modal-body tools-modal-body">
+            <div class="workspace-hero workspace-hero-tools compact navigation-workspace-hero" data-workspace-theme="tools-workspace">
+                <div><span class="workspace-kicker">Personal systems</span><h3>Tools workspace</h3><p>Open the systems that turn daily activity into useful context.</p></div>
+            </div>
             <button class="tool-choice-card" onclick="openAboutYouModal()">
                 <span>About you</span>
                 <small>Memories / profile</small>
             </button>
+            <button class="tool-choice-card" onclick="openDailyBriefModal()">
+                <span>Daily Brief</span>
+                <small>Daily / quests / memories / videos</small>
+            </button>
             <button class="tool-choice-card" onclick="openVideoRecommendationsModal()">
                 <span>Video Recommendations</span>
-                <small>Bilibili / YouTube</small>
+                <small>YouTube captions and updates</small>
             </button>
         </div>
     </div>
@@ -609,16 +881,106 @@
 
 <!-- ROLES MODAL -->
 <div class="modal-overlay" id="roles-modal">
-    <div class="modal-content tools-modal-content">
+    <div class="modal-content tools-modal-content advanced-modal-content navigation-workspace-content">
         <div class="modal-header">
             <span>Roles</span>
             <button onclick="closeRolesModal()" class="modal-close-btn" title="Close">x</button>
         </div>
         <div class="modal-body tools-modal-body">
+            <div class="workspace-hero workspace-hero-roles compact navigation-workspace-hero" data-workspace-theme="roles-workspace">
+                <div><span class="workspace-kicker">Specialized modes</span><h3>Roles workspace</h3><p>Choose an isolated role with its own context and memory boundaries.</p></div>
+            </div>
             <button class="tool-choice-card" onclick="openAssistantRoleModal()">
                 <span>Assistant</span>
                 <small>Obsidian notes / dedicated memory / dedicated chats</small>
             </button>
+            <button class="tool-choice-card" onclick="openLearnerRoleModal()">
+                <span>Learner</span>
+                <small>Scheduled authoritative research / selected creator videos / managed learning memory</small>
+            </button>
+            <button class="tool-choice-card" onclick="openAnkiRoleModal()">
+                <span>Anki</span>
+                <small>Deck overview / daily reviews / study time / streaks and 30-day activity</small>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- LEARNER ROLE MODAL -->
+<div class="modal-overlay" id="learner-role-modal">
+    <div class="modal-content learner-role-modal-content advanced-modal-content">
+        <div class="modal-header">
+            <button onclick="backToRolesFromLearner()" class="about-you-back modal-back-btn" title="Back">Back</button>
+            <span>Learner</span>
+            <button onclick="closeLearnerRoleModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body learner-role-body">
+            <section class="workspace-hero workspace-hero-roles learner-role-hero" data-workspace-theme="learner-role">
+                <div><span class="workspace-kicker">CONTINUOUS LEARNING</span><h3>Learning framework</h3><p>Schedule authoritative research or read captions from specific and newly published videos by creators already selected in Video Recommendations.</p></div>
+                <div class="learner-role-metrics"><span><strong id="learner-task-count">0</strong>tasks</span><span><strong id="learner-complete-count">0</strong>completed</span></div>
+            </section>
+            <section class="learner-panel learner-task-editor">
+                <div class="learner-section-head"><div><strong id="learner-editor-title">Create task</strong><small>Topics only. Arbitrary URLs are rejected and unreadable or low-authority pages are excluded.</small></div></div>
+                <div class="learner-form-grid learner-core-fields">
+                    <label class="learner-wide-field"><span>Task name</span><input id="learner-task-title" type="text" maxlength="120" placeholder="Track new multimodal-model research"></label>
+                    <div class="learner-choice-group learner-wide-field"><span>Source</span><div class="learner-segmented" id="learner-source-choice"><button type="button" data-value="web" class="active" onclick="selectLearnerSource('web')">Authoritative web</button><button type="button" data-value="video" onclick="selectLearnerSource('video')">Selected creators</button></div><select id="learner-source-type" onchange="renderLearnerSourceFields()" hidden><option value="web">Authoritative web</option><option value="video">Creator videos and captions</option></select></div>
+                    <label id="learner-topic-field" class="learner-wide-field"><span>Learning topic</span><textarea id="learner-task-topic" rows="3" maxlength="500" placeholder="Describe the topic; do not paste a URL"></textarea></label>
+                    <div id="learner-creator-field" class="learner-wide-field" hidden><span>Selected creators</span><div id="learner-creator-options" class="learner-creator-options"></div></div>
+                    <div id="learner-video-field" class="learner-wide-field" hidden>
+                        <div class="learner-video-head"><span>Video selection</span><button type="button" onclick="refreshLearnerVideoOptions()">Refresh recommendations</button></div>
+                        <div class="learner-choice-group"><small id="learner-video-selection-help"></small><div class="learner-segmented" id="learner-video-selection-choice"><button type="button" data-value="selected" onclick="selectLearnerVideoSelection('selected')">Selected videos</button><button type="button" data-value="new" onclick="selectLearnerVideoSelection('new')">Every new video</button><button type="button" data-value="latest" onclick="selectLearnerVideoSelection('latest')">Latest per creator</button><button type="button" data-value="most_viewed" onclick="selectLearnerVideoSelection('most_viewed')">Most viewed per creator</button></div><select id="learner-video-selection-mode" onchange="renderLearnerVideoFields()" hidden><option value="selected">Selected videos</option><option value="new">Every new video</option><option value="latest">Latest per creator</option><option value="most_viewed">Most viewed per creator</option></select></div>
+                        <div id="learner-video-options" class="learner-video-options"></div>
+                    </div>
+                    <details id="learner-web-settings" class="learner-advanced-settings learner-wide-field">
+                        <summary><span>Research settings</span><small>Optional limits and source requirements</small></summary>
+                        <div class="learner-advanced-grid">
+                            <label><span>Search result limit</span><input id="learner-web-max-pages" type="number" min="3" max="30" value="15"></label>
+                            <label><span>References to use</span><input id="learner-web-reference-count" type="number" min="1" max="10" value="6"></label>
+                            <label><span>Minimum reliable references</span><input id="learner-web-min-references" type="number" min="1" max="6" value="1"></label>
+                            <label><span>Source policy</span><select id="learner-web-source-policy"><option value="balanced">Reliable, official preferred</option><option value="official_only">Official sources only</option><option value="flexible">Flexible trusted sources</option></select></label>
+                            <p class="learner-policy-note">If the selected tier finds too little usable evidence, Learner automatically steps down to a trusted wider tier. A downgraded result is marked yellow with an explanation.</p>
+                        </div>
+                    </details>
+                    <div class="learner-choice-group learner-wide-field"><span>Frequency</span><div class="learner-segmented" id="learner-schedule-choice"><button type="button" data-value="once" class="active" onclick="selectLearnerSchedule('once')">One time</button><button type="button" data-value="daily" onclick="selectLearnerSchedule('daily')">Daily</button><button type="button" data-value="weekly" onclick="selectLearnerSchedule('weekly')">Weekly</button></div><select id="learner-schedule-type" onchange="renderLearnerScheduleFields()" hidden><option value="once">One time</option><option value="daily">Daily</option><option value="weekly">Weekly</option></select></div>
+                    <div id="learner-run-when-field" class="learner-choice-group learner-wide-field"><span>Start</span><div class="learner-segmented learner-run-when" id="learner-run-when-choice"><button type="button" data-value="now" class="active" onclick="selectLearnerRunWhen('now')">Now</button><button type="button" data-value="next_launch" onclick="selectLearnerRunWhen('next_launch')">Next launch</button><button type="button" data-value="scheduled" onclick="selectLearnerRunWhen('scheduled')">Specific time</button></div><select id="learner-run-when" onchange="renderLearnerScheduleFields()" hidden><option value="now">Now</option><option value="next_launch">Next launch</option><option value="scheduled">Specific time</option></select></div>
+                    <label id="learner-run-at-field" hidden><span>Run at</span><input id="learner-run-at" type="datetime-local"></label>
+                    <label id="learner-time-field" hidden><span>Time</span><input id="learner-time" type="time" value="09:00"></label>
+                    <div id="learner-weekday-field" class="learner-wide-field learner-weekdays" hidden>
+                        <span>Weekdays</span>
+                        <label><input type="checkbox" value="0">Mon</label><label><input type="checkbox" value="1">Tue</label><label><input type="checkbox" value="2">Wed</label><label><input type="checkbox" value="3">Thu</label><label><input type="checkbox" value="4">Fri</label><label><input type="checkbox" value="5">Sat</label><label><input type="checkbox" value="6">Sun</label>
+                    </div>
+                </div>
+                <div class="learner-memory-options">
+                    <label><input id="learner-read-memory" type="checkbox">Read relevant memory before learning</label>
+                    <label><input id="learner-manage-memory" type="checkbox">Summarize into memory and manage duplicates/links</label>
+                </div>
+                <div class="learner-editor-actions"><span id="learner-editor-status"></span><div><button id="learner-editor-cancel" onclick="cancelLearnerTaskEdit()" hidden>Cancel</button><button id="learner-editor-submit" class="primary" onclick="createLearnerTask()">Create task</button></div></div>
+            </section>
+            <div id="learner-orphan-notice" class="learner-caution-box learner-orphan-notice" hidden></div>
+            <section class="learner-panel"><div class="learner-section-head"><div><strong>Tasks</strong><small>Due tasks begin when this application opens.</small></div><button onclick="startLearnerDueTasks(true)">Run due</button></div><div id="learner-task-list" class="learner-list"></div></section>
+            <section class="learner-panel"><div class="learner-section-head"><div><strong>Recent activity</strong><small>Open a completed run to inspect its report, sources and memory changes.</small></div></div><div id="learner-run-list" class="learner-list"></div></section>
+        </div>
+    </div>
+</div>
+
+<!-- LEARNER ACTIVITY / RESULT MODAL -->
+<div class="modal-overlay" id="learner-activity-modal">
+    <div class="modal-content learner-activity-modal-content advanced-modal-content">
+        <div class="modal-header"><span>Learner activity</span><button onclick="closeLearnerActivityModal()" class="modal-close-btn" title="Close">x</button></div>
+        <div class="modal-body learner-activity-body" id="learner-activity-body"></div>
+    </div>
+</div>
+
+<!-- ANKI ROLE MODAL -->
+<div class="modal-overlay" id="anki-role-modal">
+    <div class="modal-content anki-role-modal-content advanced-modal-content">
+        <div class="modal-header">
+            <button onclick="backToRolesFromAnki()" class="about-you-back modal-back-btn" title="Back">Back</button>
+            <span>Anki</span>
+            <button onclick="closeAnkiRoleModal()" class="modal-close-btn" title="Close">x</button>
+        </div>
+        <div class="modal-body anki-role-body" id="anki-role-body">
+            <div class="anki-empty-state">Loading Anki study status...</div>
         </div>
     </div>
 </div>
@@ -641,11 +1003,11 @@
     </div>
 </div>
 
-<!-- ASSISTANT PATH MEMORY PICKER -->
+<!-- ASSISTANT OBSIDIAN MEMORY CURATOR -->
 <div class="modal-overlay" id="assistant-memory-picker-modal">
     <div class="modal-content assistant-memory-picker-content">
         <div class="modal-header">
-            <span>Add memory</span>
+            <span>Curate Obsidian memory</span>
             <button onclick="closeAssistantMemoryPicker()" class="modal-close-btn" title="Close">x</button>
         </div>
         <div class="modal-body assistant-memory-picker-body">
@@ -660,14 +1022,44 @@
                 <strong>Selected</strong>
                 <span id="assistant-memory-picker-selected">Nothing selected</span>
             </div>
-            <label class="assistant-memory-description-field">
+            <div id="assistant-note-extraction-options" class="assistant-note-extraction-options" style="display:none;">
+                <div class="assistant-extraction-heading">
+                    <div>
+                        <strong>Generate an important memory</strong>
+                        <small id="assistant-note-source-info">Select the whole note or one chapter.</small>
+                    </div>
+                    <span class="assistant-important-mark">Important</span>
+                </div>
+                <label>
+                    <span>Scope</span>
+                    <select id="assistant-note-chapter-select">
+                        <option value="">Entire note</option>
+                    </select>
+                </label>
+                <div class="assistant-extraction-mode-grid">
+                    <label class="assistant-extraction-mode selected">
+                        <input type="radio" name="assistant-extraction-mode" value="simple" checked onchange="syncAssistantExtractionMode()">
+                        <strong>Simple extraction</strong>
+                        <small>Core subject, conclusions and indispensable concepts only.</small>
+                        <em id="assistant-simple-limit">Up to 1,200 characters</em>
+                    </label>
+                    <label class="assistant-extraction-mode">
+                        <input type="radio" name="assistant-extraction-mode" value="complex" onchange="syncAssistantExtractionMode()">
+                        <strong>Complex extraction</strong>
+                        <small>Structure, mechanisms, relationships, qualifications and conclusions.</small>
+                        <em id="assistant-complex-limit">Up to 3,600 characters</em>
+                    </label>
+                </div>
+                <button id="assistant-extract-memory-button" class="assistant-extract-primary" onclick="extractAssistantNoteMemory()">Read with model and save memory</button>
+            </div>
+            <label id="assistant-memory-description-field" class="assistant-memory-description-field">
                 <span>Description</span>
                 <textarea id="assistant-memory-description" maxlength="4000" rows="4" placeholder="Describe what this file or folder means and how Saya should understand it."></textarea>
             </label>
             <div id="assistant-memory-picker-status" class="assistant-role-hint"></div>
             <div class="assistant-memory-picker-actions">
                 <button onclick="closeAssistantMemoryPicker()">Cancel</button>
-                <button class="primary" onclick="saveAssistantPathMemory()">Add memory</button>
+                <button id="assistant-save-description-button" class="primary" onclick="saveAssistantPathMemory()">Save description</button>
             </div>
         </div>
     </div>
@@ -675,23 +1067,24 @@
 
 <!-- VIDEO RECOMMENDATIONS MODAL -->
 <div class="modal-overlay" id="video-recommendations-modal">
-    <div class="modal-content video-modal-content">
+    <div class="modal-content video-modal-content advanced-modal-content media-workspace-content">
         <div class="modal-header">
             <button onclick="backToToolsFromVideoRecommendations()" class="about-you-back modal-back-btn" title="Back">Back</button>
             <span>Video Recommendations</span>
             <button onclick="closeVideoRecommendationsModal()" class="modal-close-btn" title="Close">x</button>
         </div>
         <div class="modal-body video-modal-body">
+            <div class="workspace-hero workspace-hero-tools video-workspace-hero" data-workspace-theme="video-recommendations">
+                <div><span class="workspace-kicker">Signal over noise</span><h3>Creator watchlist</h3><p>Track selected creators, refresh on demand and keep recommendations tied to sources you chose.</p></div>
+                <div class="workspace-mini-metrics"><span><strong id="video-workspace-creator-count">0</strong>creators</span><span><strong id="video-workspace-result-count">0</strong>updates</span></div>
+            </div>
             <section class="video-control-panel">
                 <label class="video-toggle-row">
                     <input type="checkbox" id="video-auto-open-checkbox" onchange="saveVideoRecommendationSettings()">
-                    <span>Auto open on app start</span>
+                    <span>Auto open Daily Brief on app start</span>
                 </label>
                 <div class="video-add-row">
-                    <select id="video-platform-select" title="Platform">
-                        <option value="bilibili">Bilibili</option>
-                        <option value="youtube">YouTube</option>
-                    </select>
+                    <span class="video-platform-fixed">YouTube</span>
                     <input id="video-creator-input" type="text" placeholder="Creator name, @handle, UID, or channel URL">
                     <button onclick="addVideoCreator()">Add</button>
                 </div>
@@ -709,26 +1102,64 @@
 </div>
 
 
-<!-- VIDEO DIGEST MODAL -->
+<!-- DAILY BRIEF MODAL -->
 <div class="modal-overlay" id="video-digest-modal">
-    <div class="modal-content video-digest-modal-content">
+    <div class="modal-content video-digest-modal-content advanced-modal-content brief-workspace-content">
         <div class="modal-header">
             <button onclick="backToToolsFromVideoDigest()" class="about-you-back modal-back-btn" title="Back">Back</button>
-            <span>Video Brief</span>
+            <span>Daily Brief</span>
             <button onclick="closeVideoDigestModal()" class="modal-close-btn" title="Close">x</button>
         </div>
         <div class="modal-body video-digest-modal-body">
-            <div class="video-digest-topline">
+            <div class="video-digest-topline workspace-hero workspace-hero-tools" data-workspace-theme="daily-brief">
                 <div>
-                    <div class="video-digest-title">Recommended Updates</div>
+                    <span class="workspace-kicker">Daily intelligence</span>
+                    <div class="video-digest-title" id="daily-brief-title">Today with Saya</div>
                     <div id="video-digest-status" class="video-digest-status"></div>
                 </div>
                 <div class="video-digest-actions">
-                    <button onclick="refreshVideoDigest()">Refresh</button>
-                    <button onclick="openVideoRecommendationsModal()">Manage</button>
+                    <button class="daily-brief-settings-toggle" onclick="toggleDailyBriefCardSettings()" title="Card settings" aria-label="Card settings">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                            <path d="M4 7h16"></path>
+                            <path d="M4 12h16"></path>
+                            <path d="M4 17h16"></path>
+                            <circle cx="9" cy="7" r="2"></circle>
+                            <circle cx="15" cy="12" r="2"></circle>
+                            <circle cx="11" cy="17" r="2"></circle>
+                        </svg>
+                    </button>
+                    <button onclick="refreshDailyBrief()">Refresh</button>
+                    <button onclick="talkWithSayaAboutDailyBrief()">Talk</button>
+                    <button onclick="openVideoRecommendationsModal()">Videos</button>
                 </div>
             </div>
-            <div id="video-digest-list" class="video-digest-list"></div>
+            <div id="daily-brief-card-settings" class="daily-brief-card-settings" hidden>
+                <div class="daily-brief-settings-head">
+                    <span>Cards</span>
+                    <div>
+                        <button onclick="resetDailyBriefCardSettings()">Reset</button>
+                        <button onclick="toggleDailyBriefCardSettings(false)">Close</button>
+                    </div>
+                </div>
+                <div id="daily-brief-card-settings-list" class="daily-brief-card-settings-list"></div>
+                <div class="daily-brief-settings-add">
+                    <input id="daily-brief-new-card-label" type="text" placeholder="Label">
+                    <input id="daily-brief-new-card-value" type="text" placeholder="Value">
+                    <input id="daily-brief-new-card-detail" type="text" placeholder="Detail">
+                    <button onclick="addDailyBriefCustomCard()">Add</button>
+                </div>
+            </div>
+            <div class="daily-brief-shell">
+                <section class="daily-brief-panel daily-brief-today-panel">
+                    <div class="daily-brief-section-title">Today with Saya</div>
+                    <section class="daily-brief-opening" id="daily-brief-opening">Loading...</section>
+                    <section class="daily-brief-grid" id="daily-brief-grid"></section>
+                </section>
+                <section class="daily-brief-panel daily-brief-video-panel">
+                    <div class="daily-brief-section-title">Video Updates</div>
+                    <div id="video-digest-list" class="video-digest-list"></div>
+                </section>
+            </div>
         </div>
     </div>
 </div>
@@ -744,12 +1175,125 @@
             <div class="resize-handle sw"></div>
             <div class="resize-handle se"></div>
             <canvas id="mmd-canvas" style="width:100%; height:100%;"></canvas>
+            <!-- [ADDED] Loading overlay — covers canvas until model is fully loaded -->
+            <div class="mmd-loading-overlay" id="mmd-loading-overlay" hidden>
+                <div class="mmd-loading-spinner"></div>
+                <span class="mmd-loading-text">Loading…</span>
+            </div>
+
+            <!-- [ADDED] Hidden 3D Settings Trigger (matches workspace-gradient-trigger icon) -->
+            <button class="mmd-settings-trigger" id="mmd-settings-trigger" title="3D Settings" aria-label="3D Settings">
+                <span aria-hidden="true">◌</span>
+            </button>
+
+            <!-- [ADDED] 3D Settings Panel (to the RIGHT of model frame, no overlap) -->
+            <div class="mmd-settings-panel" id="mmd-settings-panel" hidden>
+                <div class="mmd-settings-head">
+                    <span>3D Settings</span>
+                    <button class="mmd-settings-close" id="mmd-settings-close" title="Close" aria-label="Close">×</button>
+                </div>
+                <div class="mmd-settings-body">
+                    <div class="mmd-settings-section-title">Model</div>
+                    <select id="mmd-model-select" class="mmd-settings-select"></select>
+
+                    <div class="mmd-settings-section-title-row">
+                        <span class="mmd-settings-section-title">Lighting</span>
+                        <button class="mmd-more-toggle" id="mmd-more-toggle" title="Advanced lighting">More</button>
+                    </div>
+                    <div class="mmd-light-block">
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Ambient</span>
+                            <input type="color" id="mmd-ambient-color" value="#aaaaaa" title="Ambient Color">
+                            <input type="range" id="mmd-light-ambient" min="0" max="2" step="0.05" value="1">
+                        </div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Key</span>
+                            <input type="color" id="mmd-dir-color" value="#ffffff" title="Key Light Color">
+                            <input type="range" id="mmd-light-dir" min="0" max="2" step="0.05" value="1">
+                        </div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Top</span>
+                            <input type="color" id="mmd-top-color" value="#ffffff" title="Top Light Color">
+                            <input type="range" id="mmd-light-top" min="0" max="2" step="0.05" value="1">
+                        </div>
+                    </div>
+                    <label class="mmd-settings-row">
+                        <span>Background</span>
+                        <input type="color" id="mmd-bg-color" value="#000000">
+                    </label>
+
+                    <!-- [ADDED] Advanced lighting section (hidden until "More" clicked) -->
+                    <div class="mmd-advanced-lighting" id="mmd-advanced-lighting" hidden>
+                        <div class="mmd-adv-subsection">Rim Light</div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Color</span>
+                            <input type="color" id="mmd-rim-color" value="#4488ff">
+                            <input type="range" id="mmd-rim-intensity" min="0" max="3" step="0.05" value="0.6">
+                        </div>
+
+                        <div class="mmd-adv-subsection">Fill Light</div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Color</span>
+                            <input type="color" id="mmd-fill-color" value="#fff5e0">
+                            <input type="range" id="mmd-fill-intensity" min="0" max="2" step="0.05" value="0.3">
+                        </div>
+
+                        <div class="mmd-adv-subsection">Hemisphere</div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Sky</span>
+                            <input type="color" id="mmd-hemi-sky" value="#88aaff">
+                        </div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Ground</span>
+                            <input type="color" id="mmd-hemi-ground" value="#504030">
+                            <input type="range" id="mmd-hemi-intensity" min="0" max="2" step="0.05" value="0.4">
+                        </div>
+
+                        <div class="mmd-adv-subsection">Point Light</div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Color</span>
+                            <input type="color" id="mmd-point-color" value="#ffcc88">
+                            <input type="range" id="mmd-point-intensity" min="0" max="5" step="0.1" value="0">
+                        </div>
+
+                        <div class="mmd-adv-subsection">Fog</div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Color</span>
+                            <input type="color" id="mmd-fog-color" value="#000000">
+                            <input type="range" id="mmd-fog-density" min="0" max="0.15" step="0.001" value="0.035">
+                        </div>
+
+                        <div class="mmd-adv-subsection">Skybox</div>
+                        <label class="mmd-settings-row">
+                            <span>Enable</span>
+                            <input type="checkbox" id="mmd-skybox-enabled">
+                        </label>
+                        <div class="mmd-light-row">
+                            <input type="text" id="mmd-skybox-url" placeholder="前缀: /static/skybox/nanji (自动探测 _R/_L/_U/_D/_F/_B 或 _RT/_LF/.. + .jpg/.png/.tga) 或全景图: /static/skybox/pano.jpg" style="flex:1;min-width:0;box-sizing:border-box">
+                        </div>
+                        <div class="mmd-light-row">
+                            <span class="mmd-light-label">Rotate</span>
+                            <input type="range" id="mmd-skybox-rotation" min="0" max="360" step="1" value="0">
+                        </div>
+                        <label class="mmd-settings-row">
+                            <span>Reflection</span>
+                            <input type="checkbox" id="mmd-skybox-env" title="Also use as environment reflection (PBR materials only; limited effect on MMD toon shading)">
+                        </label>
+                    </div>
+                    <div class="mmd-settings-actions">
+                        <button class="mmd-settings-btn secondary" id="mmd-light-reset">Reset</button>
+                        <button class="mmd-settings-btn secondary" id="mmd-light-save-default" title="Save current lighting as this model's default">Default</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
     <nav id="question-index" class="question-index" aria-label="User question index" hidden>
         <div id="question-index-list" class="question-index-list"></div>
     </nav>
 
-    <script src="/static/js/app.js?v=api-attachments-20260712"></script>
+    <div id="memory-candidate-stack" class="memory-candidate-stack" aria-live="polite"></div>
+
+<script src="/static/js/app.js?v=g22-20260811-ai-memory-compression-g41-anki-daily-preset-g42-memory-network-3d-scale-g43-three-r106-fix-g44-memory-graph-surface-fix-g45-memory-graph-display-controls-g46-independent-display-settings-g47-memory-graph-text-scale-g48-persist-display-settings-g49-daily-unblock"></script>
 </body>
 </html>

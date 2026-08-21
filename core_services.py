@@ -9,15 +9,37 @@ import re
 import hashlib
 import uuid
 import shutil
+import threading
+import copy
+from functools import wraps
 from datetime import datetime, timedelta
 from contextlib import contextmanager
+from pathlib import Path
+from urllib.parse import quote
 
 from saya_app.config import (
     CHAT_MEMORY_DIR,
     KNOWLEDGE_BASE_DIR,
     LLAVA_MMPROJ_PATH,
     LLAVA_MODEL_PATH,
+    MMD_DIRECTORY,
+    PROJECT_ROOT,
 )
+from saya_app.services.memory_store import SQLiteMemoryStore
+from saya_app.services.memory_graph import MemoryGraphStore
+from saya_app.services.embedding_provider import (
+    EmbeddingProviderError,
+    create_embedding_provider,
+)
+
+
+def memory_write_locked(method):
+    """Serialize mutations across API requests and concurrent Learner workers."""
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        with self._memory_write_lock:
+            return method(self, *args, **kwargs)
+    return wrapped
 
 class SafeStream:
     def __init__(self, original):
@@ -109,7 +131,27 @@ class MemoryManager:
             "knowledge_base",
             "sessions.json"
         )
+        self._delete_plans = {}
+        self._recover_staged_session_deletions()
         self.initialize_session()
+
+    def _recover_staged_session_deletions(self):
+        """Restore session files left staged by an interrupted cascade delete."""
+        try:
+            for name in os.listdir(self.base_dir):
+                marker = ".jsonl.deleting-"
+                if marker not in name:
+                    continue
+                staged_path = os.path.join(self.base_dir, name)
+                if name.endswith(".committed"):
+                    os.remove(staged_path)
+                    continue
+                original_name = name.split(marker, 1)[0] + ".jsonl"
+                original_path = self._safe_session_path(original_name)
+                if original_path and not os.path.exists(original_path):
+                    os.replace(staged_path, original_path)
+        except OSError as exc:
+            print(f"Error recovering staged session deletion: {exc}")
 
     def _safe_session_path(self, session_id):
         if not session_id or session_id != os.path.basename(session_id):
@@ -143,9 +185,20 @@ class MemoryManager:
         return None
 
     def initialize_session(self):
-        """Start a new session"""
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.current_session_file = os.path.join(self.base_dir, f"session_{timestamp}.jsonl")
+        """Start a new legacy/current session and return its stable id."""
+        session_id = self.create_session(make_current=True)
+        return session_id
+
+    def create_session(self, make_current=False):
+        """Create a collision-resistant session id without changing global state by default."""
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
+        session_id = f"session_{timestamp}-{uuid.uuid4().hex[:8]}.jsonl"
+        path = self._safe_session_path(session_id)
+        if not path:
+            raise ValueError("Unable to create a safe session path")
+        if make_current:
+            self.current_session_file = path
+        return session_id
 
     def get_pinned_set(self):
         if not os.path.exists(self.pinned_file):
@@ -180,10 +233,77 @@ class MemoryManager:
             self.save_pinned_set(pinned)
         return True
 
+    def _last_completed_qa_time(self, entries):
+        """Return the answer timestamp of the most recent completed user/AI exchange."""
+        waiting_for_answer = False
+        last_qa_time = ""
+        for entry in entries or []:
+            if not isinstance(entry, dict):
+                continue
+            role = str(entry.get("role", "") or "").strip().lower()
+            if role == "user":
+                waiting_for_answer = True
+            elif role in {"ai", "assistant"} and waiting_for_answer:
+                last_qa_time = str(entry.get("time", "") or "").strip()
+                waiting_for_answer = False
+        return last_qa_time
+
+    def build_archive_exchanges(self, entries):
+        """Return completed user/assistant pairs with stable source-index IDs."""
+        exchanges = []
+        pending_questions = []
+        question_indices = []
+        for index, entry in enumerate(entries or []):
+            if isinstance(entry, dict):
+                role = str(entry.get("role") or "").strip().lower()
+                content = str(entry.get("content") or "").strip()
+            else:
+                content = str(entry or "").strip()
+                lowered = content.lower()
+                if lowered.startswith("doctor:"):
+                    role, content = "user", content.split(":", 1)[1].strip()
+                elif lowered.startswith("saya:"):
+                    role, content = "assistant", content.split(":", 1)[1].strip()
+                else:
+                    role = "system"
+            if not content:
+                continue
+            if role == "user":
+                pending_questions.append(content)
+                question_indices.append(index)
+            elif role in {"ai", "assistant"} and pending_questions:
+                exchanges.append({
+                    "id": f"qa-{question_indices[0]}-{index}",
+                    "question": "\n".join(pending_questions).strip(),
+                    "answer": content,
+                    "question_index": question_indices[0],
+                    "answer_index": index,
+                })
+                pending_questions = []
+                question_indices = []
+        return exchanges
+
+    def _session_time_sort_key(self, value):
+        raw = str(value or "").strip()
+        for fmt in (
+            "%Y-%m-%d %H:%M:%S",
+            "%Y-%m-%d_%H-%M-%S",
+            "%Y-%m-%dT%H:%M:%S",
+            "%Y-%m-%d",
+        ):
+            try:
+                return datetime.strptime(raw[:19], fmt).timestamp()
+            except (TypeError, ValueError):
+                continue
+        return 0.0
+
     def get_session_list(self):
         """Get list of available sessions with preview"""
         sessions = []
-        files = sorted([f for f in os.listdir(self.base_dir) if f.startswith('session_') and f.endswith('.jsonl')], reverse=True)
+        files = [
+            f for f in os.listdir(self.base_dir)
+            if f.startswith('session_') and f.endswith('.jsonl')
+        ]
         pinned_set = self.get_pinned_set()
         
         for file in files:
@@ -195,9 +315,9 @@ class MemoryManager:
                     (str(entry.get("role_mode", "") or "") for entry in entries if entry.get("role_mode")),
                     ""
                 )
+                last_qa_time = self._last_completed_qa_time(entries)
                 if entries:
                     first = entries[0]
-                    time_str = first.get('time', '')
                     first_content = str(first.get("content", ""))
                     preview_entry = first
                     if first.get("role") == "user" and "[IMAGE:" in first_content:
@@ -208,13 +328,13 @@ class MemoryManager:
                     preview = preview_content[:30] + ("..." if len(preview_content) > 30 else "")
                 else:
                     preview = "Empty session"
-                    time_str = ""
                 
                 sessions.append({
                     "id": file,
                     "name": file.replace("session_", "").replace(".jsonl", ""),
                     "preview": preview,
-                    "time": time_str,
+                    "time": last_qa_time,
+                    "last_qa_time": last_qa_time,
                     "pinned": file in pinned_set,
                     "role_mode": role_mode
                 })
@@ -229,9 +349,17 @@ class MemoryManager:
                 "name": legacy.get("time", "Legacy session"),
                 "preview": str(preview)[:30] + ("..." if len(str(preview)) > 30 else ""),
                 "time": legacy.get("time", ""),
+                "last_qa_time": legacy.get("time", ""),
                 "pinned": False,
                 "legacy": True
             })
+        sessions.sort(
+            key=lambda item: (
+                self._session_time_sort_key(item.get("last_qa_time") or item.get("time")),
+                str(item.get("id", "")),
+            ),
+            reverse=True,
+        )
         return sessions
 
     def _clean_session_preview(self, content):
@@ -354,6 +482,71 @@ class MemoryManager:
             "month_days": days
         }
 
+    def get_daily_conversation_stats(self, date_str=None):
+        """Count completed conversations and messages for one calendar day."""
+        try:
+            target_date = datetime.strptime(str(date_str)[:10], "%Y-%m-%d").strftime("%Y-%m-%d")
+        except (TypeError, ValueError):
+            target_date = datetime.now().strftime("%Y-%m-%d")
+
+        user_messages = 0
+        assistant_messages = 0
+        completed_conversations = 0
+        active_sessions = 0
+        files = [
+            name for name in os.listdir(self.base_dir)
+            if name.startswith("session_") and name.endswith(".jsonl")
+        ]
+        for name in files:
+            path = os.path.join(self.base_dir, name)
+            session_active = False
+            pending_user = False
+            try:
+                with codecs.open(path, "r", "utf-8") as handle:
+                    for line in handle:
+                        if not line.strip():
+                            continue
+                        entry = json.loads(line)
+                        role = str(entry.get("role") or "").strip().lower()
+                        entry_date = str(entry.get("time") or "")[:10]
+                        if role == "user":
+                            pending_user = True
+                            if entry_date == target_date:
+                                user_messages += 1
+                                session_active = True
+                        elif role in {"ai", "assistant"}:
+                            if entry_date == target_date:
+                                assistant_messages += 1
+                                session_active = True
+                                if pending_user:
+                                    completed_conversations += 1
+                            pending_user = False
+                if session_active:
+                    active_sessions += 1
+            except (OSError, ValueError, json.JSONDecodeError):
+                continue
+
+        for legacy in self._load_legacy_sessions():
+            if str(legacy.get("time") or "")[:10] != target_date:
+                continue
+            active_sessions += 1
+            exchanges = self.build_archive_exchanges(legacy.get("history") or [])
+            completed_conversations += len(exchanges)
+            for item in legacy.get("history") or []:
+                text = str(item or "").strip().lower()
+                if text.startswith("doctor:"):
+                    user_messages += 1
+                elif text.startswith("saya:"):
+                    assistant_messages += 1
+
+        return {
+            "date": target_date,
+            "conversation_count": completed_conversations,
+            "user_message_count": user_messages,
+            "assistant_message_count": assistant_messages,
+            "session_count": active_sessions,
+        }
+
     def search_sessions(self, query, limit=50):
         query = re.sub(r"\s+", " ", str(query or "")).strip().lower()
         if not query:
@@ -373,12 +566,12 @@ class MemoryManager:
             path = os.path.join(self.base_dir, file)
             try:
                 matches = []
-                last_time = ""
+                entries = []
                 with codecs.open(path, "r", "utf-8") as f:
                     for index, line in enumerate(f):
                         data = json.loads(line)
+                        entries.append(data)
                         content = str(data.get("content", ""))
-                        last_time = data.get("time", last_time)
                         score = self._score_search_match(content, terms, query)
                         if score > 0:
                             snippet = content[:220] + ("..." if len(content) > 220 else "")
@@ -390,11 +583,13 @@ class MemoryManager:
                                 "score": score
                             })
                 if matches:
+                    last_qa_time = self._last_completed_qa_time(entries)
                     matches.sort(key=lambda item: item.get("score", 0), reverse=True)
                     results.append({
                         "id": file,
                         "name": file.replace("session_", "").replace(".jsonl", ""),
-                        "time": last_time,
+                        "time": last_qa_time,
+                        "last_qa_time": last_qa_time,
                         "matches": matches[:5],
                         "match_count": len(matches),
                         "score": sum(item.get("score", 0) for item in matches)
@@ -423,6 +618,7 @@ class MemoryManager:
                     "id": f"legacy:{legacy.get('id')}",
                     "name": legacy.get("time", "Legacy session"),
                     "time": legacy.get("time", ""),
+                    "last_qa_time": legacy.get("time", ""),
                     "legacy": True,
                     "matches": matches[:5],
                     "match_count": len(matches),
@@ -431,13 +627,14 @@ class MemoryManager:
         results.sort(key=lambda item: (item.get("score", 0), item.get("time", "")), reverse=True)
         return results[:limit]
 
-    def load_session(self, session_id):
+    def load_session(self, session_id, make_current=True):
         """Load a specific session completely"""
         legacy = self._find_legacy_session(session_id)
         if legacy:
             # Legacy sessions are read-only. A continued conversation will be saved
             # into a fresh JSONL session instead of overwriting another active file.
-            self.current_session_file = None
+            if make_current:
+                self.current_session_file = None
             return [str(item) for item in legacy.get("history", [])]
 
         path = self._safe_session_path(session_id)
@@ -446,7 +643,8 @@ class MemoryManager:
         if not os.path.exists(path):
             return []
         
-        self.current_session_file = path
+        if make_current:
+            self.current_session_file = path
         history_items = []
         try:
             with codecs.open(path, "r", "utf-8") as f:
@@ -475,10 +673,89 @@ class MemoryManager:
             return True
         return False
 
-    def save_message(self, role, content, translation=None, metadata=None):
-        """Save a single message to current session log"""
-        if not self.current_session_file:
-            self.initialize_session()
+    def _session_delete_signature(self, session_id):
+        path = self._safe_session_path(session_id)
+        if not path or not os.path.isfile(path):
+            return ""
+        digest = hashlib.sha256()
+        try:
+            with open(path, "rb") as session_file:
+                while True:
+                    chunk = session_file.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    digest.update(chunk)
+            return digest.hexdigest()
+        except OSError:
+            return ""
+
+    def preview_session_deletion(self, session_id):
+        if isinstance(session_id, str) and session_id.startswith("legacy:"):
+            raise ValueError("Legacy sessions cannot be deleted here")
+        signature = self._session_delete_signature(session_id)
+        if not signature:
+            raise ValueError("Session not found")
+        now = datetime.now()
+        self._delete_plans = {
+            token: plan for token, plan in self._delete_plans.items()
+            if plan.get("expires_at") and plan["expires_at"] >= now
+        }
+        token = str(uuid.uuid4())
+        self._delete_plans[token] = {
+            "session_id": str(session_id), "signature": signature,
+            "expires_at": now + timedelta(minutes=10),
+        }
+        return {"confirmation_token": token, "session_id": str(session_id)}
+
+    def stage_session_deletion(self, session_id, confirmation_token=None, expected_signature=None):
+        if expected_signature is None:
+            plan = self._delete_plans.pop(str(confirmation_token or ""), None)
+            if not plan or plan.get("session_id") != str(session_id):
+                raise ValueError("Session deletion confirmation expired. Review it again.")
+            expected_signature = plan.get("signature")
+            if plan.get("expires_at") < datetime.now():
+                raise ValueError("Session deletion confirmation expired. Review it again.")
+        if expected_signature != self._session_delete_signature(session_id):
+            raise ValueError("Session changed. Review deletion again.")
+        original_path = self._safe_session_path(session_id)
+        staged_path = original_path + f".deleting-{uuid.uuid4().hex}"
+        os.replace(original_path, staged_path)
+        return {
+            "session_id": str(session_id), "original_path": original_path,
+            "staged_path": staged_path,
+        }
+
+    @staticmethod
+    def rollback_staged_session(stage):
+        try:
+            if stage and os.path.exists(stage.get("staged_path", "")):
+                os.replace(stage["staged_path"], stage["original_path"])
+            return True
+        except OSError:
+            return False
+
+    @staticmethod
+    def commit_staged_session(stage):
+        try:
+            if stage and os.path.exists(stage.get("staged_path", "")):
+                committed_path = stage["staged_path"] + ".committed"
+                os.replace(stage["staged_path"], committed_path)
+                try:
+                    os.remove(committed_path)
+                except OSError:
+                    # The committed suffix tells startup recovery to finish
+                    # cleanup instead of restoring a successfully deleted chat.
+                    pass
+            return True
+        except OSError:
+            return False
+
+    def save_message(self, role, content, translation=None, metadata=None, session_id=None):
+        """Save one message, preferably to an explicitly selected session."""
+        target_path = self._safe_session_path(session_id) if session_id else self.current_session_file
+        if not target_path:
+            session_id = self.create_session(make_current=session_id is None)
+            target_path = self._safe_session_path(session_id)
             
         entry = {
             "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -490,7 +767,7 @@ class MemoryManager:
         if isinstance(metadata, dict):
             entry.update(metadata)
             
-        with codecs.open(self.current_session_file, "a", "utf-8") as f:
+        with codecs.open(target_path, "a", "utf-8") as f:
             f.write(json.dumps(entry, ensure_ascii=False) + "\n")
             
     def update_message_translation(self, index, translation):
@@ -519,7 +796,7 @@ class MemoryManager:
         except:
             return False
 
-    def load_session_full(self, session_id):
+    def load_session_full(self, session_id, make_current=True):
         """Load full session data including translations"""
         legacy = self._find_legacy_session(session_id)
         if legacy:
@@ -546,7 +823,8 @@ class MemoryManager:
         if not os.path.exists(path):
             return []
         
-        self.current_session_file = path
+        if make_current:
+            self.current_session_file = path
         items = []
         try:
             with codecs.open(path, "r", "utf-8") as f:
@@ -557,14 +835,15 @@ class MemoryManager:
             
         return items
 
-    def truncate_session(self, count):
-        """Truncate current session file to keep only first 'count' lines"""
-        if not self.current_session_file or not os.path.exists(self.current_session_file):
+    def truncate_session(self, count, session_id=None):
+        """Truncate an explicit session, falling back to the legacy current one."""
+        target_path = self._safe_session_path(session_id) if session_id else self.current_session_file
+        if not target_path or not os.path.exists(target_path):
             return False
             
         try:
             # Read all lines
-            with codecs.open(self.current_session_file, "r", "utf-8") as f:
+            with codecs.open(target_path, "r", "utf-8") as f:
                 lines = f.readlines()
             
             # Truncate
@@ -572,7 +851,7 @@ class MemoryManager:
                 lines = lines[:count]
                 
                 # Write back
-                with codecs.open(self.current_session_file, "w", "utf-8") as f:
+                with codecs.open(target_path, "w", "utf-8") as f:
                     f.writelines(lines)
             return True
         except Exception as e:
@@ -588,6 +867,7 @@ class ProjectManager:
         if not os.path.exists(self.base_dir):
             os.makedirs(self.base_dir)
         self.projects = self.load_projects()
+        self._delete_plans = {}
 
     def load_projects(self):
         if os.path.exists(self.file_path):
@@ -602,10 +882,22 @@ class ProjectManager:
 
     def save_projects(self):
         try:
-            with codecs.open(self.file_path, "w", "utf-8") as f:
+            temp_path = self.file_path + f".tmp-{uuid.uuid4().hex}"
+            with codecs.open(temp_path, "w", "utf-8") as f:
                 json.dump(self.projects, f, ensure_ascii=False, indent=4)
+                f.write("\n")
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temp_path, self.file_path)
+            return True
         except Exception as e:
             print(f"Error saving projects: {e}")
+            try:
+                if 'temp_path' in locals() and os.path.exists(temp_path):
+                    os.remove(temp_path)
+            except OSError:
+                pass
+            return False
 
     def list_projects(self):
         return sorted(self.projects, key=lambda p: p.get("updated_at", p.get("created_at", "")), reverse=True)
@@ -656,6 +948,89 @@ class ProjectManager:
                 changed = True
         if changed:
             self.save_projects()
+
+    def delete_project(self, project_id):
+        # Removes the project record and returns the session_ids it owned so
+        # the caller can cascade-delete the associated session files. If the
+        # project does not exist, returns None.
+        if not project_id:
+            return None
+        project = self.get_project(project_id)
+        if not project:
+            return None
+        session_ids = list(project.get("session_ids", []))
+        self.projects = [p for p in self.projects if p.get("id") != project_id]
+        self.save_projects()
+        return session_ids
+
+    def _project_delete_signature(self, project, memory_manager):
+        session_signatures = {
+            str(session_id): memory_manager._session_delete_signature(session_id)
+            for session_id in project.get("session_ids", [])
+        }
+        raw = json.dumps(
+            {"project": project, "sessions": session_signatures},
+            ensure_ascii=False, sort_keys=True, default=str,
+        )
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def preview_project_deletion(self, project_id, memory_manager):
+        project = self.get_project(project_id)
+        if not project:
+            raise ValueError("Project not found")
+        now = datetime.now()
+        self._delete_plans = {
+            token: plan for token, plan in self._delete_plans.items()
+            if plan.get("expires_at") and plan["expires_at"] >= now
+        }
+        token = str(uuid.uuid4())
+        session_ids = list(project.get("session_ids", []))
+        self._delete_plans[token] = {
+            "project_id": str(project_id),
+            "signature": self._project_delete_signature(project, memory_manager),
+            "session_ids": session_ids,
+            "session_signatures": {
+                session_id: memory_manager._session_delete_signature(session_id)
+                for session_id in session_ids
+            },
+            "expires_at": now + timedelta(minutes=10),
+        }
+        return {
+            "confirmation_token": token, "project_id": str(project_id),
+            "session_ids": session_ids,
+        }
+
+    def consume_project_deletion_plan(self, project_id, confirmation_token, memory_manager):
+        plan = self._delete_plans.pop(str(confirmation_token or ""), None)
+        project = self.get_project(project_id)
+        if (
+            not plan or not project or plan.get("project_id") != str(project_id)
+            or plan.get("expires_at") < datetime.now()
+            or plan.get("signature") != self._project_delete_signature(project, memory_manager)
+        ):
+            raise ValueError("Project changed or deletion confirmation expired. Review it again.")
+        return plan
+
+    def stage_project_deletion(self, project_id):
+        project = self.get_project(project_id)
+        if not project:
+            raise ValueError("Project not found")
+        project_copy = copy.deepcopy(project)
+        original_index = self.projects.index(project)
+        self.projects.pop(original_index)
+        if not self.save_projects():
+            self.projects.insert(original_index, project_copy)
+            raise RuntimeError("Unable to persist project deletion")
+        return {"project": project_copy, "index": original_index}
+
+    def rollback_staged_project(self, stage):
+        if not stage or not isinstance(stage.get("project"), dict):
+            return False
+        self.projects.insert(min(int(stage.get("index", 0)), len(self.projects)), stage["project"])
+        if self.save_projects():
+            return True
+        self.projects = [project for project in self.projects if project is not stage["project"]]
+        return False
 
     def find_project_for_session(self, session_id):
         for project in self.projects:
@@ -708,25 +1083,60 @@ project_manager = ProjectManager()
 class KnowledgeBase:
     VECTOR_DIMENSIONS = 384
     VECTOR_MATCH_THRESHOLD = 0.08
+    MEMORY_LAYER_ORDER = {"core": 0, "semantic": 1, "episodic": 2, "archive": 3}
+    DAILY_ACTIVITY_MEMORY_ID = "system-daily-activity-current"
+    DAILY_ACTIVITY_MANAGED_SLOT = "daily_activity:today"
+    ANKI_CHECKIN_MEMORY_ID = "system-anki-checkin-status"
+    ANKI_CHECKIN_MANAGED_SLOT = "anki:checkin_status"
     ABOUT_YOU_PERSONALITY_ID = "about-you-personality"
     ABOUT_YOU_POSSESSION_PREFIX = "about-you-possession-"
     ABOUT_YOU_POSSESSION_SUGGESTED_LENGTH = 600
+    RETENTION_POLICIES = {"permanent", "durable", "compressible", "temporary"}
 
     def __init__(self, base_dir=str(KNOWLEDGE_BASE_DIR)):
         self.base_dir = base_dir
         self.file_path = os.path.join(self.base_dir, "knowledge.json")
         self.settings_path = os.path.join(self.base_dir, "memory_settings.json")
+        self.candidates_path = os.path.join(self.base_dir, "memory_candidates.json")
+        self.deletions_path = os.path.join(self.base_dir, "memory_deletions.json")
+        self.maintenance_path = os.path.join(self.base_dir, "memory_maintenance.json")
+        self.cold_archive_path = os.path.join(self.base_dir, "memory_cold_archive.jsonl")
+        self.sqlite_path = os.path.join(self.base_dir, "memory3.sqlite3")
         self.backup_dir = os.path.join(self.base_dir, "backups")
+        self.sqlite_store = None
+        self.embedding_provider = None
+        self.embedding_last_error = ""
         self._vector_cache = {}
         self._last_memory_backup_at = None
+        self._last_access_flush_at = datetime.now()
+        self._access_metadata_dirty = False
+        self._dirty_access_ids = set()
+        self._maintenance_lock = threading.RLock()
+        self._memory_write_lock = threading.RLock()
+        self._maintenance_running = False
+        self._ai_compression_plans = {}
+        self._memory_delete_plans = {}
+        self.last_maintenance_result = None
         if not os.path.exists(self.base_dir):
             os.makedirs(self.base_dir)
         
         self.memories = []
+        self.memory_candidates = []
+        self.deleted_memory_ids = {}
+        self.load_memory_deletions()
         self.load_memories()
+        self.load_memory_candidates()
         self.settings = self.load_settings()
+        self.memory_maintenance = self.load_memory_maintenance_state()
         self.import_legacy_memories()
         self.normalize_all_memories()
+        self.initialize_sqlite_store()
+        self.initialize_embedding_provider()
+        self.memory_graph = MemoryGraphStore(self.base_dir)
+        self._memory_graph_dirty = True
+        self.last_maintenance_result = self.run_memory_capacity_maintenance(
+            trigger="startup",
+        )
 
     def load_settings(self):
         defaults = {
@@ -737,7 +1147,59 @@ class KnowledgeBase:
             "memory_2_enabled": True,
             "relevant_memory_count": 8,
             "include_memory_metadata": True,
-            "local_vector_retrieval_enabled": True
+            "local_vector_retrieval_enabled": True,
+            "autonomous_memory_enabled": False,
+            "layered_memory_enabled": True,
+            "api_context_window_tokens": 1000000,
+            "local_context_window_tokens": 8192,
+            "memory_prompt_budget_tokens": 12000,
+            "memory_prompt_budget_ratio": 0.15,
+            "memory_item_budget_tokens": 700,
+            "memory_max_chars_core": 1200,
+            "memory_max_chars_semantic": 2400,
+            "memory_max_chars_episodic": 3600,
+            "memory_max_chars_knowledge_simple": 1200,
+            "memory_max_chars_knowledge_complex": 3600,
+            "memory_core_limit": 10,
+            "memory_candidate_pool_size": 80,
+            "memory_active_soft_limit": 5000,
+            "memory_archive_soft_limit": 50000,
+            "memory_active_hard_limit": 6000,
+            "memory_archive_hard_limit": 60000,
+            "memory_capacity_warning_ratio": 0.80,
+            "memory_capacity_auto_compact_enabled": True,
+            "memory_cold_archive_enabled": True,
+            "memory_cold_archive_batch_size": 200,
+            "memory_retrieval_threshold": 0.08,
+            "memory_access_flush_seconds": 120,
+            "memory_compression_enabled": False,
+            "memory_compression_age_days": 30,
+            "memory_compression_min_group": 3,
+            "memory_compression_group_size": 20,
+            "memory_compression_summary_chars": 1800,
+            "memory_compression_max_generations": 2,
+            "memory_ai_compression_enabled": False,
+            "memory_ai_compression_max_memories": 200,
+            "memory_ai_compression_max_generations": 2,
+            "memory_ai_compression_input_token_limit": 32000,
+            "sqlite_memory_enabled": True,
+            "sqlite_fts_enabled": True,
+            "embedding_enabled": False,
+            "embedding_provider": "sentence_transformers",
+            "embedding_model": "BAAI/bge-m3",
+            "embedding_device": "cpu",
+            "embedding_api_url": "",
+            "embedding_api_key_env": "EMBEDDING_API_KEY",
+            "embedding_batch_size": 8,
+            "embedding_candidate_count": 80,
+            "embedding_min_similarity": 0.30,
+            "embedding_index_batch_limit": 500,
+            "embedding_api_timeout_seconds": 120,
+            "embedding_max_chars": 12000,
+            "embedding_auto_index_new": False,
+            "memory_graph_auto_expansion": 4,
+            "memory_graph_deep_expansion": 10,
+            "memory_graph_candidate_limit": 10000,
         }
         if os.path.exists(self.settings_path):
             try:
@@ -752,30 +1214,451 @@ class KnowledgeBase:
     def save_settings(self):
         self._atomic_write_json(self.settings_path, self.settings)
 
+    def load_memory_maintenance_state(self):
+        defaults = {
+            "version": 1,
+            "last_band": "normal",
+            "last_run_at": None,
+            "last_result": None,
+            "cold_archive_count": 0,
+            "events": [],
+        }
+        if os.path.exists(self.maintenance_path):
+            try:
+                loaded = self._load_json_file(self.maintenance_path)
+                if isinstance(loaded, dict):
+                    defaults.update(loaded)
+            except Exception as exc:
+                print(f"Error loading memory maintenance state: {exc}")
+        if not isinstance(defaults.get("events"), list):
+            defaults["events"] = []
+        defaults["events"] = [
+            event for event in defaults["events"][-60:]
+            if isinstance(event, dict) and event.get("id")
+        ]
+        try:
+            defaults["cold_archive_count"] = max(0, int(defaults.get("cold_archive_count") or 0))
+        except (TypeError, ValueError):
+            defaults["cold_archive_count"] = 0
+        if defaults["cold_archive_count"] == 0 and os.path.exists(self.cold_archive_path):
+            try:
+                with open(self.cold_archive_path, "r", encoding="utf-8") as archive_file:
+                    defaults["cold_archive_count"] = sum(1 for line in archive_file if line.strip())
+            except OSError:
+                pass
+        return defaults
+
+    def save_memory_maintenance_state(self):
+        self.memory_maintenance["events"] = list(self.memory_maintenance.get("events") or [])[-60:]
+        return self._atomic_write_json(self.maintenance_path, self.memory_maintenance)
+
+    def _record_memory_maintenance_event(
+        self,
+        code,
+        level,
+        message,
+        details=None,
+        compression_engine="deterministic_local",
+        token_usage=0,
+    ):
+        event = {
+            "id": str(uuid.uuid4()),
+            "code": str(code or "memory_maintenance"),
+            "level": str(level or "info"),
+            "message": str(message or "Memory maintenance completed."),
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "acknowledged": False,
+            "compression_engine": str(compression_engine or "deterministic_local"),
+            "token_usage": max(0, int(token_usage or 0)),
+            "details": details if isinstance(details, dict) else {},
+        }
+        events = self.memory_maintenance.setdefault("events", [])
+        events.append(event)
+        self.memory_maintenance["events"] = events[-60:]
+        self.save_memory_maintenance_state()
+        return event
+
+    def acknowledge_memory_maintenance(self, event_id=None):
+        changed = False
+        event_id = str(event_id or "").strip()
+        for event in self.memory_maintenance.get("events") or []:
+            if event.get("acknowledged"):
+                continue
+            if not event_id or str(event.get("id")) == event_id:
+                event["acknowledged"] = True
+                event["acknowledged_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                changed = True
+        if changed:
+            self.save_memory_maintenance_state()
+        return {"status": "success", "acknowledged": changed}
+
     def update_settings(self, updates):
-        allowed = {
+        boolean_keys = {
             "auto_save_memories",
             "auto_merge_enabled",
-            "auto_merge_days",
             "memory_2_enabled",
-            "relevant_memory_count",
             "include_memory_metadata",
-            "local_vector_retrieval_enabled"
+            "local_vector_retrieval_enabled",
+            "autonomous_memory_enabled",
+            "layered_memory_enabled",
+            "memory_compression_enabled",
+            "memory_capacity_auto_compact_enabled",
+            "memory_cold_archive_enabled",
+            "memory_ai_compression_enabled",
+            "sqlite_memory_enabled",
+            "sqlite_fts_enabled",
+            "embedding_enabled",
+            "embedding_auto_index_new",
+        }
+        integer_limits = {
+            "auto_merge_days": (1, 365),
+            "relevant_memory_count": (1, 50),
+            "api_context_window_tokens": (8192, 2000000),
+            "local_context_window_tokens": (2048, 262144),
+            "memory_prompt_budget_tokens": (512, 200000),
+            "memory_item_budget_tokens": (64, 12000),
+            "memory_max_chars_core": (200, 12000),
+            "memory_max_chars_semantic": (400, 30000),
+            "memory_max_chars_episodic": (600, 50000),
+            "memory_max_chars_knowledge_simple": (400, 12000),
+            "memory_max_chars_knowledge_complex": (800, 30000),
+            "memory_core_limit": (0, 100),
+            "memory_candidate_pool_size": (10, 1000),
+            "memory_active_soft_limit": (100, 1000000),
+            "memory_archive_soft_limit": (100, 5000000),
+            "memory_active_hard_limit": (100, 1200000),
+            "memory_archive_hard_limit": (100, 6000000),
+            "memory_cold_archive_batch_size": (2, 2000),
+            "memory_access_flush_seconds": (10, 3600),
+            "memory_compression_age_days": (1, 3650),
+            "memory_compression_min_group": (2, 100),
+            "memory_compression_group_size": (2, 500),
+            "memory_compression_summary_chars": (300, 20000),
+            "memory_compression_max_generations": (1, 5),
+            "memory_ai_compression_max_memories": (2, 500),
+            "memory_ai_compression_max_generations": (1, 5),
+            "memory_ai_compression_input_token_limit": (2000, 120000),
+            "embedding_batch_size": (1, 256),
+            "embedding_candidate_count": (5, 1000),
+            "embedding_index_batch_limit": (1, 1000000),
+            "embedding_api_timeout_seconds": (10, 600),
+            "embedding_max_chars": (200, 100000),
+            "memory_graph_auto_expansion": (1, 20),
+            "memory_graph_deep_expansion": (1, 50),
+            "memory_graph_candidate_limit": (100, 10000),
+        }
+        float_limits = {
+            "memory_prompt_budget_ratio": (0.001, 0.5),
+            "memory_capacity_warning_ratio": (0.50, 0.95),
+            "memory_retrieval_threshold": (0.0, 1.0),
+            "embedding_min_similarity": (-1.0, 1.0),
+        }
+        string_limits = {
+            "embedding_provider": 40,
+            "embedding_model": 300,
+            "embedding_device": 30,
+            "embedding_api_url": 600,
+            "embedding_api_key_env": 100,
         }
         for key, value in (updates or {}).items():
-            if key not in allowed:
-                continue
-            if key in {"auto_merge_days", "relevant_memory_count"}:
+            if key in boolean_keys:
+                self.settings[key] = bool(value)
+            elif key in integer_limits:
                 try:
-                    upper = 365 if key == "auto_merge_days" else 30
-                    value = max(1, min(upper, int(value)))
+                    lower, upper = integer_limits[key]
+                    self.settings[key] = max(lower, min(upper, int(value)))
                 except (TypeError, ValueError):
                     continue
-            else:
-                value = bool(value)
-            self.settings[key] = value
+            elif key in float_limits:
+                try:
+                    lower, upper = float_limits[key]
+                    self.settings[key] = max(lower, min(upper, float(value)))
+                except (TypeError, ValueError):
+                    continue
+            elif key in string_limits:
+                text = str(value or "").strip()[:string_limits[key]]
+                if key == "embedding_provider" and text not in {"sentence_transformers", "openai_compatible"}:
+                    continue
+                if key == "embedding_api_key_env" and not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", text):
+                    continue
+                self.settings[key] = text
+        self.settings["memory_active_hard_limit"] = max(
+            int(self.settings.get("memory_active_soft_limit", 5000)),
+            int(self.settings.get("memory_active_hard_limit", 6000)),
+        )
+        self.settings["memory_archive_hard_limit"] = max(
+            int(self.settings.get("memory_archive_soft_limit", 50000)),
+            int(self.settings.get("memory_archive_hard_limit", 60000)),
+        )
         self.save_settings()
+        if self.settings.get("sqlite_memory_enabled", True) and not self.sqlite_store:
+            self.initialize_sqlite_store()
+        self.initialize_embedding_provider()
+        if hasattr(self, "memory_maintenance"):
+            self.last_maintenance_result = self.run_memory_capacity_maintenance(
+                trigger="settings_update",
+            )
         return self.settings
+
+    def initialize_sqlite_store(self):
+        if not self.settings.get("sqlite_memory_enabled", True):
+            self.sqlite_store = None
+            return {"status": "disabled"}
+        store = SQLiteMemoryStore(self.sqlite_path)
+        self.sqlite_store = store
+        if not store.available:
+            return {"status": "fallback_json", "error": store.last_error}
+
+        status = store.integrity_check()
+        migration_complete = str((status.get("meta") or {}).get("migration_complete") or "") == "1"
+        sqlite_tombstones = store.load_deleted_ids()
+        if sqlite_tombstones:
+            merged = set(self.deleted_memory_ids) | sqlite_tombstones
+            if merged != set(self.deleted_memory_ids):
+                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                for memory_id in sqlite_tombstones:
+                    self.deleted_memory_ids.setdefault(memory_id, {"deleted_at": now, "reason": "sqlite_migration"})
+                self.save_memory_deletions()
+            before_count = len(self.memories)
+            self.memories = [
+                memory for memory in self.memories
+                if str(memory.get("id") or "") not in merged
+            ]
+            if len(self.memories) != before_count:
+                self._atomic_write_json(self.file_path, self.memories)
+        if not migration_complete:
+            self._backup_existing_file(
+                self.file_path,
+                "knowledge.pre-sqlite-migration",
+                force=True,
+                min_interval_seconds=0,
+            )
+        sync_result = store.upsert_memories(
+            self.memories,
+            migration_source=self.file_path if not migration_complete else "",
+        )
+        if sync_result.get("status") != "success":
+            return {"status": "fallback_json", **sync_result}
+        for memory_id in self.deleted_memory_ids:
+            store.mark_deleted(memory_id)
+
+        # Preserve database-only records after an interrupted JSON export. JSON
+        # records always win on ID conflicts, while missing IDs are restored.
+        json_ids = {str(memory.get("id")) for memory in self.memories if memory.get("id")}
+        recovered = [
+            memory for memory in store.load_active_memories()
+            if str(memory.get("id") or "") not in json_ids
+        ]
+        if recovered:
+            self.memories.extend(recovered)
+            self.normalize_all_memories()
+        return {
+            "status": "success",
+            "migrated": not migration_complete,
+            "synced_count": sync_result.get("count", 0),
+            "recovered_count": len(recovered),
+        }
+
+    def rebuild_sqlite_store(self):
+        if not self.settings.get("sqlite_memory_enabled", True):
+            return {"status": "disabled", "count": 0}
+        if not self.sqlite_store or not self.sqlite_store.available:
+            init_result = self.initialize_sqlite_store()
+            if init_result.get("status") != "success":
+                return init_result
+        return self.sqlite_store.rebuild(self.memories)
+
+    def get_sqlite_store_status(self):
+        if not self.settings.get("sqlite_memory_enabled", True):
+            return {"enabled": False, "available": False, "status": "disabled"}
+        if not self.sqlite_store:
+            return {"enabled": True, "available": False, "status": "not_initialized"}
+        status = self.sqlite_store.integrity_check()
+        status.update({
+            "enabled": True,
+            "available": bool(self.sqlite_store.available and status.get("ok")),
+            "status": "ready" if status.get("ok") else "fallback_json",
+        })
+        return status
+
+    def initialize_embedding_provider(self):
+        if not self.settings.get("embedding_enabled", False):
+            self.embedding_provider = None
+            self.embedding_last_error = ""
+            return {"status": "disabled", "ready": False}
+        try:
+            self.embedding_provider = create_embedding_provider(self.settings)
+            self.embedding_last_error = ""
+            status = self.embedding_provider.status()
+            return {"status": "ready" if status.get("ready") else "dependency_missing", **status}
+        except Exception as exc:
+            self.embedding_provider = None
+            self.embedding_last_error = str(exc)
+            return {"status": "unavailable", "ready": False, "error": self.embedding_last_error}
+
+    def _embedding_text(self, memory):
+        text = self._memory_text(memory)
+        try:
+            max_chars = max(200, int(self.settings.get("embedding_max_chars", 12000)))
+        except (TypeError, ValueError):
+            max_chars = 12000
+        return text[:max_chars]
+
+    def _embedding_content_hash(self, memory):
+        text = self._embedding_text(memory)
+        return hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
+
+    def get_embedding_status(self):
+        configured = bool(self.settings.get("embedding_enabled", False))
+        provider_status = {
+            "ready": False,
+            "provider": self.settings.get("embedding_provider", "sentence_transformers"),
+            "model": self.settings.get("embedding_model", "BAAI/bge-m3"),
+        }
+        if self.embedding_provider:
+            provider_status = self.embedding_provider.status()
+        provider_key = str(provider_status.get("provider_key") or "")
+        index_status = (
+            self.sqlite_store.embedding_status(provider_key)
+            if self.sqlite_store and self.sqlite_store.available
+            else {"available": False, "count": 0}
+        )
+        stale_count = 0
+        missing_count = 0
+        if provider_key and self.sqlite_store and self.sqlite_store.available:
+            hashes = self.sqlite_store.embedding_hashes(provider_key)
+            for memory in self.memories:
+                if memory.get("is_archived"):
+                    continue
+                memory_id = str(memory.get("id") or "")
+                if memory_id not in hashes:
+                    missing_count += 1
+                elif hashes[memory_id] != self._embedding_content_hash(memory):
+                    stale_count += 1
+        return {
+            "enabled": configured,
+            "ready": bool(configured and provider_status.get("ready") and index_status.get("available")),
+            "provider": provider_status,
+            "index": index_status,
+            "missing_count": missing_count,
+            "stale_count": stale_count,
+            "last_error": self.embedding_last_error or provider_status.get("last_error", ""),
+        }
+
+    def build_embedding_index(self, force=False, limit=None):
+        if not self.settings.get("embedding_enabled", False):
+            return {"status": "disabled", "indexed_count": 0, "remaining_count": 0}
+        if not self.sqlite_store or not self.sqlite_store.available:
+            return {"status": "sqlite_unavailable", "indexed_count": 0, "error": "SQLite is required for embeddings."}
+        if not self.embedding_provider:
+            init_result = self.initialize_embedding_provider()
+            if not self.embedding_provider:
+                return {"status": "provider_unavailable", "indexed_count": 0, **init_result}
+        provider_status = self.embedding_provider.status()
+        if not provider_status.get("ready"):
+            return {"status": "provider_unavailable", "indexed_count": 0, **provider_status}
+        provider_key = self.embedding_provider.key
+        existing_hashes = self.sqlite_store.embedding_hashes(provider_key)
+        pending = []
+        for memory in self.memories:
+            if memory.get("is_archived") or not memory.get("id"):
+                continue
+            content_hash = self._embedding_content_hash(memory)
+            if force or existing_hashes.get(str(memory.get("id"))) != content_hash:
+                pending.append((memory, content_hash))
+        try:
+            requested_limit = int(
+                limit if limit is not None else self.settings.get("embedding_index_batch_limit", 500)
+            )
+            requested_limit = max(1, min(1000000, requested_limit))
+        except (TypeError, ValueError):
+            requested_limit = 500
+        batch_targets = pending[:requested_limit]
+        try:
+            batch_size = max(1, min(256, int(self.settings.get("embedding_batch_size", 8))))
+        except (TypeError, ValueError):
+            batch_size = 8
+        indexed_count = 0
+        dimensions = set()
+        try:
+            for start in range(0, len(batch_targets), batch_size):
+                batch = batch_targets[start:start + batch_size]
+                vectors = self.embedding_provider.embed([
+                    self._embedding_text(memory) for memory, _ in batch
+                ])
+                if len(vectors) != len(batch):
+                    raise EmbeddingProviderError("Embedding provider returned an unexpected batch size.")
+                entries = []
+                for (memory, content_hash), vector in zip(batch, vectors):
+                    dimensions.add(len(vector))
+                    entries.append({
+                        "memory_id": str(memory.get("id")),
+                        "content_hash": content_hash,
+                        "vector": vector,
+                    })
+                result = self.sqlite_store.upsert_embeddings(provider_key, entries)
+                if result.get("status") != "success":
+                    raise EmbeddingProviderError(result.get("error") or "Unable to save embedding vectors.")
+                indexed_count += result.get("count", 0)
+            self.embedding_last_error = ""
+            return {
+                "status": "success",
+                "indexed_count": indexed_count,
+                "remaining_count": max(0, len(pending) - indexed_count),
+                "provider_key": provider_key,
+                "dimensions": sorted(dimensions),
+            }
+        except Exception as exc:
+            self.embedding_last_error = str(exc)
+            return {
+                "status": "error",
+                "indexed_count": indexed_count,
+                "remaining_count": max(0, len(pending) - indexed_count),
+                "error": self.embedding_last_error,
+            }
+
+    def maybe_index_new_memories(self, memories):
+        if not (
+            self.settings.get("embedding_enabled", False)
+            and self.settings.get("embedding_auto_index_new", False)
+            and self.embedding_provider
+        ):
+            return {"status": "skipped", "indexed_count": 0}
+        provider_status = self.embedding_provider.status()
+        if not provider_status.get("ready") or not self.sqlite_store or not self.sqlite_store.available:
+            return {"status": "provider_unavailable", "indexed_count": 0}
+        provider_key = self.embedding_provider.key
+        existing_hashes = self.sqlite_store.embedding_hashes(provider_key)
+        targets = []
+        for memory in memories or []:
+            if not isinstance(memory, dict) or memory.get("is_archived") or not memory.get("id"):
+                continue
+            content_hash = self._embedding_content_hash(memory)
+            if existing_hashes.get(str(memory.get("id"))) != content_hash:
+                targets.append((memory, content_hash))
+        if not targets:
+            return {"status": "success", "indexed_count": 0}
+        try:
+            vectors = self.embedding_provider.embed([
+                self._embedding_text(memory) for memory, _ in targets
+            ])
+            entries = [
+                {
+                    "memory_id": str(memory.get("id")),
+                    "content_hash": content_hash,
+                    "vector": vector,
+                }
+                for (memory, content_hash), vector in zip(targets, vectors)
+            ]
+            result = self.sqlite_store.upsert_embeddings(provider_key, entries)
+            return {
+                "status": result.get("status", "error"),
+                "indexed_count": result.get("count", 0),
+                "error": result.get("error", ""),
+            }
+        except Exception as exc:
+            self.embedding_last_error = str(exc)
+            return {"status": "error", "indexed_count": 0, "error": self.embedding_last_error}
 
     def import_legacy_memories(self):
         """Copy legacy memory records into the active store without changing source files."""
@@ -923,6 +1806,74 @@ class KnowledgeBase:
                 continue
         return None
 
+    def load_memory_deletions(self):
+        self.deleted_memory_ids = {}
+        if not os.path.exists(self.deletions_path):
+            return self.deleted_memory_ids
+        try:
+            loaded = self._load_json_file(self.deletions_path)
+            deleted = loaded.get("deleted", {}) if isinstance(loaded, dict) else {}
+            if isinstance(deleted, list):
+                deleted = {str(memory_id): {"deleted_at": ""} for memory_id in deleted if memory_id}
+            if isinstance(deleted, dict):
+                self.deleted_memory_ids = {
+                    str(memory_id): (details if isinstance(details, dict) else {"deleted_at": str(details or "")})
+                    for memory_id, details in deleted.items()
+                    if memory_id
+                }
+        except Exception as exc:
+            print(f"Error loading memory deletion ledger: {exc}")
+        return self.deleted_memory_ids
+
+    def save_memory_deletions(self):
+        try:
+            self._atomic_write_json(self.deletions_path, {
+                "schema_version": 1,
+                "deleted": self.deleted_memory_ids,
+            })
+            return True
+        except Exception as exc:
+            print(f"Error saving memory deletion ledger: {exc}")
+            return False
+
+    def _record_memory_deletions(self, memory_ids, reason="user_delete"):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        previous = dict(self.deleted_memory_ids)
+        for memory_id in memory_ids:
+            memory_id = str(memory_id or "").strip()
+            if memory_id:
+                self.deleted_memory_ids[memory_id] = {"deleted_at": now, "reason": str(reason or "user_delete")}
+        if self.save_memory_deletions():
+            return previous
+        self.deleted_memory_ids = previous
+        return None
+
+    def _restore_memory_deletion_ledger(self, previous):
+        self.deleted_memory_ids = dict(previous or {})
+        return self.save_memory_deletions()
+
+    def revive_deleted_memory(self, memory_id):
+        """Clear a tombstone only for an explicit user-driven recreation."""
+        memory_id = str(memory_id or "").strip()
+        if not memory_id:
+            return False
+        if memory_id not in self.deleted_memory_ids:
+            if self.sqlite_store and self.sqlite_store.available:
+                return self.sqlite_store.revive_memory(memory_id)
+            return True
+        previous = dict(self.deleted_memory_ids)
+        self.deleted_memory_ids.pop(memory_id, None)
+        if self.save_memory_deletions():
+            if not self.sqlite_store or not self.sqlite_store.available:
+                return True
+            if self.sqlite_store.revive_memory(memory_id):
+                return True
+            self.deleted_memory_ids = previous
+            self.save_memory_deletions()
+            return False
+        self.deleted_memory_ids = previous
+        return False
+
     def load_memories(self):
         if os.path.exists(self.file_path):
             try:
@@ -934,14 +1885,247 @@ class KnowledgeBase:
                 self.memories = self._load_latest_valid_backup() or []
         else:
             self.memories = []
+        if self.deleted_memory_ids:
+            tombstones = set(self.deleted_memory_ids)
+            self.memories = [
+                memory for memory in self.memories
+                if str(memory.get("id") or "") not in tombstones
+            ]
 
-    def save_memories(self):
+    def save_memories(self, invalidate_vectors=True, sqlite_subset=None, graph_dirty=True):
         try:
             self._backup_existing_file(self.file_path, "knowledge.before-save")
             self._atomic_write_json(self.file_path, self.memories)
-            self._vector_cache = {}
+            if self.sqlite_store and self.sqlite_store.available:
+                sync_targets = self.memories if sqlite_subset is None else sqlite_subset
+                sync_result = self.sqlite_store.upsert_memories(sync_targets)
+                if sync_result.get("status") != "success":
+                    print(f"SQLite memory sync fallback: {sync_result.get('error', 'unknown error')}")
+            if invalidate_vectors:
+                self._vector_cache = {}
+            self._access_metadata_dirty = False
+            self._dirty_access_ids = set()
+            self._last_access_flush_at = datetime.now()
+            if graph_dirty and hasattr(self, "memory_graph"):
+                self._memory_graph_dirty = True
+            return True
         except Exception as e:
             print(f"Error saving KB: {e}")
+            return False
+
+    def load_memory_candidates(self):
+        if os.path.exists(self.candidates_path):
+            try:
+                loaded = self._load_json_file(self.candidates_path)
+                self.memory_candidates = loaded if isinstance(loaded, list) else []
+            except Exception as e:
+                print(f"Error loading memory candidates: {e}")
+                self.memory_candidates = []
+        else:
+            self.memory_candidates = []
+        self.memory_candidates = [
+            self._normalize_memory_candidate(candidate)
+            for candidate in self.memory_candidates
+            if isinstance(candidate, dict)
+        ]
+
+    def save_memory_candidates(self):
+        try:
+            self._atomic_write_json(self.candidates_path, self.memory_candidates)
+        except Exception as e:
+            print(f"Error saving memory candidates: {e}")
+
+    def _normalize_memory_candidate(self, candidate):
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        content = self._normalize_text(candidate.get("content"))
+        title = self._normalize_text(candidate.get("title"))[:120]
+        if not title:
+            title = f"Memory candidate {now[:10]}"
+        category = self._normalize_text(candidate.get("category")) or self.infer_category(content, title, "auto_autonomous")
+        tags = candidate.get("tags")
+        if not isinstance(tags, list):
+            tags = self.infer_tags(content, category)
+        tags = [self._normalize_text(tag) for tag in tags if self._normalize_text(tag)][:8]
+
+        normalized = dict(candidate)
+        normalized.update({
+            "id": self._normalize_text(candidate.get("id")) or str(datetime.now().timestamp()),
+            "creation_time": self._normalize_text(candidate.get("creation_time")) or now,
+            "date": self._normalize_text(candidate.get("date"))[:10] or now[:10],
+            "title": title,
+            "content": content,
+            "category": category,
+            "tags": tags,
+            "confidence": self._coerce_float(candidate.get("confidence"), 0.7),
+            "importance_score": self._coerce_float(candidate.get("importance_score"), 0.45),
+            "status": self._normalize_text(candidate.get("status")) or "pending",
+            "source": "auto_autonomous",
+        })
+        source_detail = normalized.get("source_detail")
+        if not isinstance(source_detail, dict):
+            source_detail = {}
+        source_detail.setdefault("type", "autonomous_memory_candidate")
+        source_detail.setdefault("captured_at", normalized["creation_time"])
+        normalized["source_detail"] = source_detail
+        return normalized
+
+    def _memory_content_key(self, content):
+        return re.sub(r"\s+", " ", str(content or "")).strip().lower()
+
+    def _has_matching_memory_content(self, content, project_id=""):
+        target = self._memory_content_key(content)
+        active_project_id = str(project_id or "")
+        if not target:
+            return False
+        for memory in self.memories:
+            existing = self._memory_content_key(memory.get("content"))
+            existing_project_id = str(memory.get("project_id") or "")
+            if existing == target and existing_project_id == active_project_id:
+                return True
+        return False
+
+    def _find_pending_candidate_by_content(self, content, project_id=""):
+        target = self._memory_content_key(content)
+        active_project_id = str(project_id or "")
+        if not target:
+            return None
+        for candidate in self.memory_candidates:
+            if candidate.get("status") != "pending":
+                continue
+            existing = self._memory_content_key(candidate.get("content"))
+            existing_project_id = str(candidate.get("project_id") or "")
+            if existing == target and existing_project_id == active_project_id:
+                return candidate
+        return None
+
+    def get_memory_candidates(self, status="pending", limit=20):
+        status = self._normalize_text(status)
+        try:
+            limit = max(1, min(100, int(limit)))
+        except (TypeError, ValueError):
+            limit = 20
+        candidates = [
+            candidate for candidate in self.memory_candidates
+            if not status or candidate.get("status") == status
+        ]
+        candidates.sort(key=lambda item: (item.get("creation_time", ""), item.get("id", "")), reverse=True)
+        return candidates[:limit]
+
+    def add_memory_candidate(
+        self,
+        content,
+        title=None,
+        category=None,
+        tags=None,
+        confidence=None,
+        importance_score=None,
+        source_detail=None,
+        metadata=None
+    ):
+        content = self._normalize_text(content)
+        if len(content) < 4:
+            return None
+        metadata = metadata if isinstance(metadata, dict) else {}
+        project_id = str(metadata.get("project_id") or "")
+        if self._has_matching_memory_content(content, project_id=project_id):
+            return None
+        existing = self._find_pending_candidate_by_content(content, project_id=project_id)
+        if existing:
+            return existing
+
+        now = datetime.now()
+        candidate = {
+            "id": str(now.timestamp()),
+            "creation_time": now.strftime("%Y-%m-%d %H:%M:%S"),
+            "date": now.strftime("%Y-%m-%d"),
+            "title": title or f"Memory candidate {now.strftime('%Y-%m-%d')}",
+            "content": content,
+            "category": category,
+            "tags": tags,
+            "confidence": confidence,
+            "importance_score": importance_score,
+            "status": "pending",
+            "source": "auto_autonomous",
+            "source_detail": source_detail if isinstance(source_detail, dict) else {
+                "type": "autonomous_memory_candidate",
+                "captured_at": now.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        }
+        candidate.update(metadata)
+        candidate = self._normalize_memory_candidate(candidate)
+        self.memory_candidates.append(candidate)
+        self.save_memory_candidates()
+        return candidate
+
+    def _find_memory_candidate(self, candidate_id):
+        candidate_id = str(candidate_id or "")
+        for candidate in self.memory_candidates:
+            if str(candidate.get("id")) == candidate_id:
+                return candidate
+        return None
+
+    def confirm_memory_candidate(self, candidate_id, updates=None):
+        candidate = self._find_memory_candidate(candidate_id)
+        if not candidate or candidate.get("status") != "pending":
+            return None
+        updates = updates if isinstance(updates, dict) else {}
+
+        content = self._normalize_text(updates.get("content", candidate.get("content")))
+        if not content:
+            return None
+        title = self._normalize_text(updates.get("title", candidate.get("title"))) or None
+        category = self._normalize_text(updates.get("category", candidate.get("category"))) or None
+        tags = updates.get("tags", candidate.get("tags"))
+        if isinstance(tags, str):
+            tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
+        if not isinstance(tags, list):
+            tags = None
+        is_important = bool(updates.get("is_important", False))
+        is_locked = bool(updates.get("is_locked", False))
+        project_id = str(candidate.get("project_id") or "")
+
+        if self._has_matching_memory_content(content, project_id=project_id):
+            candidate["status"] = "duplicate"
+            candidate["resolved_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.save_memory_candidates()
+            return {"status": "duplicate", "memory": None}
+
+        source_detail = candidate.get("source_detail") if isinstance(candidate.get("source_detail"), dict) else {}
+        source_detail = dict(source_detail)
+        source_detail["type"] = "autonomous_memory_confirmed"
+        source_detail["confirmed_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        metadata = {}
+        for key in ("project_id", "project_name", "project_scoped"):
+            if key in candidate:
+                metadata[key] = candidate[key]
+        if is_locked:
+            metadata["is_locked"] = True
+
+        memory = self.add_memory(
+            content,
+            title=title,
+            source="auto_autonomous",
+            is_important=is_important,
+            category=category,
+            tags=tags,
+            confidence=updates.get("confidence", candidate.get("confidence")),
+            source_detail=source_detail,
+            metadata=metadata
+        )
+        candidate["status"] = "confirmed"
+        candidate["resolved_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        candidate["memory_id"] = memory.get("id")
+        self.save_memory_candidates()
+        return {"status": "success", "memory": memory}
+
+    def ignore_memory_candidate(self, candidate_id):
+        candidate = self._find_memory_candidate(candidate_id)
+        if not candidate:
+            return False
+        candidate["status"] = "ignored"
+        candidate["resolved_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.save_memory_candidates()
+        return True
 
     def _normalize_text(self, value):
         return re.sub(r"\s+", " ", str(value or "")).strip()
@@ -1010,6 +2194,76 @@ class KnowledgeBase:
             value = default
         return max(minimum, min(maximum, value))
 
+    def _infer_memory_kind(self, memory):
+        category = str(memory.get("category") or "general")
+        source = str(memory.get("source") or "").lower()
+        managed_slot = str(memory.get("managed_slot") or "").lower()
+        if managed_slot == "life_quests:summary":
+            return "goal_summary"
+        if managed_slot == "assistant_role:learning_map:index":
+            return "knowledge_index"
+        if managed_slot.startswith("assistant_role:learning_area:"):
+            return "knowledge_area"
+        if managed_slot.startswith("about_you:") or source == "about_you":
+            return "profile"
+        if category == "conversation_summary" or source in {"archive", "session_archive", "auto_merge"}:
+            return "summary"
+        if category in {"identity", "preference", "goal", "relationship", "project", "health"}:
+            return category
+        if category in {"emotion", "schedule"}:
+            return "event"
+        return "fact"
+
+    def _infer_memory_layer(self, memory):
+        if memory.get("is_archived"):
+            return "archive"
+        source = str(memory.get("source") or "").lower()
+        category = str(memory.get("category") or "general").lower()
+        title = str(memory.get("title") or "").lower()
+        managed_slot = str(memory.get("managed_slot") or "").lower()
+        if managed_slot.startswith("assistant_role:learning_"):
+            return "semantic"
+        if managed_slot.startswith("about_you:") or managed_slot == "life_quests:summary" or source == "about_you":
+            return "core"
+        if "life quests" in title and memory.get("is_locked"):
+            return "core"
+        if category == "identity" and memory.get("is_locked") and source in {"manual", "system"}:
+            return "core"
+        if category == "conversation_summary" or source in {"archive", "session_archive", "auto_merge"}:
+            return "episodic"
+        if category in {"emotion", "schedule"}:
+            return "episodic"
+        return "semantic"
+
+    def _memory_layer(self, memory):
+        layer = str(memory.get("memory_layer") or "").lower()
+        if memory.get("is_archived"):
+            return "archive"
+        if layer not in self.MEMORY_LAYER_ORDER:
+            return self._infer_memory_layer(memory)
+        return layer
+
+    def _infer_retention_policy(self, memory):
+        current = str(memory.get("retention_policy") or "").strip().lower()
+        if current in self.RETENTION_POLICIES:
+            return current
+        managed_slot = str(memory.get("managed_slot") or "").strip().lower()
+        source = str(memory.get("source") or "").strip().lower()
+        layer = self._memory_layer(memory)
+        if managed_slot or source in {"about_you", "system_activity"} or layer == "core":
+            return "permanent"
+        if memory.get("expires_at"):
+            return "temporary"
+        if (
+            layer == "episodic"
+            or source in {"archive", "session_archive", "auto_merge", "capacity_compaction", "auto_autonomous"}
+            or str(memory.get("memory_kind") or "").lower() in {"event", "summary", "conversation_summary"}
+        ):
+            return "compressible"
+        if memory.get("is_locked") or memory.get("is_important"):
+            return "durable"
+        return "durable"
+
     def _memory_tier(self, memory):
         source = str(memory.get("source", "") or "").lower()
         title = str(memory.get("title", "") or "").lower()
@@ -1076,7 +2330,7 @@ class KnowledgeBase:
             count = 0
         return min(1.0, count / 12.0)
 
-    def _query_relevance_score(self, memory, query):
+    def _query_relevance_score(self, memory, query, embedding_score=None):
         query = str(query or "").strip()
         if not query:
             return 0.0
@@ -1087,18 +2341,24 @@ class KnowledgeBase:
             overlap_score = len(query_tokens & memory_tokens) / max(1, len(query_tokens))
         semantic_score = self.semantic_memory_score(memory, query)
         exact_score = 1.0 if query.lower() in self._memory_text(memory).lower() else 0.0
+        if embedding_score is not None:
+            dense_score = self._coerce_float((float(embedding_score) + 1.0) / 2.0, 0.0)
+            return self._coerce_float(
+                dense_score * 0.62 + overlap_score * 0.15 + semantic_score * 0.13 + exact_score * 0.10,
+                0.0,
+            )
         return self._coerce_float(
             overlap_score * 0.35 + semantic_score * 0.45 + exact_score * 0.20,
             0.0
         )
 
-    def memory_priority_score(self, memory, query=""):
+    def memory_priority_score(self, memory, query="", embedding_score=None):
         low, high = self._memory_score_band(memory)
         confidence = self._coerce_float(memory.get("confidence"), 0.75)
         importance = self._coerce_float(memory.get("importance_score"), 0.4)
         recency = self._recency_score(memory)
         access = self._access_score(memory)
-        relevance = self._query_relevance_score(memory, query)
+        relevance = self._query_relevance_score(memory, query, embedding_score=embedding_score)
         locked = 1.0 if memory.get("is_locked") else 0.0
         starred = 1.0 if memory.get("is_important") else 0.0
 
@@ -1181,6 +2441,23 @@ class KnowledgeBase:
         ensure("source", "manual")
         ensure("is_locked", False)
         ensure("is_important", False)
+        ensure("is_archived", False)
+
+        title_key = str(memory.get("title") or "").strip().lower()
+        source_key = str(memory.get("source") or "").strip().lower()
+        if title_key in {"life quests summary", "achievements log"} and source_key == "system":
+            managed_defaults = {
+                "managed_slot": "life_quests:summary",
+                "is_locked": True,
+                "is_important": True,
+                "memory_layer": "core",
+                "memory_kind": "goal_summary",
+                "category": "goal",
+            }
+            for key, value in managed_defaults.items():
+                if memory.get(key) != value:
+                    memory[key] = value
+                    changed = True
 
         if not isinstance(memory.get("content"), str):
             memory["content"] = str(memory.get("content", ""))
@@ -1204,8 +2481,8 @@ class KnowledgeBase:
             memory["tags"] = tags[:8]
             changed = True
 
-        if "schema_version" not in memory or memory.get("schema_version") != 2:
-            memory["schema_version"] = 2
+        if "schema_version" not in memory or memory.get("schema_version") != 3:
+            memory["schema_version"] = 3
             changed = True
 
         if "confidence" not in memory:
@@ -1256,9 +2533,80 @@ class KnowledgeBase:
             "created_at": memory.get("creation_time")
         }])
 
+        # "Archive conversation" historically meant "create an active
+        # conversation summary". Migrate those summaries to explicit Episodic
+        # semantics so they cannot be mistaken for retired Archive records.
+        if (
+            not memory.get("is_archived")
+            and str(memory.get("category") or "").lower() == "conversation_summary"
+            and str(memory.get("source") or "").lower() in {"archive", "session_archive"}
+        ):
+            if memory.get("memory_layer") != "episodic":
+                memory["memory_layer"] = "episodic"
+                changed = True
+            if memory.get("archive_semantics") != "active_summary_not_archived_record":
+                memory["archive_semantics"] = "active_summary_not_archived_record"
+                changed = True
+            tags = [
+                str(tag) for tag in memory.get("tags", [])
+                if str(tag).strip().lower() != "archive"
+            ]
+            for tag in ("conversation", "summary", "episodic"):
+                if tag not in tags:
+                    tags.append(tag)
+            if memory.get("tags") != tags[:8]:
+                memory["tags"] = tags[:8]
+                changed = True
+            detail = memory.get("source_detail")
+            if not isinstance(detail, dict):
+                detail = {"type": "session_archive"}
+            detail_updates = {
+                "action": "summarize_selected_exchanges",
+                "target_memory_layer": "episodic",
+            }
+            for key, value in detail_updates.items():
+                if detail.get(key) != value:
+                    detail[key] = value
+                    changed = True
+            memory["source_detail"] = detail
+
         status = "archived" if memory.get("is_archived") else "active"
         if memory.get("status") != status:
             memory["status"] = status
+            changed = True
+
+        layer = self._memory_layer(memory)
+        if memory.get("memory_layer") != layer:
+            memory["memory_layer"] = layer
+            changed = True
+        kind = str(memory.get("memory_kind") or "").strip().lower()
+        if not kind:
+            memory["memory_kind"] = self._infer_memory_kind(memory)
+            changed = True
+        retention_policy = self._infer_retention_policy(memory)
+        if memory.get("retention_policy") != retention_policy:
+            memory["retention_policy"] = retention_policy
+            changed = True
+        if "compressed_from" not in memory or not isinstance(memory.get("compressed_from"), list):
+            memory["compressed_from"] = []
+            changed = True
+        inferred_generation = 1 if memory.get("compressed_from") else 0
+        try:
+            compression_generation = max(0, int(memory.get("compression_generation", inferred_generation)))
+        except (TypeError, ValueError):
+            compression_generation = inferred_generation
+        if memory.get("compression_generation") != compression_generation:
+            memory["compression_generation"] = compression_generation
+            changed = True
+        try:
+            ai_generation = max(0, int(memory.get("ai_compression_generation", 0)))
+        except (TypeError, ValueError):
+            ai_generation = 0
+        if memory.get("ai_compression_generation") != ai_generation:
+            memory["ai_compression_generation"] = ai_generation
+            changed = True
+        if "parent_memory_id" not in memory:
+            memory["parent_memory_id"] = None
             changed = True
 
         return memory, changed
@@ -1276,6 +2624,7 @@ class KnowledgeBase:
         if changed:
             self.save_memories()
 
+    @memory_write_locked
     def add_memory(
         self,
         content,
@@ -1286,7 +2635,8 @@ class KnowledgeBase:
         tags=None,
         confidence=None,
         source_detail=None,
-        metadata=None
+        metadata=None,
+        run_capacity_check=True,
     ):
         timestamp = datetime.now()
         if not title:
@@ -1294,7 +2644,7 @@ class KnowledgeBase:
             title = f"Memory {timestamp.strftime('%Y-%m-%d %H:%M')}"
             
         memory = {
-            "id": str(timestamp.timestamp()),
+            "id": str(uuid.uuid4()),
             "creation_time": timestamp.strftime("%Y-%m-%d %H:%M:%S"),
             "date": timestamp.strftime("%Y-%m-%d"),
             "title": title,
@@ -1314,18 +2664,238 @@ class KnowledgeBase:
         if isinstance(metadata, dict):
             memory.update(metadata)
 
+        memory["id"] = str(memory.get("id") or uuid.uuid4())
+        if self._find_memory(memory["id"]):
+            raise ValueError("A memory with this ID already exists")
+        previous_memories = copy.deepcopy(self.memories)
+        previous_deletions = copy.deepcopy(self.deleted_memory_ids)
+        if memory["id"] in self.deleted_memory_ids and not self.revive_deleted_memory(memory["id"]):
+            raise RuntimeError("Unable to clear the previous deletion marker")
+
         memory, _ = self.normalize_memory(memory)
         if self._looks_like_correction(memory.get("content")):
             related_ids = self._find_related_memory_ids(memory)
             if related_ids:
                 memory["supersedes"] = related_ids
+                memory["conflicts_with"] = related_ids
                 for existing in self.memories:
                     if existing.get("id") in related_ids:
                         conflicts = existing.setdefault("conflicts_with", [])
                         if memory["id"] not in conflicts:
                             conflicts.append(memory["id"])
+                        existing["superseded_by"] = memory["id"]
 
         self.memories.append(memory)
+        try:
+            self._validate_relationship_graph()
+        except ValueError:
+            self.memories = previous_memories
+            self.deleted_memory_ids = previous_deletions
+            self.save_memory_deletions()
+            raise
+        if not self.save_memories():
+            self.memories = previous_memories
+            self.deleted_memory_ids = previous_deletions
+            self.save_memory_deletions()
+            raise RuntimeError("Unable to persist the new memory")
+        self.maybe_index_new_memories([memory])
+        if run_capacity_check and not self._maintenance_running:
+            self.last_maintenance_result = self.run_memory_capacity_maintenance(
+                trigger="memory_added",
+            )
+        return memory
+
+    def upsert_daily_activity_memory(self, date_str, checkin_record, app_entries, chat_stats):
+        """Maintain one protected, high-priority memory describing today.
+
+        The same managed slot is refreshed throughout the day and reused after
+        midnight, so daily operational state does not create an ever-growing
+        pile of important memories.
+        """
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        date_str = str(date_str or now[:10])[:10]
+        checkin_record = checkin_record if isinstance(checkin_record, dict) else {}
+        chat_stats = chat_stats if isinstance(chat_stats, dict) else {}
+        try:
+            app_entries = max(0, int(app_entries or 0))
+        except (TypeError, ValueError):
+            app_entries = 0
+
+        done = int(checkin_record.get("done") or 0)
+        total = int(checkin_record.get("total") or 0)
+        status = str(checkin_record.get("status") or "no_tasks")
+        status_labels = {
+            "completed": "全部完成",
+            "partial": "部分完成",
+            "pending": "尚未完成",
+            "missed": "未完成",
+            "no_tasks": "今日没有打卡任务",
+            "future": "尚未开始",
+        }
+        task_lines = []
+        for task in checkin_record.get("task_details") or []:
+            if not isinstance(task, dict):
+                continue
+            title = re.sub(r"\s+", " ", str(task.get("title") or "")).strip()
+            if title:
+                task_lines.append(f"  - {'已完成' if task.get('done') else '未完成'}：{title[:80]}")
+        if not task_lines:
+            task_lines.append("  - 今日没有可记录的打卡任务")
+
+        self_ratings = []
+        for key, label in (("mood", "心情"), ("energy", "精力"), ("difficulty", "难度")):
+            value = checkin_record.get(key)
+            if value not in (None, ""):
+                self_ratings.append(f"{label} {value}/5")
+        rating_text = "、".join(self_ratings) if self_ratings else "未填写"
+        note = re.sub(r"\s+", " ", str(checkin_record.get("note") or "")).strip()
+
+        content_lines = [
+            f"这是 Saya 自动维护的今日活动状态，日期为 {date_str}，数据会在进入页面、完成对话或修改打卡后更新。",
+            f"- 今日打卡：{done}/{total}，状态为{status_labels.get(status, status)}。",
+            f"- 今日自评：{rating_text}。",
+            f"- 今日进入 Saya 页面：{app_entries} 次。",
+            f"- 今日已完成对话：{int(chat_stats.get('conversation_count') or 0)} 轮；用户消息 {int(chat_stats.get('user_message_count') or 0)} 条，Saya 回复 {int(chat_stats.get('assistant_message_count') or 0)} 条，涉及 {int(chat_stats.get('session_count') or 0)} 个会话。",
+            "- 今日打卡明细：",
+            *task_lines,
+        ]
+        if note:
+            content_lines.append(f"- 今日备注：{note[:500]}")
+        content = "\n".join(content_lines)
+
+        memory = self._find_memory(self.DAILY_ACTIVITY_MEMORY_ID)
+        if memory is None:
+            memory = {
+                "id": self.DAILY_ACTIVITY_MEMORY_ID,
+                "creation_time": now,
+            }
+            self.memories.append(memory)
+        memory.update({
+            "date": date_str,
+            "title": f"今日活动状态 · {date_str}",
+            "content": content,
+            "source": "system_activity",
+            "source_detail": {
+                "type": "daily_activity_snapshot",
+                "captured_at": now,
+                "date": date_str,
+            },
+            "category": "schedule",
+            "tags": ["today", "checkin", "activity", "conversation"],
+            "confidence": 1.0,
+            "importance_score": 0.9,
+            "is_locked": True,
+            "is_important": True,
+            "is_archived": False,
+            "status": "active",
+            "managed_slot": self.DAILY_ACTIVITY_MANAGED_SLOT,
+            "memory_layer": "core",
+            "memory_kind": "daily_activity",
+            "last_updated": now,
+            "evidence": [{
+                "type": "system_activity_snapshot",
+                "quote": content[:180],
+                "created_at": now,
+            }],
+        })
+        memory.pop("archived_from_layer", None)
+        memory, _ = self.normalize_memory(memory)
+        self.save_memories()
+        return memory
+
+    def upsert_anki_checkin_memory(self, anki_state):
+        """Maintain one fixed memory containing the latest Anki check-in state."""
+        anki_state = anki_state if isinstance(anki_state, dict) else {}
+        summary = anki_state.get("summary")
+        if not isinstance(summary, dict):
+            return None
+
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        completed_decks = [
+            re.sub(r"\s+", " ", str(name or "")).strip()
+            for name in summary.get("completed_decks_today") or []
+            if str(name or "").strip()
+        ]
+        completed = bool(summary.get("daily_task_completed"))
+        recent_activity = []
+        for item in anki_state.get("daily_activity") or []:
+            if not isinstance(item, dict) or int(item.get("reviews") or 0) <= 0:
+                continue
+            recent_activity.append(
+                f"{str(item.get('date') or '')[:10]}：{int(item.get('reviews') or 0)} 次复习"
+            )
+        recent_text = "；".join(recent_activity[-14:]) or "最近 30 天暂无复习记录"
+        minutes = round(int(summary.get("today_time_ms") or 0) / 60000, 1)
+        completed_text = "、".join(completed_decks) if completed_decks else "暂无"
+        status_text = "已完成" if completed else "尚未完成"
+        snapshot = {
+            "date": now[:10],
+            "profile": str(anki_state.get("profile") or ""),
+            "source_modified_at": str(anki_state.get("source_modified_at") or ""),
+            "completed": completed,
+            "completed_decks": completed_decks,
+            "today_reviews": int(summary.get("today_reviews") or 0),
+            "today_cards": int(summary.get("today_cards") or 0),
+            "today_time_ms": int(summary.get("today_time_ms") or 0),
+            "today_accuracy": float(summary.get("today_accuracy") or 0),
+            "current_streak": int(summary.get("current_streak") or 0),
+            "longest_streak": int(summary.get("longest_streak") or 0),
+            "recent_activity": recent_activity[-14:],
+        }
+        memory = self._find_memory(self.ANKI_CHECKIN_MEMORY_ID)
+        if memory is not None and memory.get("anki_checkin") == snapshot:
+            return memory
+
+        content = "\n".join([
+            "这是 Saya 自动维护的 Anki 学习打卡记忆；每次读取 Anki 后会原位更新，不会为每天重复创建新记忆。",
+            f"- 当前档案：{str(anki_state.get('profile') or '未命名档案')}。",
+            f"- 今日每日任务：{status_text}。判定规则为至少一个实际牌组今天有学习记录，且当前没有到期的复习或学习卡。",
+            f"- 今日满足条件的牌组：{completed_text}。",
+            f"- 今日学习：{int(summary.get('today_reviews') or 0)} 次复习，{int(summary.get('today_cards') or 0)} 张不同卡片，用时约 {minutes:g} 分钟，正确率 {float(summary.get('today_accuracy') or 0):.1f}%。",
+            f"- 连续学习：当前 {int(summary.get('current_streak') or 0)} 天，最长 {int(summary.get('longest_streak') or 0)} 天。",
+            f"- 最近活动：{recent_text}。",
+            f"- Anki 数据源最后变动：{str(anki_state.get('source_modified_at') or '未知')}。",
+        ])
+
+        if memory is None:
+            memory = {
+                "id": self.ANKI_CHECKIN_MEMORY_ID,
+                "creation_time": now,
+            }
+            self.memories.append(memory)
+        memory.update({
+            "date": now[:10],
+            "title": "Anki 学习打卡状态（自动更新）",
+            "content": content,
+            "source": "system_activity",
+            "source_detail": {
+                "type": "anki_checkin_snapshot",
+                "captured_at": now,
+                "source_modified_at": anki_state.get("source_modified_at"),
+                "profile": anki_state.get("profile"),
+            },
+            "category": "schedule",
+            "tags": ["anki", "study", "checkin", "spaced_repetition"],
+            "confidence": 1.0,
+            "importance_score": 0.9,
+            "is_locked": True,
+            "is_important": True,
+            "is_archived": False,
+            "status": "active",
+            "managed_slot": self.ANKI_CHECKIN_MANAGED_SLOT,
+            "memory_layer": "core",
+            "memory_kind": "study_tracker",
+            "retention_policy": "permanent",
+            "last_updated": now,
+            "anki_checkin": snapshot,
+            "evidence": [{
+                "type": "anki_statistics_snapshot",
+                "quote": content[:180],
+                "created_at": now,
+            }],
+        })
+        memory.pop("archived_from_layer", None)
+        memory, _ = self.normalize_memory(memory)
         self.save_memories()
         return memory
 
@@ -1796,16 +3366,399 @@ class KnowledgeBase:
         self.save_memories()
         return self.get_about_you_possessions()
 
-    def delete_memory(self, memory_id):
-        # Prevent deleting locked or managed memories
-        for m in self.memories:
-            if m["id"] == memory_id and (m.get("is_locked", False) or m.get("managed_slot")):
-                print(f"Attempt to delete locked memory {memory_id} blocked.")
-                return False
+    def memory_delete_policy(self, memory):
+        if not isinstance(memory, dict):
+            return False, "Memory not found"
+        managed_slot = str(memory.get("managed_slot") or "")
+        retired_assistant_memory = bool(
+            memory.get("is_archived")
+            and managed_slot.startswith((
+                "assistant_role:learning_area:",
+                "assistant_role:learning_note:",
+                "assistant_role:curated:",
+            ))
+        )
+        if retired_assistant_memory:
+            return True, "Archived Assistant record can be permanently deleted"
+        if managed_slot:
+            return False, "This memory is managed by another feature"
+        if memory.get("is_locked", False):
+            return False, "Unlock this memory before permanently deleting it"
+        return True, "Memory can be permanently deleted"
 
-        self.memories = [m for m in self.memories if m["id"] != memory_id]
-        self.save_memories()
+    def _validate_relationship_graph(self, memories=None):
+        """Reject dangling, self-referential, or cyclic supersession metadata."""
+        records = memories if memories is not None else self.memories
+        by_id = {str(item.get("id")): item for item in records if isinstance(item, dict) and item.get("id")}
+        adjacency = {memory_id: set() for memory_id in by_id}
+        for memory_id, memory in by_id.items():
+            for field in ("supersedes", "conflicts_with"):
+                values = memory.get(field) or []
+                if not isinstance(values, list):
+                    raise ValueError(f"{field} must be a list")
+                for related_id in values:
+                    related_id = str(related_id or "").strip()
+                    if not related_id or related_id not in by_id:
+                        raise ValueError(f"{field} references a missing memory")
+                    if related_id == memory_id:
+                        raise ValueError("A memory cannot relate to itself")
+                    if field == "supersedes":
+                        adjacency[memory_id].add(related_id)
+                        if str(by_id[related_id].get("superseded_by") or "") != memory_id:
+                            raise ValueError("Supersession relationships must be reciprocal")
+                    elif memory_id not in {
+                        str(value) for value in (by_id[related_id].get("conflicts_with") or [])
+                    }:
+                        raise ValueError("Conflict relationships must be reciprocal")
+            newer_id = str(memory.get("superseded_by") or "").strip()
+            if newer_id:
+                if newer_id not in by_id:
+                    raise ValueError("superseded_by references a missing memory")
+                if newer_id == memory_id:
+                    raise ValueError("A memory cannot supersede itself")
+                if memory_id not in {
+                    str(value) for value in (by_id[newer_id].get("supersedes") or [])
+                }:
+                    raise ValueError("Supersession relationships must be reciprocal")
+                adjacency[newer_id].add(memory_id)
+
+        visiting, visited = set(), set()
+
+        def visit(memory_id):
+            if memory_id in visiting:
+                raise ValueError("The supersession relationship would form a cycle")
+            if memory_id in visited:
+                return
+            visiting.add(memory_id)
+            for related_id in adjacency.get(memory_id, ()):
+                visit(related_id)
+            visiting.remove(memory_id)
+            visited.add(memory_id)
+
+        for memory_id in by_id:
+            visit(memory_id)
         return True
+
+    def _memory_delete_signature(self, memory_ids):
+        target_ids = {str(memory_id) for memory_id in memory_ids}
+        payload = []
+        relation_fields = (
+            "id", "is_archived", "is_locked", "managed_slot", "supersedes",
+            "superseded_by", "conflicts_with", "merged_into", "parent_memory_id",
+            "compressed_from",
+        )
+        for memory in self.memories:
+            related = bool(str(memory.get("id")) in target_ids)
+            if not related:
+                related_values = []
+                for field in ("supersedes", "conflicts_with", "compressed_from"):
+                    value = memory.get(field) or []
+                    related_values.extend(value if isinstance(value, list) else [value])
+                related_values.extend([
+                    memory.get("superseded_by"), memory.get("merged_into"), memory.get("parent_memory_id")
+                ])
+                related = bool(target_ids & {str(value) for value in related_values if value})
+            if related:
+                payload.append({field: memory.get(field) for field in relation_fields})
+        raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, default=str)
+        if self.memory_graph:
+            target_nodes = {f"memory:{memory_id}" for memory_id in target_ids}
+            manual_edges = [
+                edge for edge in (self.memory_graph.graph.get("edges") or [])
+                if edge.get("source_kind") == "manual"
+                and (edge.get("source") in target_nodes or edge.get("target") in target_nodes)
+            ]
+            raw += json.dumps(manual_edges, ensure_ascii=False, sort_keys=True, default=str)
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+    def _relationship_cleanup_plan(self, memory_ids):
+        target_ids = {str(memory_id) for memory_id in memory_ids}
+        by_id = {str(memory.get("id")): memory for memory in self.memories if memory.get("id")}
+        remaining_ids = set(by_id) - target_ids
+        changes = {}
+        cleared = []
+        rewired = []
+        warnings = []
+        target_nodes = {f"memory:{memory_id}" for memory_id in target_ids}
+        removed_manual_edges = [
+            {
+                "id": str(edge.get("id") or ""),
+                "source": str(edge.get("source") or ""),
+                "target": str(edge.get("target") or ""),
+                "relation": str(edge.get("relation") or "related_to"),
+            }
+            for edge in ((self.memory_graph.graph.get("edges") or []) if self.memory_graph else [])
+            if edge.get("source_kind") == "manual"
+            and (edge.get("source") in target_nodes or edge.get("target") in target_nodes)
+        ]
+
+        def change(memory_id):
+            return changes.setdefault(memory_id, copy.deepcopy(by_id[memory_id]))
+
+        for memory_id in remaining_ids:
+            memory = by_id[memory_id]
+            for field in ("supersedes", "conflicts_with", "compressed_from"):
+                values = memory.get(field) or []
+                values = values if isinstance(values, list) else [values]
+                kept = [value for value in values if str(value) not in target_ids]
+                if len(kept) != len(values):
+                    change(memory_id)[field] = kept
+                    cleared.append({"memory_id": memory_id, "field": field})
+            for field in ("superseded_by", "merged_into", "parent_memory_id"):
+                if str(memory.get(field) or "") in target_ids:
+                    change(memory_id)[field] = None
+                    cleared.append({"memory_id": memory_id, "field": field})
+
+        # Only supersession has a safe transitive meaning. Treat adjacent
+        # deleted nodes as one component so deleting B+C from A->B->C->D
+        # safely reconnects A->D. Other relationship types are never guessed.
+        newer_to_older = {memory_id: set() for memory_id in by_id}
+        for memory_id, memory in by_id.items():
+            newer_to_older[memory_id].update(
+                str(value) for value in (memory.get("supersedes") or [])
+                if str(value) in by_id
+            )
+            older_id = memory_id
+            newer_id = str(memory.get("superseded_by") or "").strip()
+            if newer_id in by_id:
+                newer_to_older[newer_id].add(older_id)
+        older_to_newer = {memory_id: set() for memory_id in by_id}
+        for newer_id, older_ids in newer_to_older.items():
+            for older_id in older_ids:
+                older_to_newer[older_id].add(newer_id)
+
+        pending_targets = set(target_ids & set(by_id))
+        while pending_targets:
+            seed = pending_targets.pop()
+            component = {seed}
+            queue = [seed]
+            while queue:
+                current = queue.pop()
+                adjacent_targets = (
+                    newer_to_older.get(current, set()) | older_to_newer.get(current, set())
+                ) & target_ids
+                for related_id in adjacent_targets - component:
+                    component.add(related_id)
+                    pending_targets.discard(related_id)
+                    queue.append(related_id)
+            newer_ids = {
+                newer_id for target_id in component
+                for newer_id in older_to_newer.get(target_id, set())
+                if newer_id in remaining_ids
+            }
+            older_ids = {
+                older_id for target_id in component
+                for older_id in newer_to_older.get(target_id, set())
+                if older_id in remaining_ids
+            }
+            if older_ids and len(newer_ids) == 1:
+                bridge_from = next(iter(newer_ids))
+                newer = change(bridge_from)
+                supersedes = [
+                    str(value) for value in (newer.get("supersedes") or [])
+                    if str(value) not in target_ids
+                ]
+                for older_id in sorted(older_ids):
+                    if older_id != bridge_from and older_id not in supersedes:
+                        supersedes.append(older_id)
+                    change(older_id)["superseded_by"] = bridge_from
+                    rewired.append({
+                        "from": bridge_from, "to": older_id,
+                        "relation": "supersedes", "via": sorted(component),
+                    })
+                newer["supersedes"] = supersedes
+            elif older_ids and len(newer_ids) > 1:
+                warnings.append({
+                    "memory_ids": sorted(component),
+                    "code": "ambiguous_supersession",
+                    "message": "Multiple newer memories point to these records; links will be cleared instead of guessed.",
+                })
+
+        tentative = [changes.get(str(memory.get("id")), memory) for memory in self.memories if str(memory.get("id")) not in target_ids]
+        self._validate_relationship_graph(tentative)
+        return {
+            "changes": changes, "cleared": cleared, "rewired": rewired,
+            "warnings": warnings, "removed_manual_edges": removed_manual_edges,
+        }
+
+    @memory_write_locked
+    def preview_memory_deletion(self, memory_ids, reason="user_delete"):
+        unique_ids = list(dict.fromkeys(
+            str(memory_id).strip() for memory_id in (memory_ids or []) if str(memory_id).strip()
+        ))[:500]
+        deletable_ids, blocked = [], []
+        for memory_id in unique_ids:
+            memory = self._find_memory(memory_id)
+            allowed, policy_reason = self.memory_delete_policy(memory)
+            if allowed:
+                deletable_ids.append(memory_id)
+            else:
+                blocked.append({"id": memory_id, "reason": policy_reason})
+        cleanup = self._relationship_cleanup_plan(deletable_ids)
+        now = datetime.now()
+        self._memory_delete_plans = {
+            token: plan for token, plan in self._memory_delete_plans.items()
+            if plan.get("expires_at") and plan["expires_at"] >= now
+        }
+        token = str(uuid.uuid4())
+        expires_at = now + timedelta(minutes=10)
+        self._memory_delete_plans[token] = {
+            "ids": deletable_ids,
+            "reason": str(reason or "user_delete"),
+            "signature": self._memory_delete_signature(deletable_ids),
+            "expires_at": expires_at,
+        }
+        return {
+            "status": "confirmation_required",
+            "confirmation_token": token,
+            "expires_at": expires_at.isoformat(timespec="seconds"),
+            "delete_count": len(deletable_ids),
+            "memory_ids": deletable_ids,
+            "titles": [str(self._find_memory(memory_id).get("title") or "Untitled")[:160] for memory_id in deletable_ids],
+            "blocked": blocked,
+            "cleared_reference_count": len(cleanup["cleared"]),
+            "removed_manual_edge_count": len(cleanup["removed_manual_edges"]),
+            "removed_manual_edges": cleanup["removed_manual_edges"],
+            "rewired_links": cleanup["rewired"],
+            "warnings": cleanup["warnings"],
+        }
+
+    def _consume_memory_delete_plan(self, confirmation_token, memory_ids, reason):
+        plan = self._memory_delete_plans.pop(str(confirmation_token or ""), None)
+        if not plan or plan["expires_at"] < datetime.now():
+            raise ValueError("Deletion confirmation expired. Review the impact again.")
+        expected = list(dict.fromkeys(str(memory_id) for memory_id in memory_ids))
+        if plan["ids"] != expected or plan["reason"] != str(reason or "user_delete"):
+            raise ValueError("Deletion scope changed. Review the impact again.")
+        if plan["signature"] != self._memory_delete_signature(expected):
+            raise ValueError("Memory relationships changed. Review the impact again.")
+        return plan
+
+    @memory_write_locked
+    def delete_memory(self, memory_id, confirmation_token=None):
+        target = self._find_memory(memory_id)
+        allowed, reason = self.memory_delete_policy(target)
+        if not allowed:
+            print(f"Memory deletion blocked for {memory_id}: {reason}")
+            return False
+
+        result = self.delete_memories(
+            [memory_id], reason="user_delete", confirmation_token=confirmation_token,
+        )
+        return result.get("status") == "success" and result.get("deleted_count") == 1
+
+    @memory_write_locked
+    def delete_memories(
+        self, memory_ids, reason="user_bulk_delete", confirmation_token=None,
+        require_all=False,
+    ):
+        unique_ids = []
+        seen = set()
+        for memory_id in memory_ids if isinstance(memory_ids, (list, tuple, set)) else []:
+            memory_id = str(memory_id or "").strip()
+            if memory_id and memory_id not in seen:
+                unique_ids.append(memory_id)
+                seen.add(memory_id)
+        unique_ids = unique_ids[:500]
+
+        deletable_ids = []
+        blocked = []
+        for memory_id in unique_ids:
+            memory = self._find_memory(memory_id)
+            if not memory:
+                blocked.append({"id": memory_id, "reason": "Memory not found"})
+                continue
+            allowed, policy_reason = self.memory_delete_policy(memory)
+            if not allowed:
+                blocked.append({"id": memory_id, "reason": policy_reason})
+                continue
+            deletable_ids.append(memory_id)
+
+        if require_all and blocked:
+            return {
+                "status": "blocked",
+                "message": "Every linked memory must be deletable before this cascade can continue.",
+                "deleted_count": 0,
+                "deleted_ids": [],
+                "blocked": blocked,
+            }
+        if not deletable_ids:
+            return {
+                "status": "blocked" if blocked else "success",
+                "message": blocked[0]["reason"] if blocked else "",
+                "deleted_count": 0,
+                "deleted_ids": [],
+                "blocked": blocked,
+            }
+
+        cleanup = self._relationship_cleanup_plan(deletable_ids)
+        needs_confirmation = bool(
+            cleanup["cleared"] or cleanup["rewired"] or cleanup["warnings"]
+            or cleanup["removed_manual_edges"]
+        )
+        confirmed = bool(confirmation_token)
+        if confirmed:
+            try:
+                self._consume_memory_delete_plan(confirmation_token, deletable_ids, reason)
+            except ValueError as exc:
+                return {
+                    "status": "confirmation_required",
+                    "message": str(exc),
+                    **self.preview_memory_deletion(deletable_ids, reason=reason),
+                }
+        elif needs_confirmation:
+            return self.preview_memory_deletion(deletable_ids, reason=reason)
+
+        deletable_set = set(deletable_ids)
+        previous_memories = copy.deepcopy(self.memories)
+        previous_deletions = self._record_memory_deletions(deletable_ids, reason=reason)
+        if previous_deletions is None:
+            return {
+                "status": "error",
+                "message": "Unable to persist memory deletion ledger",
+                "deleted_count": 0,
+                "deleted_ids": [],
+                "blocked": blocked,
+            }
+        for memory_id, updated in cleanup["changes"].items():
+            for index, memory in enumerate(self.memories):
+                if str(memory.get("id")) == memory_id:
+                    self.memories[index] = updated
+                    break
+        self.memories = [memory for memory in self.memories if str(memory.get("id")) not in deletable_set]
+        if not self.save_memories():
+            self.memories = previous_memories
+            self._restore_memory_deletion_ledger(previous_deletions)
+            return {
+                "status": "error",
+                "message": "Unable to persist memory deletion",
+                "deleted_count": 0,
+                "deleted_ids": [],
+                "blocked": blocked,
+            }
+        if self.sqlite_store and self.sqlite_store.available:
+            for memory_id in deletable_ids:
+                deleted = (
+                    self.sqlite_store.purge_memory(memory_id, reason=reason)
+                    if confirmed else self.sqlite_store.mark_deleted(memory_id)
+                )
+                if not deleted:
+                    # JSON plus the file tombstone remain authoritative and
+                    # prevent resurrection. Surface the degraded secondary
+                    # cleanup so maintenance can retry it later.
+                    blocked.append({"id": memory_id, "reason": "SQLite cleanup pending"})
+        self.ensure_memory_graph(force=True)
+        return {
+            "status": "success",
+            "deleted_count": len(deletable_ids),
+            "deleted_ids": deletable_ids,
+            "blocked": blocked,
+            "cleared_reference_count": len(cleanup["cleared"]),
+            "removed_manual_edge_count": len(cleanup["removed_manual_edges"]),
+            "removed_manual_edges": cleanup["removed_manual_edges"],
+            "rewired_links": cleanup["rewired"],
+            "warnings": cleanup["warnings"],
+        }
 
     def _auto_memories_for_session(self, session_id):
         """Return automatic memories whose provenance is this exact chat session."""
@@ -1838,6 +3791,35 @@ class KnowledgeBase:
             })
         return preview
 
+    def preview_auto_memory_deletion(self, session_ids, reason="session_delete"):
+        session_ids = list(dict.fromkeys(
+            str(session_id) for session_id in (session_ids or []) if session_id
+        ))
+        memories = []
+        for session_id in session_ids:
+            for memory in self._auto_memories_for_session(session_id):
+                if memory not in memories:
+                    memories.append(memory)
+        memory_preview = self.preview_memory_deletion(
+            [memory.get("id") for memory in memories], reason=reason,
+        )
+        return {
+            "auto_memories": [
+                {
+                    "id": memory.get("id"),
+                    "title": self._normalize_text(memory.get("title")) or "Untitled automatic memory",
+                    "content": (
+                        self._normalize_text(memory.get("content"))[:180]
+                        + ("..." if len(self._normalize_text(memory.get("content"))) > 180 else "")
+                    ),
+                }
+                for memory in memories
+            ],
+            "auto_memory_count": len(memories),
+            "memory_preview": memory_preview,
+            "confirmation_token": memory_preview.get("confirmation_token"),
+        }
+
     def delete_auto_memories_for_session(self, session_id):
         """Delete only unlocked automatic memories explicitly linked to one chat session."""
         related = self._auto_memories_for_session(session_id)
@@ -1845,40 +3827,682 @@ class KnowledgeBase:
         if not related_ids:
             return {"deleted_count": 0}
 
+        previous = self.memories
+        previous_deletions = self._record_memory_deletions(related_ids, reason="session_delete")
+        if previous_deletions is None:
+            return {"deleted_count": 0, "error": "Unable to persist memory deletion ledger"}
         self.memories = [memory for memory in self.memories if memory.get("id") not in related_ids]
-        self.save_memories()
+        if not self.save_memories():
+            self.memories = previous
+            self._restore_memory_deletion_ledger(previous_deletions)
+            return {"deleted_count": 0, "error": "Unable to persist memory deletion"}
+        if self.sqlite_store and self.sqlite_store.available:
+            for memory_id in related_ids:
+                self.sqlite_store.mark_deleted(memory_id)
         return {"deleted_count": len(related)}
 
+    def _synchronize_relationship_update(self, memory_id, previous, current, updated_fields):
+        by_id = {str(memory.get("id")): memory for memory in self.memories if memory.get("id")}
+        memory_id = str(memory_id)
+        if "supersedes" in updated_fields:
+            before = {str(value) for value in (previous.get("supersedes") or [])}
+            after = list(dict.fromkeys(str(value) for value in (current.get("supersedes") or [])))
+            current["supersedes"] = after
+            for related_id in before - set(after):
+                related = by_id.get(related_id)
+                if related and str(related.get("superseded_by") or "") == memory_id:
+                    related["superseded_by"] = None
+            for related_id in after:
+                related = by_id.get(related_id)
+                if related:
+                    prior_newer_id = str(related.get("superseded_by") or "")
+                    if prior_newer_id and prior_newer_id != memory_id and prior_newer_id in by_id:
+                        by_id[prior_newer_id]["supersedes"] = [
+                            value for value in (by_id[prior_newer_id].get("supersedes") or [])
+                            if str(value) != related_id
+                        ]
+                    related["superseded_by"] = memory_id
+        if "superseded_by" in updated_fields:
+            before = str(previous.get("superseded_by") or "")
+            after = str(current.get("superseded_by") or "")
+            if before and before != after and before in by_id:
+                by_id[before]["supersedes"] = [
+                    value for value in (by_id[before].get("supersedes") or [])
+                    if str(value) != memory_id
+                ]
+            if after and after in by_id:
+                values = [str(value) for value in (by_id[after].get("supersedes") or [])]
+                if memory_id not in values:
+                    values.append(memory_id)
+                by_id[after]["supersedes"] = values
+        if "conflicts_with" in updated_fields:
+            before = {str(value) for value in (previous.get("conflicts_with") or [])}
+            after = set(str(value) for value in (current.get("conflicts_with") or []))
+            current["conflicts_with"] = sorted(after)
+            for related_id in before - after:
+                related = by_id.get(related_id)
+                if related:
+                    related["conflicts_with"] = [
+                        value for value in (related.get("conflicts_with") or [])
+                        if str(value) != memory_id
+                    ]
+            for related_id in after:
+                related = by_id.get(related_id)
+                if related:
+                    values = [str(value) for value in (related.get("conflicts_with") or [])]
+                    if memory_id not in values:
+                        values.append(memory_id)
+                    related["conflicts_with"] = sorted(values)
+
+    @memory_write_locked
     def update_memory(self, memory_id, updates):
         if not isinstance(updates, dict):
             return False
         for m in self.memories:
             if m["id"] == memory_id:
+                previous_memories = copy.deepcopy(self.memories)
+                previous = copy.deepcopy(m)
                 allowed = {
                     "title", "content", "source", "is_locked", "is_important", "is_archived",
                     "category", "tags", "confidence", "importance_score", "expires_at",
-                    "status", "supersedes", "conflicts_with"
+                    "status", "supersedes", "conflicts_with", "superseded_by",
+                    "memory_layer", "memory_kind", "retention_policy", "source_detail"
                 }
                 clean_updates = {k: v for k, v in updates.items() if k in allowed}
-                if m.get("managed_slot"):
-                    blocked = {"title", "content", "is_locked", "is_archived", "source", "category", "tags", "supersedes", "conflicts_with"}
+                if "memory_layer" in clean_updates:
+                    requested_layer = str(clean_updates.get("memory_layer") or "").lower()
+                    if requested_layer not in self.MEMORY_LAYER_ORDER:
+                        clean_updates.pop("memory_layer", None)
+                if "retention_policy" in clean_updates:
+                    requested_policy = str(clean_updates.get("retention_policy") or "").lower()
+                    if requested_policy not in self.RETENTION_POLICIES:
+                        clean_updates.pop("retention_policy", None)
+                managed_slot = str(m.get("managed_slot") or "")
+                if managed_slot:
+                    blocked = {"title", "content", "is_locked", "is_archived", "source", "category", "tags", "supersedes", "conflicts_with", "memory_layer", "memory_kind", "retention_policy"}
                     clean_updates = {k: v for k, v in clean_updates.items() if k not in blocked}
                     clean_updates["is_locked"] = True
-                    clean_updates["source"] = "about_you"
+                    if managed_slot.startswith("about_you:"):
+                        clean_updates["source"] = "about_you"
+                        clean_updates["memory_layer"] = "core"
+                if clean_updates.get("is_archived") is True and not m.get("is_archived"):
+                    m["archived_from_layer"] = self._memory_layer(m)
                 m.update(clean_updates)
+                if "is_archived" in clean_updates:
+                    if clean_updates.get("is_archived"):
+                        m["memory_layer"] = "archive"
+                    elif m.get("memory_layer") == "archive":
+                        restored = str(m.get("archived_from_layer") or "")
+                        m["memory_layer"] = restored if restored in self.MEMORY_LAYER_ORDER and restored != "archive" else self._infer_memory_layer(m)
                 if "content" in clean_updates and "tags" not in clean_updates:
                     m["category"] = self.infer_category(m.get("content", ""), m.get("title", ""), m.get("source", ""))
                     m["tags"] = self.infer_tags(m.get("content", ""), m.get("category"))
                 self.normalize_memory(m)
-                self.save_memories()
-                return True
+                try:
+                    self._synchronize_relationship_update(memory_id, previous, m, set(clean_updates))
+                    self._validate_relationship_graph()
+                except ValueError:
+                    self.memories = previous_memories
+                    raise
+                if self.save_memories():
+                    self.maybe_index_new_memories([m])
+                    if not self._maintenance_running:
+                        self.last_maintenance_result = self.run_memory_capacity_maintenance(
+                            trigger="memory_updated",
+                        )
+                    return True
+                self.memories = previous_memories
+                return False
         return False
 
     def get_memories(self, include_archived=False):
         memories = self.memories
         if not include_archived:
             memories = [m for m in memories if not m.get("is_archived", False)]
-        return sorted(memories, key=lambda x: x.get("date", ""), reverse=True)
+        by_date = sorted(
+            memories,
+            key=lambda x: (x.get("date", ""), x.get("creation_time", "")),
+            reverse=True,
+        )
+        return sorted(by_date, key=lambda x: self.MEMORY_LAYER_ORDER.get(self._memory_layer(x), 2))
+
+    def _memory_capacity_snapshot(self):
+        active = sum(1 for memory in self.memories if not memory.get("is_archived"))
+        archived = len(self.memories) - active
+        active_soft = max(1, int(self.settings.get("memory_active_soft_limit", 5000)))
+        archive_soft = max(1, int(self.settings.get("memory_archive_soft_limit", 50000)))
+        active_hard = max(active_soft, int(self.settings.get("memory_active_hard_limit", 6000)))
+        archive_hard = max(archive_soft, int(self.settings.get("memory_archive_hard_limit", 60000)))
+        warning_ratio = self._coerce_float(
+            self.settings.get("memory_capacity_warning_ratio"),
+            0.80,
+            minimum=0.50,
+            maximum=0.95,
+        )
+        active_warning = max(1, min(active_soft, int(active_hard * warning_ratio)))
+        archive_warning = max(1, min(archive_soft, int(archive_hard * warning_ratio)))
+        active_ratio = active / active_hard
+        archive_ratio = archived / archive_hard
+        if active >= active_hard or archived >= archive_hard:
+            band = "hard"
+        elif active >= active_soft or archived >= archive_soft:
+            band = "auto"
+        elif active >= active_warning or archived >= archive_warning:
+            band = "warning"
+        else:
+            band = "normal"
+        return {
+            "active": active,
+            "archived": archived,
+            "active_soft_limit": active_soft,
+            "archive_soft_limit": archive_soft,
+            "active_hard_limit": active_hard,
+            "archive_hard_limit": archive_hard,
+            "active_warning_at": active_warning,
+            "archive_warning_at": archive_warning,
+            "warning_ratio": warning_ratio,
+            "active_ratio": round(active_ratio, 4),
+            "archive_ratio": round(archive_ratio, 4),
+            "band": band,
+        }
+
+    def get_memory_maintenance_status(self):
+        snapshot = self._memory_capacity_snapshot()
+        compression_pressure = self._local_compression_pressure_state()
+        pending = [
+            dict(event) for event in self.memory_maintenance.get("events") or []
+            if not event.get("acknowledged")
+        ][-8:]
+        return {
+            "status": snapshot["band"],
+            "capacity": snapshot,
+            "auto_compact_enabled": bool(
+                self.settings.get("memory_capacity_auto_compact_enabled", True)
+            ),
+            "hard_limit_forced": True,
+            "cold_archive_enabled": bool(self.settings.get("memory_cold_archive_enabled", True)),
+            "cold_archive_count": int(self.memory_maintenance.get("cold_archive_count") or 0),
+            "ai_compression_enabled": bool(self.settings.get("memory_ai_compression_enabled", False)),
+            "compression_pressure": compression_pressure,
+            "pending_events": pending,
+            "last_result": self.memory_maintenance.get("last_result"),
+            "compression_engine": "deterministic_local",
+            "token_usage": 0,
+        }
+
+    def _is_capacity_managed_memory(self, memory):
+        managed_slot = str(memory.get("managed_slot") or "").strip()
+        source = str(memory.get("source") or "").strip().lower()
+        return bool(managed_slot) or source in {"about_you", "system_activity"}
+
+    @memory_write_locked
+    def _cold_store_memories(self, memories, reason, force=False):
+        records = [
+            memory for memory in memories
+            if isinstance(memory, dict) and memory.get("id") and memory in self.memories
+        ]
+        if not records or (
+            not force and not self.settings.get("memory_cold_archive_enabled", True)
+        ):
+            return {"moved_count": 0, "memory_ids": []}
+        os.makedirs(os.path.dirname(self.cold_archive_path), exist_ok=True)
+        moved_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            bundle_size = max(2, min(2000, int(self.settings.get("memory_cold_archive_batch_size", 200))))
+        except (TypeError, ValueError):
+            bundle_size = 200
+        bundle_id = None
+        moved_ids = []
+        archive_start = os.path.getsize(self.cold_archive_path) if os.path.exists(self.cold_archive_path) else 0
+        with open(self.cold_archive_path, "a", encoding="utf-8") as archive_file:
+            for index, memory in enumerate(records):
+                if index % bundle_size == 0:
+                    bundle_id = str(uuid.uuid4())
+                memory_id = str(memory.get("id"))
+                wrapper = {
+                    "version": 1,
+                    "bundle_id": bundle_id,
+                    "cold_archived_at": moved_at,
+                    "reason": str(reason or "capacity_maintenance"),
+                    "summary": {
+                        "id": memory_id,
+                        "title": str(memory.get("title") or "Untitled")[:180],
+                        "date": str(memory.get("date") or "")[:10],
+                        "layer": self._memory_layer(memory),
+                        "project_id": str(memory.get("project_id") or ""),
+                        "parent_memory_id": memory.get("parent_memory_id"),
+                    },
+                    "memory": memory,
+                }
+                archive_file.write(json.dumps(wrapper, ensure_ascii=False) + "\n")
+                moved_ids.append(memory_id)
+            archive_file.flush()
+            os.fsync(archive_file.fileno())
+
+        previous_ledger = dict(self.deleted_memory_ids)
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        for memory_id in moved_ids:
+            self.deleted_memory_ids[memory_id] = {
+                "deleted_at": now,
+                "reason": "cold_archive",
+            }
+        if not self.save_memory_deletions():
+            self.deleted_memory_ids = previous_ledger
+            try:
+                with open(self.cold_archive_path, "r+b") as archive_file:
+                    archive_file.truncate(archive_start)
+            except OSError:
+                pass
+            return {"moved_count": 0, "memory_ids": [], "error": "deletion_ledger_failed"}
+
+        moved_id_set = set(moved_ids)
+        previous_memories = copy.deepcopy(self.memories)
+        self.memories = [
+            memory for memory in self.memories
+            if str(memory.get("id") or "") not in moved_id_set
+        ]
+        if not self.save_memories():
+            self.memories = previous_memories
+            self._restore_memory_deletion_ledger(previous_ledger)
+            try:
+                with open(self.cold_archive_path, "r+b") as archive_file:
+                    archive_file.truncate(archive_start)
+            except OSError:
+                pass
+            return {"moved_count": 0, "memory_ids": [], "error": "memory_store_failed"}
+        if self.sqlite_store and self.sqlite_store.available:
+            for memory_id in moved_ids:
+                self.sqlite_store.mark_deleted(memory_id)
+        self.memory_maintenance["cold_archive_count"] = (
+            int(self.memory_maintenance.get("cold_archive_count") or 0) + len(moved_ids)
+        )
+        self.save_memory_maintenance_state()
+        return {"moved_count": len(moved_ids), "memory_ids": moved_ids}
+
+    def list_cold_archive_memories(self, limit=50, search=""):
+        try:
+            limit = max(1, min(500, int(limit)))
+        except (TypeError, ValueError):
+            limit = 50
+        query = str(search or "").strip().lower()
+        if not os.path.exists(self.cold_archive_path):
+            return []
+        items = []
+        try:
+            with open(self.cold_archive_path, "r", encoding="utf-8") as archive_file:
+                for line in archive_file:
+                    try:
+                        wrapper = json.loads(line)
+                    except (TypeError, ValueError):
+                        continue
+                    summary = wrapper.get("summary") if isinstance(wrapper, dict) else None
+                    if not isinstance(summary, dict):
+                        continue
+                    haystack = " ".join([
+                        str(summary.get("title") or ""),
+                        str(summary.get("date") or ""),
+                        str(summary.get("project_id") or ""),
+                    ]).lower()
+                    if query and query not in haystack:
+                        continue
+                    items.append({
+                        **summary,
+                        "cold_archived_at": wrapper.get("cold_archived_at"),
+                        "reason": wrapper.get("reason"),
+                    })
+        except OSError as exc:
+            print(f"Error reading cold memory archive: {exc}")
+            return []
+        return items[-limit:][::-1]
+
+    @memory_write_locked
+    def restore_cold_archive_memory(self, memory_id):
+        memory_id = str(memory_id or "").strip()
+        if not memory_id or not os.path.exists(self.cold_archive_path):
+            return None
+        restored = None
+        kept_lines = []
+        try:
+            with open(self.cold_archive_path, "r", encoding="utf-8") as archive_file:
+                for line in archive_file:
+                    try:
+                        wrapper = json.loads(line)
+                    except (TypeError, ValueError):
+                        kept_lines.append(line)
+                        continue
+                    summary = wrapper.get("summary") if isinstance(wrapper, dict) else {}
+                    if restored is None and str(summary.get("id") or "") == memory_id:
+                        candidate = wrapper.get("memory")
+                        if isinstance(candidate, dict):
+                            restored = candidate
+                            continue
+                    kept_lines.append(line)
+            if restored is None:
+                return None
+        except OSError as exc:
+            print(f"Error restoring cold memory archive: {exc}")
+            return None
+
+        if self._find_memory(memory_id):
+            print(f"Cold restore blocked because memory {memory_id} already exists")
+            return None
+        if not self.revive_deleted_memory(memory_id):
+            return None
+        restored["is_archived"] = True
+        restored["memory_layer"] = "archive"
+        restored["status"] = "archived"
+        restored["cold_restored_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        restored, _ = self.normalize_memory(restored)
+        self.memories.append(restored)
+        if not self.save_memories():
+            self.memories = [memory for memory in self.memories if memory is not restored]
+            self._record_memory_deletions([memory_id], reason="cold_archive_restore_rollback")
+            if self.sqlite_store and self.sqlite_store.available:
+                self.sqlite_store.mark_deleted(memory_id)
+            return None
+        try:
+            temp_path = self.cold_archive_path + ".tmp"
+            with open(temp_path, "w", encoding="utf-8") as archive_file:
+                archive_file.writelines(kept_lines)
+                archive_file.flush()
+                os.fsync(archive_file.fileno())
+            os.replace(temp_path, self.cold_archive_path)
+        except OSError as exc:
+            try:
+                if os.path.exists(self.cold_archive_path + ".tmp"):
+                    os.remove(self.cold_archive_path + ".tmp")
+            except OSError:
+                pass
+            self.memories = [memory for memory in self.memories if memory is not restored]
+            rollback_recorded = self._record_memory_deletions(
+                [memory_id], reason="cold_archive_restore_rollback",
+            )
+            if rollback_recorded is not None:
+                self.save_memories()
+                if self.sqlite_store and self.sqlite_store.available:
+                    self.sqlite_store.mark_deleted(memory_id)
+            else:
+                self.memories.append(restored)
+            print(f"Error finalizing cold memory restore: {exc}")
+            return restored if rollback_recorded is None else None
+        self.memory_maintenance["cold_archive_count"] = max(
+            0,
+            int(self.memory_maintenance.get("cold_archive_count") or 0) - 1,
+        )
+        self.save_memory_maintenance_state()
+        self.last_maintenance_result = self.run_memory_capacity_maintenance(
+            trigger="cold_restore",
+        )
+        return restored
+
+    def _cold_archive_to_target(self, target, force=False, reason="capacity_archive"):
+        archived = [memory for memory in self.memories if memory.get("is_archived")]
+        overflow = max(0, len(archived) - max(0, int(target)))
+        if not overflow:
+            return {"moved_count": 0, "memory_ids": []}
+        retention_rank = {"temporary": 0, "compressible": 1, "durable": 2, "permanent": 3}
+        candidates = [
+            memory for memory in archived
+            if not self._is_capacity_managed_memory(memory)
+            and self._infer_retention_policy(memory) != "permanent"
+            and (
+                force
+                or self._infer_retention_policy(memory) in {"temporary", "compressible"}
+            )
+        ]
+        candidates.sort(key=lambda memory: (
+            0 if memory.get("parent_memory_id") or memory.get("merged_into") else 1,
+            retention_rank.get(self._infer_retention_policy(memory), 2),
+            1 if memory.get("is_important") else 0,
+            1 if memory.get("is_locked") else 0,
+            str(memory.get("date") or ""),
+            self._coerce_float(memory.get("importance_score"), 0.4),
+        ))
+        return self._cold_store_memories(candidates[:overflow], reason=reason, force=force)
+
+    def _cold_active_to_target(self, target, reason="active_hard_overflow"):
+        active = [memory for memory in self.memories if not memory.get("is_archived")]
+        overflow = max(0, len(active) - max(0, int(target)))
+        if not overflow:
+            return {"moved_count": 0, "memory_ids": []}
+        retention_rank = {"temporary": 0, "compressible": 1, "durable": 2, "permanent": 3}
+        candidates = [
+            memory for memory in active
+            if not self._is_capacity_managed_memory(memory)
+            and self._infer_retention_policy(memory) != "permanent"
+        ]
+        candidates.sort(key=lambda memory: (
+            retention_rank.get(self._infer_retention_policy(memory), 2),
+            1 if memory.get("is_important") else 0,
+            1 if memory.get("is_locked") else 0,
+            self._coerce_float(memory.get("importance_score"), 0.4),
+            self._coerce_float(memory.get("base_priority_score"), 0.5),
+            str(memory.get("date") or ""),
+        ))
+        return self._cold_store_memories(candidates[:overflow], reason=reason, force=True)
+
+    def run_memory_capacity_maintenance(self, trigger="manual"):
+        with self._maintenance_lock:
+            if self._maintenance_running:
+                return {"status": "already_running", "notify_user": False}
+            self._maintenance_running = True
+            try:
+                before = self._memory_capacity_snapshot()
+                previous_band = str(self.memory_maintenance.get("last_band") or "normal")
+                auto_enabled = bool(
+                    self.settings.get("memory_capacity_auto_compact_enabled", True)
+                )
+                forced = before["band"] == "hard"
+                merged_count = 0
+                summary_count = 0
+                cold_count = 0
+                merge_result = {}
+
+                if before["active"] >= before["active_hard_limit"]:
+                    target = max(1, int(before["active_soft_limit"] * 0.90))
+                    merge_result = self.merge_memories(
+                        days=0,
+                        force=True,
+                        target_active=target,
+                        reason="hard_limit",
+                    )
+                    merged_count += int(merge_result.get("merged_count") or 0)
+                    summary_count += int(merge_result.get("summary_count") or 0)
+                    cold_result = self._cold_active_to_target(target, reason="active_hard_limit")
+                    cold_count += int(cold_result.get("moved_count") or 0)
+                elif before["active"] >= before["active_soft_limit"] and auto_enabled:
+                    target = max(1, int(before["active_soft_limit"] * 0.90))
+                    merge_result = self.merge_memories(
+                        days=self.settings.get("memory_compression_age_days", 30),
+                        force=False,
+                        target_active=target,
+                        reason="soft_limit",
+                    )
+                    merged_count += int(merge_result.get("merged_count") or 0)
+                    summary_count += int(merge_result.get("summary_count") or 0)
+
+                middle = self._memory_capacity_snapshot()
+                if middle["archived"] >= middle["archive_hard_limit"]:
+                    forced = True
+                    target = max(0, int(middle["archive_soft_limit"] * 0.90))
+                    cold_result = self._cold_archive_to_target(
+                        target,
+                        force=True,
+                        reason="archive_hard_limit",
+                    )
+                    cold_count += int(cold_result.get("moved_count") or 0)
+                elif middle["archived"] >= middle["archive_soft_limit"] and auto_enabled:
+                    target = max(0, int(middle["archive_soft_limit"] * 0.90))
+                    cold_result = self._cold_archive_to_target(
+                        target,
+                        force=False,
+                        reason="archive_soft_limit",
+                    )
+                    cold_count += int(cold_result.get("moved_count") or 0)
+
+                after = self._memory_capacity_snapshot()
+                changed_count = merged_count + cold_count
+                compression_pressure = self._local_compression_pressure_state()
+                ai_recommended = bool(
+                    after["band"] in {"warning", "auto"}
+                    and (
+                        compression_pressure.get("all_at_generation_limit")
+                        or merge_result.get("all_candidates_at_generation_limit")
+                    )
+                )
+                ai_offer_signature = (
+                    f"{after['band']}:{after['active'] // max(10, int(after['active_soft_limit'] * 0.02))}:"
+                    f"{compression_pressure.get('generation_capped_count', 0) // 10}"
+                ) if ai_recommended else ""
+                offer_ai_now = bool(
+                    ai_recommended
+                    and ai_offer_signature != str(self.memory_maintenance.get("last_ai_offer_signature") or "")
+                )
+                notify_user = False
+                event = None
+                if forced:
+                    notify_user = True
+                    if after["active"] >= after["active_hard_limit"] or after["archived"] >= after["archive_hard_limit"]:
+                        event = self._record_memory_maintenance_event(
+                            "hard_limit_blocked",
+                            "critical",
+                            "Memory reached its hard limit. Forced compaction ran, but protected managed memories still prevent the store from returning below the limit.",
+                            {"before": before, "after": after, "merged_count": merged_count, "cold_count": cold_count},
+                        )
+                    else:
+                        event = self._record_memory_maintenance_event(
+                            "hard_limit_forced_compaction",
+                            "critical",
+                            f"Memory reached its hard limit. Saya forcibly compacted {merged_count} memories and moved {cold_count} full originals to recoverable cold storage.",
+                            {"before": before, "after": after, "summary_count": summary_count},
+                        )
+                elif offer_ai_now:
+                    notify_user = True
+                    event = self._record_memory_maintenance_event(
+                        "ai_compression_recommended",
+                        "warning",
+                        "Memory pressure remains, but every safely repeatable local summary has reached its generation limit. Choose a scoped DeepSeek compression plan or skip AI compression for now.",
+                        {
+                            "before": before,
+                            "after": after,
+                            "ai_recommended": True,
+                            "ai_compression_enabled": bool(
+                                self.settings.get("memory_ai_compression_enabled", False)
+                            ),
+                            "compression_pressure": compression_pressure,
+                            "local_result": merge_result,
+                            "choices": ["review_ai_compression", "skip_ai_compression"],
+                        },
+                    )
+                    self.memory_maintenance["last_ai_offer_signature"] = ai_offer_signature
+                elif changed_count:
+                    notify_user = True
+                    event = self._record_memory_maintenance_event(
+                        "automatic_capacity_compaction",
+                        "warning",
+                        f"Memory approached its capacity target. Saya automatically compacted {merged_count} memories and moved {cold_count} archived originals to recoverable cold storage.",
+                        {"before": before, "after": after, "summary_count": summary_count},
+                    )
+                elif before["band"] in {"warning", "auto"} and previous_band == "normal":
+                    notify_user = True
+                    event = self._record_memory_maintenance_event(
+                        "capacity_warning",
+                        "warning",
+                        "Memory is approaching its automatic-compaction threshold. Saya will preserve permanent memories and notify you when capacity maintenance runs.",
+                        {"before": before, "after": after},
+                    )
+
+                result = {
+                    "status": (
+                        "forced_compaction" if forced
+                        else "auto_compaction" if changed_count
+                        else "warning" if before["band"] in {"warning", "auto"}
+                        else "healthy"
+                    ),
+                    "trigger": str(trigger or "manual"),
+                    "notify_user": notify_user,
+                    "event": event,
+                    "before": before,
+                    "after": after,
+                    "merged_count": merged_count,
+                    "summary_count": summary_count,
+                    "cold_archived_count": cold_count,
+                    "ai_compression_recommended": ai_recommended,
+                    "compression_pressure": compression_pressure,
+                    "compression_engine": "deterministic_local",
+                    "token_usage": 0,
+                }
+                self.memory_maintenance["last_band"] = after["band"]
+                if after["band"] == "normal":
+                    self.memory_maintenance["last_ai_offer_signature"] = None
+                self.memory_maintenance["last_run_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                self.memory_maintenance["last_result"] = result
+                self.save_memory_maintenance_state()
+                self.last_maintenance_result = result
+                return result
+            finally:
+                self._maintenance_running = False
+
+    def get_memory_stats(self, context_window_tokens=None):
+        counts = {layer: 0 for layer in self.MEMORY_LAYER_ORDER}
+        over_content_limit = {layer: 0 for layer in self.MEMORY_LAYER_ORDER}
+        active = 0
+        archived = 0
+        total_content_chars = 0
+        for memory in self.memories:
+            layer = self._memory_layer(memory)
+            counts[layer] = counts.get(layer, 0) + 1
+            content_chars = len(str(memory.get("content", "")))
+            total_content_chars += content_chars
+            if layer != "archive" and content_chars > self.memory_content_limit(memory.get("memory_kind", ""), layer):
+                over_content_limit[layer] = over_content_limit.get(layer, 0) + 1
+            if layer == "archive" or memory.get("is_archived"):
+                archived += 1
+            else:
+                active += 1
+        capacity = self._memory_capacity_snapshot()
+        active_limit = capacity["active_soft_limit"]
+        archive_limit = capacity["archive_soft_limit"]
+        warnings = []
+        if active >= active_limit:
+            warnings.append("active_soft_limit_reached")
+        if archived >= archive_limit:
+            warnings.append("archive_soft_limit_reached")
+        if active >= capacity["active_hard_limit"]:
+            warnings.append("active_hard_limit_reached")
+        if archived >= capacity["archive_hard_limit"]:
+            warnings.append("archive_hard_limit_reached")
+        if counts.get("core", 0) > int(self.settings.get("memory_core_limit", 10)):
+            warnings.append("core_limit_exceeded")
+        if sum(over_content_limit.values()):
+            warnings.append("existing_content_over_limit")
+        return {
+            "schema_version": 3,
+            "total": len(self.memories),
+            "active": active,
+            "archived": archived,
+            "layers": counts,
+            "over_content_limit": over_content_limit,
+            "total_content_chars": total_content_chars,
+            "active_soft_limit": active_limit,
+            "archive_soft_limit": archive_limit,
+            "active_hard_limit": capacity["active_hard_limit"],
+            "archive_hard_limit": capacity["archive_hard_limit"],
+            "active_warning_at": capacity["active_warning_at"],
+            "archive_warning_at": capacity["archive_warning_at"],
+            "prompt_budget_tokens": self._memory_prompt_budget(context_window_tokens),
+            "content_limits": {
+                "core": self.memory_content_limit("", "core"),
+                "semantic": self.memory_content_limit("", "semantic"),
+                "episodic": self.memory_content_limit("", "episodic"),
+                "knowledge_simple": self.memory_content_limit("knowledge_extract_simple", "semantic"),
+                "knowledge_complex": self.memory_content_limit("knowledge_extract_complex", "semantic"),
+            },
+            "warnings": warnings,
+            "sqlite": self.get_sqlite_store_status(),
+            "embedding": self.get_embedding_status(),
+            "maintenance": self.get_memory_maintenance_status(),
+        }
 
     def _is_expired(self, memory):
         expires_at = memory.get("expires_at")
@@ -1967,17 +4591,37 @@ class KnowledgeBase:
             self._memory_vector(memory)
         )
 
-    def score_memory(self, memory, query, project_id=None):
+    def score_memory(self, memory, query, project_id=None, embedding_score=None):
         memory_project_id = str(memory.get("project_id") or "")
         active_project_id = str(project_id or "")
-        base_score = self.memory_priority_score(memory, query)
-        low, high = self._memory_score_band(memory)
-        adjustment = 0.0
+        relevance = self._query_relevance_score(memory, query, embedding_score=embedding_score)
+        confidence = self._coerce_float(memory.get("confidence"), 0.75)
+        importance = self._coerce_float(memory.get("importance_score"), 0.4)
+        recency = self._recency_score(memory)
+        access = self._access_score(memory)
+        layer = self._memory_layer(memory)
+        layer_bias = {"core": 1.0, "semantic": 0.65, "episodic": 0.35, "archive": 0.0}.get(layer, 0.4)
+        score = (
+            relevance * 0.58
+            + importance * 0.13
+            + confidence * 0.10
+            + recency * 0.07
+            + access * 0.04
+            + layer_bias * 0.08
+        )
         if active_project_id and memory_project_id == active_project_id:
-            adjustment += (high - low) * 0.18
+            score += 0.12
         elif memory_project_id and memory_project_id != active_project_id:
-            adjustment -= (high - low) * 0.18
-        return round(max(low, min(high, base_score + adjustment)), 4)
+            score -= 0.18
+        if memory.get("is_locked"):
+            score += 0.025
+        if memory.get("is_important"):
+            score += 0.035
+        if memory.get("conflicts_with"):
+            score -= 0.10
+        if memory.get("superseded_by") or self._is_expired(memory):
+            score -= 0.25
+        return round(max(0.0, min(1.0, score)), 4)
 
     def _memory_allowed_for_project(self, memory, project_id=None):
         memory_project_id = str(memory.get("project_id") or "")
@@ -1986,11 +4630,34 @@ class KnowledgeBase:
             return True
         return bool(active_project_id and memory_project_id == active_project_id)
 
-    def search_memories(self, query="", category=None, include_archived=False, limit=50):
+    def search_memories(self, query="", category=None, memory_layer=None, include_archived=False, limit=50):
         query = str(query or "").strip()
+        memory_layer = str(memory_layer or "").strip().lower()
+        if memory_layer not in self.MEMORY_LAYER_ORDER:
+            memory_layer = ""
         results = []
-        for memory in self.get_memories(include_archived=include_archived):
+        source_memories = self.get_memories(include_archived=include_archived)
+        if (
+            query
+            and not include_archived
+            and self.settings.get("sqlite_fts_enabled", True)
+            and self.sqlite_store
+            and self.sqlite_store.available
+        ):
+            fts_ids = self.sqlite_store.search_candidate_ids(
+                query,
+                limit=max(100, min(2000, int(limit or 50) * 4)),
+            )
+            if fts_ids:
+                fts_id_set = set(fts_ids)
+                source_memories = [
+                    memory for memory in source_memories
+                    if str(memory.get("id")) in fts_id_set
+                ]
+        for memory in source_memories:
             if category and memory.get("category") != category:
+                continue
+            if memory_layer and self._memory_layer(memory) != memory_layer:
                 continue
             if self._is_expired(memory) and not include_archived:
                 continue
@@ -2014,6 +4681,7 @@ class KnowledgeBase:
             results.sort(key=lambda m: (m.get("relevance_score", 0), m.get("date", "")), reverse=True)
         else:
             results.sort(key=lambda m: (m.get("date", ""), m.get("creation_time", "")), reverse=True)
+            results.sort(key=lambda m: self.MEMORY_LAYER_ORDER.get(self._memory_layer(m), 2))
 
         try:
             limit = max(1, min(200, int(limit)))
@@ -2025,70 +4693,165 @@ class KnowledgeBase:
         if limit is None:
             limit = self.settings.get("relevant_memory_count", 8)
         try:
-            limit = max(1, min(30, int(limit)))
+            limit = max(1, min(50, int(limit)))
         except (TypeError, ValueError):
             limit = 8
 
+        if not self.settings.get("layered_memory_enabled", True):
+            return self._get_relevant_memories_legacy(
+                user_input,
+                mode=mode,
+                limit=limit,
+                mark_accessed=mark_accessed,
+                project_id=project_id,
+            )
+
+        active_by_id = {
+            str(memory.get("id")): memory
+            for memory in self.memories
+            if memory.get("id") and not memory.get("is_archived") and not self._is_expired(memory)
+        }
         candidates = [
             m for m in self.memories
             if not m.get("is_archived")
             and not self._is_expired(m)
             and self._memory_allowed_for_project(m, project_id=project_id)
+            and not (
+                m.get("superseded_by")
+                and str(m.get("superseded_by")) in active_by_id
+            )
         ]
 
-        if mode == "deep":
-            scored = []
-            for memory in candidates:
-                item = dict(memory)
-                item["_score"] = self.score_memory(memory, user_input, project_id=project_id)
-                item["_tier"] = self._memory_tier(memory)
-                item["_priority_score"] = self.memory_priority_score(memory, user_input)
-                scored.append(item)
-            scored.sort(
-                key=lambda m: (
-                    m.get("_priority_score", 0),
-                    m.get("_score", 0),
-                    m.get("date", "")
-                ),
-                reverse=True
+        try:
+            core_limit = max(0, min(100, int(self.settings.get("memory_core_limit", 10))))
+        except (TypeError, ValueError):
+            core_limit = 10
+        try:
+            pool_limit = max(limit, min(1000, int(self.settings.get("memory_candidate_pool_size", 80))))
+        except (TypeError, ValueError):
+            pool_limit = 80
+        fts_candidate_ids = set()
+        embedding_scores = {}
+        if (
+            self.settings.get("sqlite_fts_enabled", True)
+            and self.sqlite_store
+            and self.sqlite_store.available
+        ):
+            fts_ids = self.sqlite_store.search_candidate_ids(
+                user_input,
+                limit=pool_limit,
+                project_id=project_id,
             )
-            selected = scored[: max(limit, 20)]
-        else:
-            core = [
-                dict(m) for m in candidates
-                if m.get("is_locked") or m.get("is_important")
+            if fts_ids:
+                fts_candidate_ids = set(fts_ids)
+        if (
+            self.settings.get("embedding_enabled", False)
+            and self.embedding_provider
+            and self.sqlite_store
+            and self.sqlite_store.available
+        ):
+            try:
+                provider_key = self.embedding_provider.key
+                indexed = self.sqlite_store.embedding_status(provider_key).get("count", 0)
+                if indexed:
+                    query_vectors = self.embedding_provider.embed([str(user_input or "")])
+                    if query_vectors:
+                        vector_limit = max(
+                            limit,
+                            min(1000, int(self.settings.get("embedding_candidate_count", 80))),
+                        )
+                        vector_results = self.sqlite_store.search_embedding(
+                            query_vectors[0],
+                            provider_key,
+                            limit=vector_limit,
+                            min_similarity=self.settings.get("embedding_min_similarity", 0.30),
+                            project_id=project_id,
+                        )
+                        embedding_scores = {
+                            str(item.get("id")): float(item.get("score", 0.0))
+                            for item in vector_results
+                        }
+                self.embedding_last_error = ""
+            except Exception as exc:
+                self.embedding_last_error = str(exc)
+
+        retrieval_ids = set(fts_candidate_ids) | set(embedding_scores)
+        if retrieval_ids:
+            safety_candidates = sorted(
+                (
+                    memory for memory in candidates
+                    if self._memory_layer(memory) != "core"
+                    and (memory.get("is_locked") or memory.get("is_important"))
+                ),
+                key=lambda memory: (
+                    self._coerce_float(memory.get("importance_score"), 0.4),
+                    memory.get("date", ""),
+                ),
+                reverse=True,
+            )[:max(10, limit)]
+            retrieval_ids.update(str(memory.get("id")) for memory in safety_candidates)
+            candidates = [
+                memory for memory in candidates
+                if self._memory_layer(memory) == "core"
+                or str(memory.get("id")) in retrieval_ids
             ]
-            relevant = []
-            core_ids = {m.get("id") for m in core}
-            for memory in candidates:
-                if memory.get("id") in core_ids:
-                    continue
-                semantic_score = self.semantic_memory_score(memory, user_input)
-                query_tokens = self._tokenize(user_input)
-                memory_text = self._memory_text(memory).lower()
-                memory_tokens = self._tokenize(memory_text)
-                has_query_signal = (
-                    str(user_input or "").lower() in memory_text
+        threshold = self._coerce_float(
+            self.settings.get("memory_retrieval_threshold"),
+            self.VECTOR_MATCH_THRESHOLD,
+        )
+        query_text = str(user_input or "").strip().lower()
+        query_tokens = self._tokenize(query_text)
+        core = []
+        relevant = []
+        for memory in candidates:
+            item = dict(memory)
+            item["_layer"] = self._memory_layer(memory)
+            item["_tier"] = self._memory_tier(memory)
+            embedding_score = embedding_scores.get(str(memory.get("id")))
+            item["_embedding_score"] = embedding_score
+            semantic_score = self.semantic_memory_score(memory, user_input)
+            item["_semantic_score"] = round(semantic_score, 4)
+            item["_score"] = self.score_memory(
+                memory,
+                user_input,
+                project_id=project_id,
+                embedding_score=embedding_score,
+            )
+            item["_priority_score"] = self.memory_priority_score(
+                memory,
+                user_input,
+                embedding_score=embedding_score,
+            )
+            if item["_layer"] == "core":
+                core.append(item)
+                continue
+            memory_text = self._memory_text(memory).lower()
+            memory_tokens = self._tokenize(memory_text)
+            has_query_signal = bool(
+                query_text and (
+                    query_text in memory_text
                     or bool(query_tokens & memory_tokens)
-                    or semantic_score >= self.VECTOR_MATCH_THRESHOLD
+                    or semantic_score >= threshold
+                    or str(memory.get("id")) in fts_candidate_ids
+                    or embedding_score is not None
                 )
-                if not has_query_signal:
-                    continue
-                score = self.score_memory(memory, user_input, project_id=project_id)
-                if score > 0.12:
-                    item = dict(memory)
-                    item["_score"] = score
-                    item["_tier"] = self._memory_tier(memory)
-                    item["_priority_score"] = self.memory_priority_score(memory, user_input)
-                    item["_semantic_score"] = round(semantic_score, 4)
-                    relevant.append(item)
-            for item in core:
-                item["_tier"] = self._memory_tier(item)
-                item["_priority_score"] = self.memory_priority_score(item, user_input)
-                item["_score"] = self.score_memory(item, user_input, project_id=project_id)
-            core.sort(key=lambda m: (m.get("_priority_score", 0), m.get("_score", 0), m.get("date", "")), reverse=True)
-            relevant.sort(key=lambda m: (m.get("_priority_score", 0), m.get("_score", 0), m.get("date", "")), reverse=True)
-            selected = (core[:limit] + relevant[:limit])[: limit * 2]
+            )
+            if has_query_signal:
+                relevant.append(item)
+
+        core.sort(key=lambda m: (m.get("_score", 0), m.get("date", "")), reverse=True)
+        relevant.sort(key=lambda m: (m.get("_score", 0), m.get("date", "")), reverse=True)
+        relevant = relevant[:pool_limit]
+        relevant_limit = max(limit, 20) if mode == "deep" else limit
+        selected = core[:core_limit] + relevant[:relevant_limit]
+        selected.sort(
+            key=lambda m: (
+                -self.MEMORY_LAYER_ORDER.get(m.get("_layer", "semantic"), 2),
+                m.get("_score", 0),
+                m.get("date", ""),
+            ),
+            reverse=True,
+        )
 
         if mark_accessed and selected:
             selected_ids = {m.get("id") for m in selected}
@@ -2100,14 +4863,113 @@ class KnowledgeBase:
                     memory["last_accessed"] = now
                     changed = True
             if changed:
-                self.save_memories()
+                self._access_metadata_dirty = True
+                self._dirty_access_ids.update(selected_ids)
+                try:
+                    flush_seconds = max(10, int(self.settings.get("memory_access_flush_seconds", 120)))
+                except (TypeError, ValueError):
+                    flush_seconds = 120
+                elapsed = (datetime.now() - self._last_access_flush_at).total_seconds()
+                if elapsed >= flush_seconds:
+                    dirty_memories = [
+                        memory for memory in self.memories
+                        if memory.get("id") in self._dirty_access_ids
+                    ]
+                    self.save_memories(
+                        invalidate_vectors=False,
+                        sqlite_subset=dirty_memories,
+                        graph_dirty=False,
+                    )
 
         return selected
 
-    def format_memory_for_prompt(self, memory, include_metadata=True):
-        content = str(memory.get("content", "")).strip()
-        if len(content) > 1200:
-            content = content[:1200] + "…"
+    def _get_relevant_memories_legacy(self, user_input, mode="normal", limit=8, mark_accessed=True, project_id=None):
+        candidates = [
+            m for m in self.memories
+            if not m.get("is_archived")
+            and not self._is_expired(m)
+            and self._memory_allowed_for_project(m, project_id=project_id)
+        ]
+        scored = []
+        for memory in candidates:
+            item = dict(memory)
+            item["_score"] = self.score_memory(memory, user_input, project_id=project_id)
+            item["_layer"] = self._memory_layer(memory)
+            scored.append(item)
+        scored.sort(key=lambda m: (m.get("_score", 0), m.get("date", "")), reverse=True)
+        selected = scored[:(max(limit, 20) if mode == "deep" else limit)]
+        if mark_accessed and selected:
+            selected_ids = {m.get("id") for m in selected}
+            now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            for memory in self.memories:
+                if memory.get("id") in selected_ids:
+                    memory["access_count"] = int(memory.get("access_count", 0) or 0) + 1
+                    memory["last_accessed"] = now
+            self._access_metadata_dirty = True
+            self._dirty_access_ids.update(selected_ids)
+        return selected
+
+    def estimate_token_count(self, text):
+        text = str(text or "")
+        cjk_count = len(re.findall(r"[\u3400-\u9fff]", text))
+        non_cjk = re.sub(r"[\u3400-\u9fff]", "", text)
+        latin_like = len(re.findall(r"[A-Za-z0-9_]+|[^\sA-Za-z0-9_]", non_cjk))
+        return max(1, cjk_count + int(len(non_cjk) / 4) + int(latin_like * 0.25))
+
+    def _truncate_to_token_budget(self, text, max_tokens):
+        text = str(text or "").strip()
+        try:
+            max_tokens = max(1, int(max_tokens))
+        except (TypeError, ValueError):
+            max_tokens = 700
+        if self.estimate_token_count(text) <= max_tokens:
+            return text
+        low, high = 1, len(text)
+        while low < high:
+            middle = (low + high + 1) // 2
+            if self.estimate_token_count(text[:middle]) <= max_tokens:
+                low = middle
+            else:
+                high = middle - 1
+        return text[:low].rstrip() + "…"
+
+    def _query_focused_excerpt(self, content, query, max_tokens):
+        content = str(content or "").strip()
+        if self.estimate_token_count(content) <= max_tokens:
+            return content
+        lowered = content.lower()
+        query_text = str(query or "").strip().lower()
+        anchors = []
+        if len(query_text) >= 2:
+            anchors.append(query_text)
+        anchors.extend(re.findall(r"[a-z0-9_]{2,}", query_text))
+        cjk = "".join(re.findall(r"[\u3400-\u9fff]", query_text))
+        anchors.extend(cjk[index:index + 2] for index in range(max(0, len(cjk) - 1)))
+        positions = [lowered.find(anchor) for anchor in anchors if anchor and lowered.find(anchor) >= 0]
+        if not positions:
+            return self._truncate_to_token_budget(content, max_tokens)
+        anchor_position = min(positions)
+        approximate_chars = max(80, int(max_tokens * 1.8))
+        start = max(0, anchor_position - approximate_chars // 3)
+        excerpt = content[start:start + approximate_chars]
+        excerpt = self._truncate_to_token_budget(excerpt, max_tokens)
+        if start > 0:
+            excerpt = "…" + excerpt
+        if start + approximate_chars < len(content) and not excerpt.endswith("…"):
+            excerpt += "…"
+        return excerpt
+
+    def format_memory_for_prompt(self, memory, include_metadata=True, max_tokens=None, query=""):
+        try:
+            max_tokens = max(64, int(max_tokens or self.settings.get("memory_item_budget_tokens", 700)))
+        except (TypeError, ValueError):
+            max_tokens = 700
+        metadata_reserve = 90 if include_metadata else 30
+        content = self._query_focused_excerpt(
+            memory.get("content", ""),
+            query,
+            max(32, max_tokens - metadata_reserve),
+        )
 
         if not include_metadata:
             return f"- {memory.get('title', 'Untitled')}: {content}"
@@ -2123,114 +4985,1506 @@ class KnowledgeBase:
             flags.append("updates older memory")
         if memory.get("conflicts_with"):
             flags.append("may be superseded/conflicted")
+        if memory.get("_graph_expanded"):
+            relation_text = "/".join(str(value) for value in list(memory.get("_graph_relations") or [])[:2])
+            via_text = ", ".join(str(value) for value in list(memory.get("_graph_via") or [])[:2])
+            graph_flag = "graph-linked"
+            if relation_text:
+                graph_flag += f" by {relation_text}"
+            if via_text:
+                graph_flag += f" via {via_text}"
+            flags.append(graph_flag)
         flag_text = f"; flags={', '.join(flags)}" if flags else ""
         project_text = ""
         if memory.get("project_name"):
             project_text = f"; project={memory.get('project_name')}"
         return (
             f"- {memory.get('title', 'Untitled')} "
-            f"[category={memory.get('category', 'general')}; date={memory.get('date', '')}; "
+            f"[layer={self._memory_layer(memory)}; category={memory.get('category', 'general')}; date={memory.get('date', '')}; "
             f"confidence={self._coerce_float(memory.get('confidence'), 0.75):.2f}; "
             f"source={memory.get('source', 'manual')}; tags={tag_text}{project_text}{flag_text}]\n"
             f"  {content}"
         )
 
-    def build_prompt_context(self, user_input, mode="normal", project_id=None):
+    def _memory_prompt_budget(self, context_window_tokens=None):
+        if context_window_tokens is None:
+            context_window_tokens = self.settings.get("api_context_window_tokens", 1000000)
+        try:
+            context_window_tokens = max(2048, int(context_window_tokens))
+        except (TypeError, ValueError):
+            context_window_tokens = 1000000
+        try:
+            absolute_budget = max(512, int(self.settings.get("memory_prompt_budget_tokens", 12000)))
+        except (TypeError, ValueError):
+            absolute_budget = 12000
+        ratio = self._coerce_float(
+            self.settings.get("memory_prompt_budget_ratio"),
+            0.15,
+            minimum=0.001,
+            maximum=0.5,
+        )
+        return min(absolute_budget, max(512, int(context_window_tokens * ratio)))
+
+    def memory_content_limit(self, memory_kind="", memory_layer="semantic"):
+        kind = str(memory_kind or "").strip().lower()
+        layer = str(memory_layer or "semantic").strip().lower()
+        if kind == "knowledge_extract_simple":
+            key, fallback = "memory_max_chars_knowledge_simple", 1200
+        elif kind == "knowledge_extract_complex":
+            key, fallback = "memory_max_chars_knowledge_complex", 3600
+        elif layer == "core":
+            key, fallback = "memory_max_chars_core", 1200
+        elif layer == "episodic":
+            key, fallback = "memory_max_chars_episodic", 3600
+        else:
+            key, fallback = "memory_max_chars_semantic", 2400
+        try:
+            return max(200, int(self.settings.get(key, fallback)))
+        except (TypeError, ValueError):
+            return fallback
+
+    def bound_generated_memory_content(self, content, memory_kind="", memory_layer="semantic"):
+        text = str(content or "").strip()
+        limit = self.memory_content_limit(memory_kind, memory_layer)
+        if len(text) <= limit:
+            return text, False, len(text)
+        clipped = text[:limit].rstrip()
+        last_break = max(clipped.rfind("\n"), clipped.rfind("。"), clipped.rfind("."))
+        if last_break >= int(limit * 0.65):
+            clipped = clipped[:last_break + 1].rstrip()
+        return clipped, True, len(text)
+
+    def _memory_conflict_audit(self, memory):
+        """Return a bounded, public explanation of a memory's conflict state."""
+        by_id = {str(item.get("id")): item for item in self.memories if item.get("id")}
+        relations = []
+
+        def add_relation(relation, related_id):
+            related = by_id.get(str(related_id))
+            if not related:
+                return
+            relations.append({
+                "relation": relation,
+                "title": str(related.get("title") or "Untitled")[:120],
+                "date": str(related.get("date") or "")[:10],
+                "active": (
+                    not bool(related.get("is_archived"))
+                    and not self._is_expired(related)
+                    and str(related.get("superseded_by") or "") != str(memory.get("id") or "")
+                ),
+            })
+
+        for related_id in list(memory.get("conflicts_with") or [])[:5]:
+            add_relation("conflicts_with", related_id)
+        for related_id in list(memory.get("supersedes") or [])[:5]:
+            add_relation("supersedes", related_id)
+        superseded_by = memory.get("superseded_by")
+        if superseded_by:
+            add_relation("superseded_by", superseded_by)
+
+        if any(item["relation"] == "superseded_by" and item["active"] for item in relations):
+            status = "superseded"
+        elif any(item["relation"] == "conflicts_with" and item["active"] for item in relations):
+            status = "needs_review"
+        elif any(item["relation"] == "supersedes" for item in relations):
+            status = "updates_older"
+        else:
+            status = "clear"
+        return {"status": status, "relations": relations}
+
+    @staticmethod
+    def normalize_memory_graph_mode(mode):
+        value = str(mode or "auto").strip().lower()
+        return value if value in {"off", "auto", "deep"} else "auto"
+
+    def ensure_memory_graph(self, force=False):
+        if not force and not getattr(self, "_memory_graph_dirty", True):
+            return {"changed": False, "sync_mode": "cached", **self.memory_graph.status()}
+        result = self.memory_graph.ensure_synced(self.memories, force=force)
+        self._memory_graph_dirty = False
+        return result
+
+    def get_memory_graph_status(self):
+        sync = self.ensure_memory_graph(force=False)
+        return {
+            **self.memory_graph.status(),
+            "sync_changed": bool(sync.get("changed")),
+            "file": os.path.basename(str(self.memory_graph.path)),
+        }
+
+    def get_memory_graph_neighbors(self, memory_id):
+        self.ensure_memory_graph(force=False)
+        return self.memory_graph.neighbors(memory_id)
+
+    def get_memory_graph_view(
+        self,
+        search="",
+        memory_layer="",
+        include_archived=False,
+        limit=80,
+        center_memory_id="",
+        relation="",
+    ):
+        """Return a bounded, enriched subgraph for the memory management UI."""
+        self.ensure_memory_graph(force=False)
+        try:
+            limit = max(20, min(200, int(limit)))
+        except (TypeError, ValueError):
+            limit = 80
+        search_text = str(search or "").strip().lower()
+        memory_layer = str(memory_layer or "").strip().lower()
+        relation = str(relation or "").strip().lower()
+        center_memory_id = str(center_memory_id or "").strip()
+
+        active_by_id = {
+            str(memory.get("id")): memory
+            for memory in self.memories
+            if memory.get("id")
+        }
+
+        def memory_allowed(memory, ignore_search=False):
+            if not include_archived and (memory.get("is_archived") or self._memory_layer(memory) == "archive"):
+                return False
+            if memory_layer and self._memory_layer(memory) != memory_layer:
+                return False
+            if search_text and not ignore_search:
+                haystack = " ".join([
+                    self._memory_text(memory),
+                    str(memory.get("project_name") or ""),
+                    str(memory.get("source") or ""),
+                ]).lower()
+                if search_text not in haystack and not bool(self._tokenize(search_text) & self._tokenize(haystack)):
+                    return False
+            return True
+
+        graph_nodes = self.memory_graph.graph.get("nodes", {})
+        def edge_visible(edge):
+            if relation:
+                return edge.get("relation") == relation
+            # Dates are available as an explicit filter, but hiding them from
+            # the default overview prevents a single busy day becoming one
+            # enormous hub that obscures stronger semantic relationships.
+            return edge.get("relation") != "occurred_on"
+
+        def adjacent(node_id):
+            return self.memory_graph.adjacent(
+                node_id,
+                relation=relation,
+                exclude_relations=() if relation else {"occurred_on"},
+            )
+
+        selected_memory_node_ids = []
+        center_node_id = f"memory:{center_memory_id}" if center_memory_id else ""
+        if center_node_id and center_node_id in graph_nodes:
+            queue = [(center_node_id, 0)]
+            visited = {center_node_id}
+            while queue and len(selected_memory_node_ids) < limit:
+                node_id, depth = queue.pop(0)
+                node = graph_nodes.get(node_id, {})
+                if node.get("type") == "memory":
+                    memory = active_by_id.get(str(node.get("ref_id") or ""))
+                    if memory and memory_allowed(memory, ignore_search=(node_id == center_node_id)):
+                        selected_memory_node_ids.append(node_id)
+                if depth >= 2:
+                    continue
+                for neighbor_id, _edge in adjacent(node_id):
+                    if neighbor_id not in visited:
+                        visited.add(neighbor_id)
+                        queue.append((neighbor_id, depth + 1))
+        else:
+            candidates = [memory for memory in self.memories if memory_allowed(memory)]
+            candidates.sort(
+                key=lambda memory: (
+                    1 if self._memory_layer(memory) == "core" else 0,
+                    1 if memory.get("is_locked") else 0,
+                    1 if memory.get("is_important") else 0,
+                    str(memory.get("date") or ""),
+                    str(memory.get("creation_time") or ""),
+                ),
+                reverse=True,
+            )
+            selected_memory_node_ids = [
+                f"memory:{memory.get('id')}" for memory in candidates[:limit]
+                if f"memory:{memory.get('id')}" in graph_nodes
+            ]
+
+        selected_memory_set = set(selected_memory_node_ids)
+        included_node_ids = set(selected_memory_node_ids)
+        included_edge_by_id = {}
+        # Add connector nodes used by the selected memories. Direct memory links
+        # are kept only when both memories are inside the bounded selection.
+        for memory_node_id in selected_memory_set:
+            for _neighbor_id, edge in adjacent(memory_node_id):
+                if not edge_visible(edge):
+                    continue
+                source = edge.get("source")
+                target = edge.get("target")
+                source_type = (graph_nodes.get(source) or {}).get("type")
+                target_type = (graph_nodes.get(target) or {}).get("type")
+                include_edge = False
+                if source in selected_memory_set and target in selected_memory_set:
+                    include_edge = True
+                elif source in selected_memory_set and target_type != "memory":
+                    include_edge = True
+                elif target in selected_memory_set and source_type != "memory":
+                    include_edge = True
+                if include_edge:
+                    included_node_ids.update((source, target))
+                    included_edge_by_id[str(edge.get("id") or "")] = dict(edge)
+        included_edges = list(included_edge_by_id.values())
+
+        connector_degree = {}
+        for edge in included_edges:
+            for endpoint in (edge.get("source"), edge.get("target")):
+                if (graph_nodes.get(endpoint) or {}).get("type") != "memory":
+                    connector_degree[endpoint] = connector_degree.get(endpoint, 0) + 1
+        connector_priority = {"project": 5, "session": 4, "entity": 3, "tag": 2, "date": 1}
+        useful_connectors = [
+            node_id for node_id, degree in connector_degree.items()
+            if degree >= 2
+        ]
+        useful_connectors.sort(
+            key=lambda node_id: (
+                connector_degree.get(node_id, 0),
+                connector_priority.get((graph_nodes.get(node_id) or {}).get("type"), 0),
+                str((graph_nodes.get(node_id) or {}).get("label") or ""),
+            ),
+            reverse=True,
+        )
+        useful_connector_set = set(useful_connectors[:max(30, limit)])
+        included_node_ids = selected_memory_set | useful_connector_set
+        included_edges = [
+            edge for edge in included_edges
+            if edge.get("source") in included_node_ids and edge.get("target") in included_node_ids
+        ]
+
+        memory_nodes = []
+        connector_nodes = []
+        for node_id in included_node_ids:
+            node = dict(graph_nodes.get(node_id) or {})
+            if not node:
+                continue
+            if node.get("type") == "memory":
+                memory = active_by_id.get(str(node.get("ref_id") or ""))
+                if not memory:
+                    continue
+                detail = memory.get("source_detail") if isinstance(memory.get("source_detail"), dict) else {}
+                node.update({
+                    "label": str(memory.get("title") or "Untitled")[:180],
+                    "preview": str(memory.get("content") or "").strip()[:500],
+                    "category": str(memory.get("category") or "general")[:80],
+                    "source": str(memory.get("source") or "manual")[:80],
+                    "project_name": str(memory.get("project_name") or "")[:140],
+                    "locked": bool(memory.get("is_locked")),
+                    "starred": bool(memory.get("is_important")),
+                    "archived": bool(memory.get("is_archived")),
+                    "session_id": str(detail.get("chat_session_id") or detail.get("session_id") or ""),
+                    "conflict": self._memory_conflict_audit(memory),
+                })
+                memory_nodes.append(node)
+            else:
+                connector_nodes.append(node)
+
+        nodes = memory_nodes + connector_nodes
+        included_ids = {node.get("id") for node in nodes}
+        included_edges = [
+            edge for edge in included_edges
+            if edge.get("source") in included_ids and edge.get("target") in included_ids
+        ]
+        connected_memory_ids = {
+            endpoint
+            for edge in included_edges
+            for endpoint in (edge.get("source"), edge.get("target"))
+            if str(endpoint).startswith("memory:")
+        }
+        return {
+            "status": self.memory_graph.status(),
+            "filters": {
+                "search": search_text,
+                "memory_layer": memory_layer,
+                "include_archived": bool(include_archived),
+                "limit": limit,
+                "center_memory_id": center_memory_id,
+                "relation": relation,
+            },
+            "nodes": nodes,
+            "edges": included_edges,
+            "summary": {
+                "memory_nodes": len(memory_nodes),
+                "connector_nodes": len(connector_nodes),
+                "edges": len(included_edges),
+                "orphan_memories": sum(
+                    1 for node in memory_nodes if node.get("id") not in connected_memory_ids
+                ),
+                "truncated": len(selected_memory_node_ids) >= limit,
+            },
+        }
+
+    @memory_write_locked
+    def add_memory_graph_edge(self, source_memory_id, target_memory_id, relation="related_to", confidence=0.9):
+        self.ensure_memory_graph(force=False)
+        return self.memory_graph.add_manual_edge(
+            source_memory_id,
+            target_memory_id,
+            relation=relation,
+            confidence=confidence,
+        )
+
+    @memory_write_locked
+    def remove_memory_graph_edge(self, edge_id):
+        return self.memory_graph.remove_manual_edge(edge_id)
+
+    def _expand_graph_memories(self, seed_memories, user_input, project_id=None, graph_mode="auto"):
+        graph_mode = self.normalize_memory_graph_mode(graph_mode)
+        trace = {
+            "mode": graph_mode,
+            "status": "disabled" if graph_mode == "off" else "no_seed",
+            "seed_count": 0,
+            "expanded_count": 0,
+        }
+        if graph_mode == "off" or not seed_memories:
+            return list(seed_memories or []), trace
+
+        threshold = self._coerce_float(
+            self.settings.get("memory_retrieval_threshold"),
+            self.VECTOR_MATCH_THRESHOLD,
+        )
+        query_text = str(user_input or "").strip().lower()
+        graph_stopwords = {
+            "the", "a", "an", "is", "are", "was", "were", "to", "of", "and", "or",
+            "what", "when", "where", "who", "how", "please", "tell", "me",
+            "我", "的", "是", "了", "吗", "呢", "什么", "怎么", "如何", "请", "一下",
+        }
+        query_tokens = {
+            token for token in self._tokenize(query_text)
+            if token not in graph_stopwords and len(token.strip()) >= 2
+        }
+        graph_seeds = []
+        for memory in seed_memories:
+            layer = memory.get("_layer") or self._memory_layer(memory)
+            memory_text = self._memory_text(memory).lower()
+            memory_tokens = self._tokenize(memory_text)
+            semantic_score = self._coerce_float(memory.get("_semantic_score"), 0)
+            has_query_signal = bool(
+                query_text and (
+                    query_text in memory_text
+                    or bool(query_tokens & memory_tokens)
+                    or semantic_score >= threshold
+                )
+            )
+            # Core memories are always supplied for safety, but an unrelated
+            # core note must not become a graph traversal starting point.
+            if layer != "core" or has_query_signal:
+                graph_seeds.append(memory)
+        if not graph_seeds:
+            return list(seed_memories), trace
+
+        self.ensure_memory_graph(force=False)
+        expansion_limit = int(self.settings.get(
+            "memory_graph_deep_expansion" if graph_mode == "deep" else "memory_graph_auto_expansion",
+            10 if graph_mode == "deep" else 4,
+        ))
+        raw_paths = self.memory_graph.expand_memory_ids(
+            [memory.get("id") for memory in graph_seeds],
+            mode=graph_mode,
+            max_results=max(
+                expansion_limit * 4,
+                int(self.settings.get("memory_graph_candidate_limit", 10000)),
+            ),
+        )
+        by_id = {str(memory.get("id")): memory for memory in self.memories if memory.get("id")}
+        active_by_id = {
+            str(memory.get("id")): memory
+            for memory in self.memories
+            if memory.get("id") and not memory.get("is_archived") and not self._is_expired(memory)
+        }
+        selected_ids = {str(memory.get("id")) for memory in seed_memories}
+        additions = []
+        for path in raw_paths:
+            memory = by_id.get(str(path.get("memory_id") or ""))
+            if not memory or str(memory.get("id")) in selected_ids:
+                continue
+            if memory.get("is_archived") or self._is_expired(memory):
+                continue
+            if not self._memory_allowed_for_project(memory, project_id=project_id):
+                continue
+            if memory.get("superseded_by") and str(memory.get("superseded_by")) in active_by_id:
+                continue
+
+            relations = list(dict.fromkeys(str(value) for value in path.get("relations", []) if value))
+            memory_text = self._memory_text(memory).lower()
+            memory_tokens = self._tokenize(memory_text)
+            semantic_score = self.semantic_memory_score(memory, user_input)
+            has_query_signal = bool(
+                query_text and (
+                    query_text in memory_text
+                    or bool(query_tokens & memory_tokens)
+                    or semantic_score >= threshold
+                )
+            )
+            graph_score = self._coerce_float(path.get("graph_score"), 0)
+            strong_context = bool(
+                set(relations)
+                & {
+                    "conflicts_with", "supersedes", "supports", "caused_by",
+                    "part_of", "follows", "related_to", "belongs_to_project", "from_session",
+                }
+            )
+            if not has_query_signal and not (strong_context and graph_score >= 0.8):
+                continue
+
+            item = dict(memory)
+            item["_layer"] = self._memory_layer(memory)
+            item["_tier"] = self._memory_tier(memory)
+            item["_semantic_score"] = round(semantic_score, 4)
+            item["_embedding_score"] = None
+            item["_score"] = self.score_memory(memory, user_input, project_id=project_id)
+            item["_priority_score"] = self.memory_priority_score(memory, user_input)
+            item["_graph_expanded"] = True
+            item["_graph_score"] = round(graph_score, 4)
+            item["_graph_relations"] = relations
+            path_nodes = [self.memory_graph.graph.get("nodes", {}).get(node_id, {}) for node_id in path.get("path", [])]
+            item["_graph_via"] = [
+                str(node.get("label") or "")[:120]
+                for node in path_nodes[1:-1]
+                if node.get("label")
+            ]
+            additions.append(item)
+
+        additions.sort(
+            key=lambda item: (
+                item.get("_graph_score", 0) * 2.0 + item.get("_semantic_score", 0),
+                item.get("_priority_score", 0),
+                item.get("date", ""),
+            ),
+            reverse=True,
+        )
+        additions = additions[:expansion_limit]
+        trace.update({
+            "status": "expanded" if additions else "no_related_match",
+            "seed_count": len(graph_seeds),
+            "expanded_count": len(additions),
+        })
+        return list(seed_memories) + additions, trace
+
+    def _memory_recall_audit_item(self, memory):
+        layer = memory.get("_layer") or self._memory_layer(memory)
+        embedding_score = memory.get("_embedding_score")
+        semantic_score = memory.get("_semantic_score")
+        score = memory.get("_score", memory.get("relevance_score", 0))
+        if memory.get("_graph_expanded"):
+            reason = "graph_related"
+        elif layer == "core":
+            reason = "core_memory"
+        elif memory.get("is_locked") or memory.get("is_important"):
+            reason = "protected_priority"
+        elif embedding_score is not None:
+            reason = "embedding_match"
+        elif semantic_score:
+            reason = "semantic_match"
+        else:
+            reason = "text_relevance"
+        item = {
+            "title": str(memory.get("title") or "Untitled")[:160],
+            "layer": layer,
+            "category": str(memory.get("category") or "general")[:80],
+            "source": str(memory.get("source") or "manual")[:80],
+            "project_name": str(memory.get("project_name") or "")[:120],
+            "reason": reason,
+            "locked": bool(memory.get("is_locked")),
+            "starred": bool(memory.get("is_important")),
+            "scores": {
+                "relevance": round(self._coerce_float(score, 0), 4),
+                "priority": round(self._coerce_float(memory.get("_priority_score"), 0), 4),
+                "semantic": round(self._coerce_float(semantic_score, 0), 4),
+                "embedding": None if embedding_score is None else round(self._coerce_float(embedding_score, 0), 4),
+            },
+            "conflict": self._memory_conflict_audit(memory),
+        }
+        if memory.get("_graph_expanded"):
+            item["graph"] = {
+                "score": round(self._coerce_float(memory.get("_graph_score"), 0), 4),
+                "relations": list(memory.get("_graph_relations") or [])[:4],
+                "via": list(memory.get("_graph_via") or [])[:3],
+            }
+        return item
+
+    def _empty_recall_audit(self, user_input, mode, project_id=None, status="no_match"):
+        active = [memory for memory in self.memories if not memory.get("is_archived") and not self._is_expired(memory)]
+        return {
+            "version": 1,
+            "status": status,
+            "mode": str(mode or "normal"),
+            "query": str(user_input or "")[:240],
+            "project_id": str(project_id or ""),
+            "selected_count": 0,
+            "selected": [],
+            "conflict_count": 0,
+            "candidate_summary": {
+                "active": len(active),
+                "archived": sum(1 for memory in self.memories if memory.get("is_archived")),
+                "superseded_filtered": sum(
+                    1 for memory in active
+                    if memory.get("superseded_by")
+                    and any(
+                        str(other.get("id")) == str(memory.get("superseded_by"))
+                        and not other.get("is_archived")
+                        and not self._is_expired(other)
+                        for other in self.memories
+                    )
+                ),
+                "project_filtered": sum(
+                    1 for memory in active
+                    if not self._memory_allowed_for_project(memory, project_id=project_id)
+                ),
+            },
+        }
+
+    def build_prompt_context_with_audit(self, user_input, mode="normal", project_id=None, context_window_tokens=None, limit=None, graph_mode="off", mark_accessed=True):
         if not self.settings.get("memory_2_enabled", True):
             memories = [
                 m for m in self.get_memories()
                 if self._memory_allowed_for_project(m, project_id=project_id)
             ]
             if not memories:
-                return ""
+                return "", self._empty_recall_audit(user_input, mode, project_id)
             target = [m for m in memories if m.get("is_locked") or m.get("is_important")]
             if mode == "deep":
                 target = memories[:25]
             if not target:
-                return ""
-            lines = [self.format_memory_for_prompt(m, include_metadata=False) for m in target]
+                return "", self._empty_recall_audit(user_input, mode, project_id)
+            lines = [self.format_memory_for_prompt(m, include_metadata=False, query=user_input) for m in target]
+            audit = self._empty_recall_audit(user_input, mode, project_id, status="selected")
+            audit["selected"] = [self._memory_recall_audit_item(memory) for memory in target]
+            audit["selected_count"] = len(audit["selected"])
+            audit["conflict_count"] = sum(1 for item in audit["selected"] if item["conflict"]["status"] != "clear")
             return (
                 "[System: Long-term Memory]\n"
                 "Use these notes to help answer Doctor. Do not invent details that are not present.\n"
                 + "\n".join(lines) + "\n\n"
-            )
+            ), audit
 
-        memories = self.get_relevant_memories(user_input, mode=mode, project_id=project_id)
+        memories = self.get_relevant_memories(
+            user_input,
+            mode=mode,
+            project_id=project_id,
+            limit=limit,
+            mark_accessed=mark_accessed,
+        )
         if not memories:
-            return ""
+            audit = self._empty_recall_audit(user_input, mode, project_id)
+            audit["graph"] = {
+                "mode": self.normalize_memory_graph_mode(graph_mode),
+                "status": "no_seed",
+                "seed_count": 0,
+                "expanded_count": 0,
+                "included_count": 0,
+            }
+            return "", audit
+
+        memories, graph_trace = self._expand_graph_memories(
+            memories,
+            user_input,
+            project_id=project_id,
+            graph_mode=graph_mode,
+        )
 
         include_metadata = self.settings.get("include_memory_metadata", True)
-        lines = [self.format_memory_for_prompt(m, include_metadata=include_metadata) for m in memories]
+        budget = self._memory_prompt_budget(context_window_tokens=context_window_tokens)
+        header_reserve = 180
+        remaining = max(128, budget - header_reserve)
+        lines = []
+        included_memories = []
+        for memory in memories:
+            item_budget = min(
+                remaining,
+                max(64, int(self.settings.get("memory_item_budget_tokens", 700))),
+            )
+            if item_budget < 64:
+                break
+            line = self.format_memory_for_prompt(
+                memory,
+                include_metadata=include_metadata,
+                max_tokens=item_budget,
+                query=user_input,
+            )
+            line_tokens = self.estimate_token_count(line)
+            if line_tokens > remaining:
+                continue
+            lines.append(line)
+            included_memories.append(memory)
+            remaining -= line_tokens
+        if not lines:
+            audit = self._empty_recall_audit(user_input, mode, project_id, status="budget_limited")
+            graph_trace["included_count"] = 0
+            audit["graph"] = graph_trace
+            return "", audit
         mode_note = (
             "Deep recall mode is active: search all supplied memories carefully, but say when a detail is missing."
             if mode == "deep"
             else "Normal mode is active: prioritize locked/starred memories and relevant notes."
         )
-        return (
+        graph_note = (
+            "Graph recall added linked context. A relationship is supporting context, not proof of causality; "
+            "verify it against memory content and dates.\n"
+            if any(memory.get("_graph_expanded") for memory in included_memories)
+            else ""
+        )
+        context = (
             "[System: Memory 2.0]\n"
             "The following are long-term memories about Doctor, Saya, projects, preferences, and prior events.\n"
             f"{mode_note}\n"
             "Memory rules: prefer newer locked/starred memories when notes conflict; treat low-confidence notes as hints; "
             "do not fabricate missing details; do not expose internal IDs unless Doctor asks to manage memory.\n"
+            + graph_note
             + "\n".join(lines) + "\n\n"
         )
+        audit = self._empty_recall_audit(user_input, mode, project_id, status="selected")
+        audit["selected"] = [self._memory_recall_audit_item(memory) for memory in included_memories]
+        audit["selected_count"] = len(audit["selected"])
+        audit["conflict_count"] = sum(
+            1 for item in audit["selected"] if item["conflict"]["status"] != "clear"
+        )
+        audit["budget_tokens"] = budget
+        audit["used_tokens"] = budget - header_reserve - remaining
+        graph_trace["included_count"] = sum(
+            1 for memory in included_memories if memory.get("_graph_expanded")
+        )
+        audit["graph"] = graph_trace
+        return context, audit
 
-    def merge_memories(self, days=7):
-        """Non-destructively compact old memories while preserving originals as archived."""
+    def build_prompt_context(self, user_input, mode="normal", project_id=None, context_window_tokens=None, limit=None, graph_mode="off", mark_accessed=False):
+        context, _audit = self.build_prompt_context_with_audit(
+            user_input,
+            mode=mode,
+            project_id=project_id,
+            context_window_tokens=context_window_tokens,
+            limit=limit,
+            graph_mode=graph_mode,
+            mark_accessed=mark_accessed,
+        )
+        return context
+
+    def build_daily_activity_prompt_context_with_audit(self):
+        context = self.build_daily_activity_prompt_context()
+        if not context:
+            return "", self._empty_recall_audit("", "daily", status="no_daily_snapshot")
+        memory = self._find_memory(self.DAILY_ACTIVITY_MEMORY_ID)
+        audit = self._empty_recall_audit("", "daily", status="daily_only")
+        audit["selected"] = [self._memory_recall_audit_item(memory)] if memory else []
+        audit["selected_count"] = len(audit["selected"])
+        return context, audit
+
+    def build_daily_activity_prompt_context(self):
+        """Return only the small managed today snapshot for auto recall."""
+        memory = self._find_memory(self.DAILY_ACTIVITY_MEMORY_ID)
+        if not memory or memory.get("is_archived"):
+            return ""
+        if str(memory.get("date") or "") != datetime.now().strftime("%Y-%m-%d"):
+            return ""
+        content = str(memory.get("content") or "").strip()
+        if not content:
+            return ""
+        return (
+            "[System: Today's Activity Memory]\n"
+            "This is a protected, automatically refreshed current-day memory. "
+            "Use it naturally when relevant and do not expose implementation details.\n"
+            f"{content}\n\n"
+        )
+
+    def _compression_generation(self, memory):
+        inferred = 1 if memory.get("compressed_from") else 0
         try:
-            days = max(1, min(365, int(days)))
+            return max(0, int(memory.get("compression_generation", inferred)))
         except (TypeError, ValueError):
-            days = 7
-        cutoff = (datetime.now() - timedelta(days=days)).date()
-        eligible = []
-        for memory in self.memories:
-            if memory.get("is_archived") or memory.get("is_locked") or memory.get("is_important"):
+            return inferred
+
+    def _ai_compression_generation(self, memory):
+        try:
+            return max(0, int(memory.get("ai_compression_generation", 0)))
+        except (TypeError, ValueError):
+            return 0
+
+    def _memory_entity_names(self, memory, limit=8):
+        names = []
+        for entity in memory.get("entities") or []:
+            if isinstance(entity, dict):
+                value = entity.get("name") or entity.get("label")
+            else:
+                value = entity
+            value = self._normalize_text(value)
+            if value and value.lower() not in {item.lower() for item in names}:
+                names.append(value[:100])
+            if len(names) >= limit:
+                break
+        return names
+
+    def _memory_topic_names(self, memory, limit=8):
+        ignored = {
+            "compressed", "summary", "semantic", "episodic", "archive",
+            "conversation", "memory", "general",
+        }
+        topics = []
+        for value in list(memory.get("topics") or []) + list(memory.get("tags") or []):
+            if isinstance(value, dict):
+                value = value.get("name") or value.get("label")
+            value = self._normalize_text(value)
+            if not value or value.lower() in ignored:
                 continue
-            if memory.get("source") == "system":
+            if value.lower() not in {item.lower() for item in topics}:
+                topics.append(value[:100])
+            if len(topics) >= limit:
+                break
+        return topics
+
+    def _compression_topic_key(self, memory):
+        category = self._normalize_text(memory.get("category") or "general").lower()[:60]
+        entities = self._memory_entity_names(memory, limit=2)
+        topics = self._memory_topic_names(memory, limit=2)
+        anchors = entities or topics
+        if not anchors:
+            return category or "general"
+        clean_anchors = [re.sub(r"\s+", " ", item.lower())[:60] for item in anchors]
+        return (category or "general") + ":" + "|".join(clean_anchors)
+
+    def _extract_compression_facts(self, memory):
+        content = self._normalize_text(memory.get("content"))
+        sentences = [
+            self._normalize_text(part)[:240]
+            for part in re.split(r"(?<=[。！？!?])|[\r\n]+", content)
+            if self._normalize_text(part)
+        ]
+
+        def matching_sentences(pattern, limit=4):
+            regex = re.compile(pattern, flags=re.IGNORECASE)
+            matches = []
+            for sentence in sentences:
+                if regex.search(sentence) and sentence not in matches:
+                    matches.append(sentence)
+                if len(matches) >= limit:
+                    break
+            return matches
+
+        date_values = []
+        memory_date = self._normalize_text(memory.get("date"))[:10]
+        if memory_date:
+            date_values.append(memory_date)
+        for value in re.findall(
+            r"(?:20\d{2}[-/.年]\d{1,2}(?:[-/.月]\d{1,2}日?)?|\d{1,2}月\d{1,2}日)",
+            content,
+        ):
+            if value not in date_values:
+                date_values.append(value)
+            if len(date_values) >= 6:
+                break
+
+        source_detail = memory.get("source_detail") if isinstance(memory.get("source_detail"), dict) else {}
+        source_refs = {
+            key: str(value)[:180]
+            for key, value in {
+                "source": memory.get("source"),
+                "session_id": source_detail.get("session_id") or source_detail.get("chat_session_id"),
+                "project_id": memory.get("project_id"),
+                "created_at": memory.get("creation_time"),
+            }.items()
+            if value
+        }
+        return {
+            "dates": date_values,
+            "entities": self._memory_entity_names(memory),
+            "topics": self._memory_topic_names(memory),
+            "decisions": matching_sentences(
+                r"决定|计划|改为|改成|取消|停止|完成|下一步|decision|decided|plan(?:ned)?|switch(?:ed)?|will\b"
+            ),
+            "preferences": matching_sentences(
+                r"喜欢|不喜欢|讨厌|偏好|希望|prefer|favorite|like|love|hate|want"
+            ),
+            "negations": matching_sentences(
+                r"不|没|没有|无|取消|停止|禁止|\bnot\b|\bno\b|never|without|don['’]?t|cannot|can['’]?t"
+            ),
+            "numeric_facts": matching_sentences(
+                r"\d+(?:\.\d+)?(?:%|％|次|条|个|天|小时|分钟|元|美元|GB|MB|KB|tokens?)?"
+            ),
+            "source": source_refs,
+        }
+
+    def _compression_fact_preview(self, facts, max_chars=260):
+        parts = []
+        labels = (
+            ("dates", "dates"), ("entities", "entities"),
+            ("decisions", "decisions"), ("preferences", "preferences"),
+            ("negations", "negations"), ("numeric_facts", "numbers"),
+        )
+        for key, label in labels:
+            values = facts.get(key) or []
+            if values:
+                parts.append(f"{label}=" + " | ".join(str(value) for value in values[:2]))
+        preview = "; ".join(parts)
+        return preview[:max_chars].rstrip()
+
+    def _local_compression_pressure_state(self):
+        max_generation = max(1, int(self.settings.get("memory_compression_max_generations", 2)))
+        eligible = 0
+        capped = 0
+        considered = 0
+        for memory in self.memories:
+            if memory.get("is_archived") or self._is_capacity_managed_memory(memory):
+                continue
+            if self._memory_layer(memory) == "core" or memory.get("source") == "system":
+                continue
+            if self._infer_retention_policy(memory) not in {"temporary", "compressible"}:
+                continue
+            considered += 1
+            if self._compression_generation(memory) >= max_generation:
+                capped += 1
+            else:
+                eligible += 1
+        return {
+            "considered_count": considered,
+            "eligible_count": eligible,
+            "generation_capped_count": capped,
+            "max_local_generation": max_generation,
+            "all_at_generation_limit": bool(capped and eligible == 0),
+        }
+
+    def _memory_compression_fingerprint(self, memory):
+        payload = {
+            "id": memory.get("id"),
+            "title": memory.get("title"),
+            "content": memory.get("content"),
+            "date": memory.get("date"),
+            "is_archived": bool(memory.get("is_archived")),
+            "compression_generation": self._compression_generation(memory),
+            "ai_compression_generation": self._ai_compression_generation(memory),
+        }
+        return hashlib.sha256(
+            json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+
+    def _prune_ai_compression_plans(self):
+        now = datetime.now()
+        kept = {}
+        for plan_id, plan in self._ai_compression_plans.items():
+            try:
+                expires_at = datetime.strptime(plan.get("expires_at", ""), "%Y-%m-%d %H:%M:%S")
+            except (TypeError, ValueError):
+                continue
+            if expires_at > now:
+                kept[plan_id] = plan
+        self._ai_compression_plans = kept
+
+    def _ai_compression_candidate_groups(self, scope="pressure", limit=50, project_id=""):
+        scope = str(scope or "pressure").strip().lower()
+        if scope not in {"pressure", "repeated", "project", "oldest"}:
+            scope = "pressure"
+        max_memories = max(2, int(self.settings.get("memory_ai_compression_max_memories", 200)))
+        try:
+            limit = max(2, min(max_memories, int(limit)))
+        except (TypeError, ValueError):
+            limit = min(50, max_memories)
+        project_id = str(project_id or "").strip()
+        local_max = max(1, int(self.settings.get("memory_compression_max_generations", 2)))
+        ai_max = max(1, int(self.settings.get("memory_ai_compression_max_generations", 2)))
+        candidates = []
+        skipped_ai_limit = 0
+        for memory in self.memories:
+            if memory.get("is_archived") or self._is_capacity_managed_memory(memory):
+                continue
+            if self._memory_layer(memory) == "core" or memory.get("source") == "system":
+                continue
+            if self._infer_retention_policy(memory) == "permanent":
+                continue
+            if scope == "project" and str(memory.get("project_id") or "") != project_id:
+                continue
+            generation = self._compression_generation(memory)
+            ai_generation = self._ai_compression_generation(memory)
+            if scope == "repeated" and generation < local_max:
+                continue
+            if ai_generation >= ai_max:
+                skipped_ai_limit += 1
+                continue
+            candidates.append(memory)
+
+        if scope == "oldest":
+            candidates.sort(key=lambda memory: (
+                str(memory.get("date") or ""),
+                1 if memory.get("is_important") else 0,
+                1 if memory.get("is_locked") else 0,
+                self._coerce_float(memory.get("importance_score"), 0.4),
+            ))
+        else:
+            candidates.sort(key=lambda memory: (
+                0 if self._compression_generation(memory) >= local_max else 1,
+                0 if self._infer_retention_policy(memory) in {"temporary", "compressible"} else 1,
+                1 if memory.get("is_important") else 0,
+                1 if memory.get("is_locked") else 0,
+                str(memory.get("date") or ""),
+                self._coerce_float(memory.get("importance_score"), 0.4),
+            ))
+        candidates = candidates[:limit]
+
+        grouped = {}
+        for memory in candidates:
+            key = (
+                str(memory.get("project_id") or ""),
+                self._memory_layer(memory),
+                str(memory.get("category") or "general"),
+                self._compression_topic_key(memory),
+            )
+            grouped.setdefault(key, []).append(memory)
+
+        group_size = max(2, min(30, int(self.settings.get("memory_compression_group_size", 20))))
+        groups = []
+        for key, memories in grouped.items():
+            memories.sort(key=lambda memory: (str(memory.get("date") or ""), str(memory.get("creation_time") or "")))
+            for offset in range(0, len(memories), group_size):
+                chunk = memories[offset:offset + group_size]
+                if len(chunk) < 2:
+                    continue
+                project_key, layer, category, topic_key = key
+                group_id = hashlib.sha256(
+                    ("|".join([project_key, layer, category, topic_key]) + f"|{offset}").encode("utf-8")
+                ).hexdigest()[:16]
+                groups.append({
+                    "group_id": group_id,
+                    "project_id": project_key,
+                    "layer": layer,
+                    "category": category,
+                    "topic_key": topic_key,
+                    "memories": chunk,
+                })
+        return groups, {
+            "scope": scope,
+            "requested_limit": limit,
+            "candidate_count": sum(len(group["memories"]) for group in groups),
+            "skipped_ai_generation_limit": skipped_ai_limit,
+            "local_generation_limit": local_max,
+            "ai_generation_limit": ai_max,
+        }
+
+    def build_ai_compression_preview(self, scope="pressure", limit=50, project_id=""):
+        self._prune_ai_compression_plans()
+        groups, selection = self._ai_compression_candidate_groups(
+            scope=scope,
+            limit=limit,
+            project_id=project_id,
+        )
+        input_limit = max(2000, int(self.settings.get("memory_ai_compression_input_token_limit", 32000)))
+        selected_groups = []
+        source_groups = []
+        source_tokens = 0
+        for group in groups:
+            records = []
+            for memory in group["memories"]:
+                records.append({
+                    "id": str(memory.get("id") or ""),
+                    "date": str(memory.get("date") or ""),
+                    "title": str(memory.get("title") or "Untitled")[:180],
+                    "content": str(memory.get("content") or "")[:12000],
+                    "structured_facts": self._extract_compression_facts(memory),
+                    "compression_generation": self._compression_generation(memory),
+                })
+            source_group = {
+                "group_id": group["group_id"],
+                "project_id": group["project_id"],
+                "layer": group["layer"],
+                "category": group["category"],
+                "topic_key": group["topic_key"],
+                "memories": records,
+            }
+            group_tokens = self.estimate_token_count(json.dumps(source_group, ensure_ascii=False))
+            if selected_groups and source_tokens + group_tokens + 900 > input_limit:
+                break
+            if group_tokens + 900 > input_limit:
+                continue
+            selected_groups.append(group)
+            source_groups.append(source_group)
+            source_tokens += group_tokens
+
+        prompt_preamble = (
+            "You compress long-term memories conservatively. Use only the supplied facts. "
+            "Preserve dates, people, decisions, preference changes, numbers, negations, and source meaning. "
+            "Do not merge groups, invent details, resolve contradictions, or silently remove a later correction. "
+            "Return one JSON object with a summaries array. Each item must contain group_id, title, summary, "
+            "and preserved_facts. Summary must be concise but self-contained.\n"
+        )
+        response_schema = {
+            "summaries": [{
+                "group_id": "group id from input",
+                "title": "short factual title",
+                "summary": "self-contained summary",
+                "preserved_facts": {
+                    "dates": [], "entities": [], "decisions": [],
+                    "preferences": [], "negations": [], "numeric_facts": [],
+                },
+            }]
+        }
+        prompt = (
+            prompt_preamble
+            + "Required JSON shape:\n"
+            + json.dumps(response_schema, ensure_ascii=False)
+            + "\n\nSource groups:\n"
+            + json.dumps(source_groups, ensure_ascii=False)
+        )
+        input_tokens = self.estimate_token_count(prompt)
+        output_tokens = min(8192, max(400, len(selected_groups) * 320, int(input_tokens * 0.22)))
+        total_tokens = input_tokens + output_tokens
+        plan_id = str(uuid.uuid4())
+        expires_at = datetime.now() + timedelta(minutes=15)
+        plan = {
+            "id": plan_id,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "expires_at": expires_at.strftime("%Y-%m-%d %H:%M:%S"),
+            "scope": selection["scope"],
+            "project_id": str(project_id or ""),
+            "prompt": prompt,
+            "input_tokens": input_tokens,
+            "max_output_tokens": output_tokens,
+            "estimated_total_tokens": total_tokens,
+            "groups": [{
+                "group_id": group["group_id"],
+                "project_id": group["project_id"],
+                "layer": group["layer"],
+                "category": group["category"],
+                "topic_key": group["topic_key"],
+                "memory_ids": [str(memory.get("id")) for memory in group["memories"]],
+            } for group in selected_groups],
+            "fingerprints": {
+                str(memory.get("id")): self._memory_compression_fingerprint(memory)
+                for group in selected_groups for memory in group["memories"]
+            },
+        }
+        if selected_groups:
+            self._ai_compression_plans[plan_id] = plan
+        return {
+            "status": "ready" if selected_groups else "no_safe_groups",
+            "plan_id": plan_id if selected_groups else None,
+            "expires_at": plan["expires_at"] if selected_groups else None,
+            "scope": selection["scope"],
+            "candidate_count": sum(len(group["memory_ids"]) for group in plan["groups"]),
+            "group_count": len(plan["groups"]),
+            "groups": [{
+                "group_id": group["group_id"],
+                "topic": group["topic_key"],
+                "category": group["category"],
+                "memory_count": len(group["memory_ids"]),
+            } for group in plan["groups"]],
+            "token_estimate": {
+                "provider": "DeepSeek-compatible",
+                "method": "cjk_aware_estimate",
+                "input_tokens": input_tokens,
+                "max_output_tokens": output_tokens,
+                "estimated_total_tokens": total_tokens,
+                "likely_min_tokens": max(1, int(total_tokens * 0.85)),
+                "likely_max_tokens": max(1, int(total_tokens * 1.20)),
+                "exact": False,
+            },
+            "limits": {
+                "requested_memories": selection["requested_limit"],
+                "input_token_limit": input_limit,
+                "skipped_ai_generation_limit": selection["skipped_ai_generation_limit"],
+            },
+        }
+
+    def get_ai_compression_plan(self, plan_id):
+        self._prune_ai_compression_plans()
+        plan = self._ai_compression_plans.get(str(plan_id or ""))
+        if not plan:
+            raise ValueError("AI compression plan expired or does not exist. Refresh the estimate.")
+        for memory_id, fingerprint in plan.get("fingerprints", {}).items():
+            memory = self._find_memory(memory_id)
+            if not memory or memory.get("is_archived"):
+                raise ValueError("A selected memory changed after preview. Refresh the estimate.")
+            if self._memory_compression_fingerprint(memory) != fingerprint:
+                raise ValueError("A selected memory changed after preview. Refresh the estimate.")
+        return plan
+
+    def apply_ai_compression_plan(self, plan_id, summaries, usage=None, model_name=""):
+        if not self.settings.get("memory_ai_compression_enabled", False):
+            raise ValueError("AI memory compression is disabled in Mode Setting.")
+        plan = self.get_ai_compression_plan(plan_id)
+        if not isinstance(summaries, list):
+            raise ValueError("AI compression response did not contain a summaries list.")
+        outputs = {
+            str(item.get("group_id") or ""): item
+            for item in summaries
+            if isinstance(item, dict) and item.get("group_id")
+        }
+        usage = usage if isinstance(usage, dict) else {}
+        prompt_tokens = max(0, int(usage.get("prompt_tokens") or plan.get("input_tokens") or 0))
+        completion_tokens = max(0, int(usage.get("completion_tokens") or 0))
+        total_tokens = max(
+            prompt_tokens + completion_tokens,
+            int(usage.get("total_tokens") or 0),
+        )
+        created = []
+        archived_count = 0
+        rejected_groups = []
+        for group in plan.get("groups") or []:
+            group_id = str(group.get("group_id") or "")
+            output = outputs.get(group_id)
+            if not output:
+                rejected_groups.append({"group_id": group_id, "reason": "missing_output"})
+                continue
+            memories = [self._find_memory(memory_id) for memory_id in group.get("memory_ids") or []]
+            memories = [memory for memory in memories if memory and not memory.get("is_archived")]
+            if len(memories) < 2:
+                rejected_groups.append({"group_id": group_id, "reason": "sources_changed"})
+                continue
+            title = self._normalize_text(output.get("title"))[:180]
+            summary = self._normalize_text(output.get("summary"))
+            if len(summary) < 20:
+                rejected_groups.append({"group_id": group_id, "reason": "summary_too_short"})
+                continue
+            source_text = "\n".join(
+                f"{memory.get('date', '')}\n{memory.get('title', '')}\n{memory.get('content', '')}"
+                for memory in memories
+            )
+
+            def number_tokens(text):
+                return {
+                    token.replace(",", "")
+                    for token in re.findall(r"(?<![A-Za-z0-9_])\d+(?:[.,]\d+)?%?", str(text or ""))
+                }
+
+            unsupported_numbers = sorted(
+                number_tokens(title + "\n" + summary) - number_tokens(source_text)
+            )
+            if unsupported_numbers:
+                rejected_groups.append({
+                    "group_id": group_id,
+                    "reason": "unsupported_numeric_fact",
+                    "values": unsupported_numbers[:12],
+                })
+                continue
+            preserved_facts = output.get("preserved_facts") if isinstance(output.get("preserved_facts"), dict) else {}
+            normalized_source = self._normalize_text(source_text).lower()
+            unsupported_anchors = []
+            for fact_key in ("dates", "entities"):
+                values = preserved_facts.get(fact_key) or []
+                if not isinstance(values, list):
+                    continue
+                for value in values[:20]:
+                    normalized_value = self._normalize_text(value).lower()
+                    if normalized_value and normalized_value not in normalized_source:
+                        unsupported_anchors.append({"type": fact_key, "value": normalized_value[:120]})
+            if unsupported_anchors:
+                rejected_groups.append({
+                    "group_id": group_id,
+                    "reason": "unsupported_preserved_fact",
+                    "values": unsupported_anchors[:12],
+                })
+                continue
+            bounded_summary, was_truncated, original_chars = self.bound_generated_memory_content(
+                summary,
+                memory_kind="summary",
+                memory_layer=group.get("layer") or "semantic",
+            )
+            structured_facts = [
+                {"memory_id": memory.get("id"), **self._extract_compression_facts(memory)}
+                for memory in memories
+            ]
+            compression_generation = max(
+                self._compression_generation(memory) for memory in memories
+            ) + 1
+            ai_generation = max(
+                self._ai_compression_generation(memory) for memory in memories
+            ) + 1
+            metadata = {
+                "memory_layer": "episodic" if group.get("layer") == "episodic" else "semantic",
+                "memory_kind": "summary",
+                "retention_policy": "compressible",
+                "compressed_from": [memory.get("id") for memory in memories],
+                "compression_generation": compression_generation,
+                "ai_compression_generation": ai_generation,
+                "structured_facts": structured_facts,
+                "model_preserved_facts": preserved_facts,
+                "compression_scope": {
+                    "project_id": group.get("project_id") or "",
+                    "category": group.get("category") or "general",
+                    "topic_key": group.get("topic_key") or "general",
+                    "source_layer": group.get("layer") or "semantic",
+                },
+            }
+            if group.get("project_id"):
+                metadata.update({
+                    "project_id": group.get("project_id"),
+                    "project_name": str(memories[0].get("project_name") or "Untitled Project")[:80],
+                    "project_scoped": True,
+                })
+            merged = self.add_memory(
+                bounded_summary,
+                title=title or f"AI compressed {group.get('topic_key') or 'memory'}",
+                source="ai_capacity_compaction",
+                is_important=False,
+                category=group.get("category") or "general",
+                tags=["compressed", "ai_compressed", str(group.get("category") or "general")],
+                confidence=min(self._coerce_float(memory.get("confidence"), 0.75) for memory in memories),
+                source_detail={
+                    "type": "confirmed_ai_memory_compression",
+                    "captured_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "compression_engine": "ai_deepseek",
+                    "model": str(model_name or "")[:180],
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "token_usage": total_tokens,
+                    "content_truncated": was_truncated,
+                    "original_generated_chars": original_chars,
+                    "protection_version": 2,
+                },
+                metadata=metadata,
+                run_capacity_check=False,
+            )
+            for memory in memories:
+                memory["archived_from_layer"] = self._memory_layer(memory)
+                memory["is_archived"] = True
+                memory["status"] = "archived"
+                memory["memory_layer"] = "archive"
+                memory["merged_into"] = merged["id"]
+                memory["parent_memory_id"] = merged["id"]
+            created.append(merged)
+            archived_count += len(memories)
+
+        if not created:
+            raise ValueError(
+                "AI output did not pass conservative validation; no memories were changed. "
+                + json.dumps(rejected_groups[:6], ensure_ascii=False)
+            )
+        self.save_memories()
+        self._ai_compression_plans.pop(str(plan_id), None)
+        capacity_result = self.run_memory_capacity_maintenance(trigger="ai_compression_completed")
+        event = self._record_memory_maintenance_event(
+            "ai_compression_completed",
+            "info",
+            f"Confirmed AI compression archived {archived_count} source memories into {len(created)} reviewed summaries.",
+            {
+                "summary_count": len(created),
+                "archived_count": archived_count,
+                "rejected_groups": rejected_groups,
+                "capacity_after": capacity_result.get("after"),
+                "model": str(model_name or "")[:180],
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+            },
+            compression_engine="ai_deepseek",
+            token_usage=total_tokens,
+        )
+        result = {
+            "status": "ai_compression_completed",
+            "notify_user": True,
+            "event": event,
+            "summary_count": len(created),
+            "archived_count": archived_count,
+            "rejected_groups": rejected_groups,
+            "memories": created,
+            "compression_engine": "ai_deepseek",
+            "model": str(model_name or ""),
+            "usage": {
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": total_tokens,
+                "actual": bool(usage.get("total_tokens") or usage.get("prompt_tokens")),
+            },
+            "capacity": capacity_result,
+        }
+        self.memory_maintenance["last_ai_offer_signature"] = None
+        self.memory_maintenance["last_result"] = result
+        self.save_memory_maintenance_state()
+        self.last_maintenance_result = result
+        return result
+
+    def merge_memories(self, days=7, force=False, target_active=None, reason="manual"):
+        """Compact compatible memories into bounded summaries and archive the originals."""
+        try:
+            days = max(0 if force else 1, min(3650, int(days)))
+        except (TypeError, ValueError):
+            days = int(self.settings.get("memory_compression_age_days", 30))
+        cutoff = (datetime.now() - timedelta(days=days)).date()
+        groups = {}
+        blocked_generation_count = 0
+        eligible_candidate_count = 0
+        max_generation = max(1, int(self.settings.get("memory_compression_max_generations", 2)))
+        for memory in self.memories:
+            if memory.get("is_archived") or self._is_capacity_managed_memory(memory):
+                continue
+            layer = self._memory_layer(memory)
+            if layer == "core" or memory.get("source") == "system":
+                continue
+            if self._infer_retention_policy(memory) == "permanent":
+                continue
+            if self._compression_generation(memory) >= max_generation:
+                blocked_generation_count += 1
+                continue
+            if not force and (
+                memory.get("is_locked")
+                or memory.get("is_important")
+                or self._infer_retention_policy(memory) not in {"temporary", "compressible"}
+            ):
                 continue
             try:
                 memory_date = datetime.strptime(memory.get("date", ""), "%Y-%m-%d").date()
             except (TypeError, ValueError):
-                continue
+                if not force:
+                    continue
+                memory_date = cutoff
             if memory_date <= cutoff:
-                eligible.append(memory)
+                eligible_candidate_count += 1
+                topic_key = self._compression_topic_key(memory)
+                group_key = (
+                    str(memory.get("project_id") or ""),
+                    layer,
+                    str(memory.get("category") or "general"),
+                    topic_key,
+                    "forced" if force else str(memory.get("date") or "")[:7],
+                )
+                groups.setdefault(group_key, []).append(memory)
 
-        if len(eligible) < 2:
-            return {"status": "skipped", "merged_count": 0}
+        try:
+            min_group = max(2, int(self.settings.get("memory_compression_min_group", 3)))
+            group_size = max(min_group, int(self.settings.get("memory_compression_group_size", 20)))
+            summary_chars = max(300, int(self.settings.get("memory_compression_summary_chars", 1800)))
+        except (TypeError, ValueError):
+            min_group, group_size, summary_chars = 3, 20, 1800
+        if force:
+            min_group = 2
+        try:
+            target_active = None if target_active is None else max(0, int(target_active))
+        except (TypeError, ValueError):
+            target_active = None
 
-        eligible.sort(key=lambda x: x.get("date", ""))
-        content_parts = []
-        for memory in eligible:
-            content = str(memory.get("content", "")).strip()
-            if len(content) > 800:
-                content = content[:800] + "…"
-            content_parts.append(
-                f"- [{memory.get('date', '')}] {memory.get('title', 'Untitled')}\n  {content}"
-            )
-
-        merged = self.add_memory(
-            "\n\n".join(content_parts),
-            title=f"Merged Memories · {eligible[0].get('date')} to {eligible[-1].get('date')}",
-            source="auto_merge",
-            is_important=False
-        )
-        for memory in eligible:
-            memory["is_archived"] = True
-            memory["merged_into"] = merged["id"]
+        merged_count = 0
+        summaries = []
+        for (project_id, layer, category, topic_key, month), group in sorted(groups.items()):
+            group.sort(key=lambda item: (item.get("date", ""), item.get("creation_time", "")))
+            for offset in range(0, len(group), group_size):
+                if target_active is not None:
+                    active_count = sum(1 for item in self.memories if not item.get("is_archived"))
+                    if active_count <= target_active:
+                        break
+                chunk = group[offset:offset + group_size]
+                if target_active is not None and len(chunk) >= 2:
+                    reduction_needed = max(1, active_count - target_active)
+                    chunk = chunk[:max(2, min(len(chunk), reduction_needed + 1))]
+                if len(chunk) < min_group:
+                    continue
+                per_item_chars = max(80, int((summary_chars - 160) / len(chunk)))
+                content_parts = []
+                structured_facts = []
+                for memory in chunk:
+                    facts = self._extract_compression_facts(memory)
+                    structured_facts.append({"memory_id": memory.get("id"), **facts})
+                    content = self._normalize_text(memory.get("content"))
+                    if len(content) > per_item_chars:
+                        content = content[:per_item_chars].rstrip() + "…"
+                    content_parts.append(
+                        f"- [{memory.get('date', '')}] {memory.get('title', 'Untitled')}: {content}"
+                    )
+                    facts_preview = self._compression_fact_preview(facts)
+                    if facts_preview:
+                        content_parts.append(f"  Key facts: {facts_preview}")
+                summary_content = "\n".join(content_parts)
+                if len(summary_content) > summary_chars:
+                    summary_content = summary_content[:summary_chars].rstrip() + "…"
+                compression_generation = max(
+                    self._compression_generation(memory) for memory in chunk
+                ) + 1
+                metadata = {
+                    "memory_layer": "episodic" if layer == "episodic" else "semantic",
+                    "memory_kind": "summary",
+                    "retention_policy": "compressible",
+                    "compressed_from": [memory.get("id") for memory in chunk if memory.get("id")],
+                    "compression_generation": compression_generation,
+                    "ai_compression_generation": max(
+                        self._ai_compression_generation(memory) for memory in chunk
+                    ),
+                    "structured_facts": structured_facts,
+                    "compression_scope": {
+                        "project_id": project_id,
+                        "category": category,
+                        "topic_key": topic_key,
+                        "month": month,
+                        "source_layer": layer,
+                    },
+                }
+                if project_id:
+                    metadata.update({
+                        "project_id": project_id,
+                        "project_name": str(chunk[0].get("project_name") or "Untitled Project")[:80],
+                        "project_scoped": True,
+                    })
+                merged = self.add_memory(
+                    summary_content,
+                    title=f"Compressed {category} · {month}",
+                    source="capacity_compaction" if reason in {"soft_limit", "hard_limit"} else "auto_merge",
+                    is_important=False,
+                    category=category,
+                    tags=["compressed", category, layer],
+                    confidence=min(self._coerce_float(item.get("confidence"), 0.75) for item in chunk),
+                    source_detail={
+                        "type": "bounded_memory_compression",
+                        "captured_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        "reason": str(reason or "manual"),
+                        "forced": bool(force),
+                        "compression_engine": "deterministic_local",
+                        "token_usage": 0,
+                        "protection_version": 2,
+                        "compression_generation": compression_generation,
+                    },
+                    metadata=metadata,
+                    run_capacity_check=False,
+                )
+                summaries.append(merged)
+                for memory in chunk:
+                    memory["archived_from_layer"] = layer
+                    memory["is_archived"] = True
+                    memory["status"] = "archived"
+                    memory["memory_layer"] = "archive"
+                    memory["merged_into"] = merged["id"]
+                    memory["parent_memory_id"] = merged["id"]
+                merged_count += len(chunk)
+        if not summaries:
+            return {
+                "status": "skipped",
+                "merged_count": 0,
+                "summary_count": 0,
+                "eligible_candidate_count": eligible_candidate_count,
+                "blocked_generation_count": blocked_generation_count,
+                "all_candidates_at_generation_limit": bool(
+                    blocked_generation_count and eligible_candidate_count == 0
+                ),
+                "compression_engine": "deterministic_local",
+                "token_usage": 0,
+            }
         self.save_memories()
         return {
             "status": "success",
-            "merged_count": len(eligible),
-            "memory": merged
+            "merged_count": merged_count,
+            "summary_count": len(summaries),
+            "eligible_candidate_count": eligible_candidate_count,
+            "blocked_generation_count": blocked_generation_count,
+            "all_candidates_at_generation_limit": bool(
+                blocked_generation_count and eligible_candidate_count == 0
+            ),
+            "memories": summaries,
+            "compression_engine": "deterministic_local",
+            "token_usage": 0,
         }
 
     def maybe_auto_merge(self):
-        if not self.settings.get("auto_merge_enabled", False):
+        if not (
+            self.settings.get("memory_compression_enabled", False)
+            or self.settings.get("auto_merge_enabled", False)
+        ):
             return {"status": "disabled", "merged_count": 0}
         today = datetime.now().strftime("%Y-%m-%d")
         if self.settings.get("last_auto_merge") == today:
             return {"status": "already_checked", "merged_count": 0}
-        result = self.merge_memories(self.settings.get("auto_merge_days", 7))
+        result = self.merge_memories(
+            self.settings.get(
+                "memory_compression_age_days",
+                self.settings.get("auto_merge_days", 30),
+            )
+        )
         self.settings["last_auto_merge"] = today
         self.save_settings()
         return result
@@ -2302,9 +6556,10 @@ class CheckInManager:
 
     def load_data(self):
         defaults = {
-            "schema_version": 1,
+            "schema_version": 2,
             "tasks": [],
             "records": {},
+            "activity": {},
             "auto_reports": {
                 "months": {},
                 "years": {}
@@ -2322,6 +6577,8 @@ class CheckInManager:
             defaults["tasks"] = []
         if not isinstance(defaults.get("records"), dict):
             defaults["records"] = {}
+        if not isinstance(defaults.get("activity"), dict):
+            defaults["activity"] = {}
         if not isinstance(defaults.get("auto_reports"), dict):
             defaults["auto_reports"] = {"months": {}, "years": {}}
         if not isinstance(defaults["auto_reports"].get("months"), dict):
@@ -2342,6 +6599,39 @@ class CheckInManager:
 
     def _today(self):
         return self._now().strftime("%Y-%m-%d")
+
+    def get_daily_activity(self, date_str=None):
+        date_str = self._safe_date(date_str)
+        item = self.data.get("activity", {}).get(date_str, {})
+        if not isinstance(item, dict):
+            item = {}
+        try:
+            entry_count = max(0, int(item.get("entry_count") or 0))
+        except (TypeError, ValueError):
+            entry_count = 0
+        return {
+            "date": date_str,
+            "entry_count": entry_count,
+            "last_entry_at": item.get("last_entry_at"),
+        }
+
+    def record_app_entry(self, date_str=None):
+        """Record one completed load of the main Saya page."""
+        date_str = self._safe_date(date_str)
+        store = self.data.setdefault("activity", {})
+        item = self.get_daily_activity(date_str)
+        item["entry_count"] += 1
+        item["last_entry_at"] = self._now().strftime("%Y-%m-%d %H:%M:%S")
+        store[date_str] = item
+
+        # Keep a little over one year of entry counters. Historical check-in
+        # records and chat files remain the source of truth for their own data.
+        cutoff = (self._now() - timedelta(days=400)).strftime("%Y-%m-%d")
+        for old_date in list(store):
+            if re.match(r"^\d{4}-\d{2}-\d{2}$", str(old_date)) and old_date < cutoff:
+                store.pop(old_date, None)
+        self.save_data()
+        return dict(item)
 
     def _add_months(self, date_obj, delta):
         month_index = date_obj.month - 1 + int(delta)
@@ -2477,6 +6767,8 @@ class CheckInManager:
             record["completions"] = {}
         if not isinstance(record.get("daily_tasks"), list):
             record["daily_tasks"] = []
+        if not isinstance(record.get("automatic_completions"), dict):
+            record["automatic_completions"] = {}
         if "note" not in record:
             record["note"] = ""
         return record
@@ -2494,11 +6786,20 @@ class CheckInManager:
                 "id": str(task.get("id") or uuid.uuid4()),
                 "title": title[:80],
                 "done": bool(task.get("done", False)),
+                "goal_id": str(task.get("goal_id") or "").strip() or None,
                 "created_at": str(task.get("created_at") or self._now().strftime("%Y-%m-%d %H:%M:%S"))
             })
         return clean
 
-    def add_task(self, title):
+    def add_task(self, title, goal_id=None, preset=None):
+        preset = str(preset or "").strip().lower()
+        if preset:
+            if preset != "anki":
+                raise ValueError("Unknown Daily task preset")
+            for existing in self.data.get("tasks", []):
+                if existing.get("active", True) and existing.get("preset") == preset:
+                    return existing
+            title = "Anki"
         title = re.sub(r"\s+", " ", str(title or "")).strip()
         if not title:
             return None
@@ -2507,10 +6808,17 @@ class CheckInManager:
             "id": str(uuid.uuid4()),
             "title": title[:80],
             "frequency": "daily",
+            "goal_id": str(goal_id or "").strip() or None,
             "order": len(self.data.get("tasks", [])),
             "active": True,
             "created_at": now
         }
+        if preset:
+            task.update({
+                "preset": preset,
+                "completion_mode": "automatic",
+                "completion_source": "anki",
+            })
         self.data["tasks"].append(task)
         self.save_data()
         return task
@@ -2520,16 +6828,19 @@ class CheckInManager:
             return False
         for task in self.data.get("tasks", []):
             if task.get("id") == task_id:
-                if "title" in updates:
+                is_preset = bool(task.get("preset"))
+                if "title" in updates and not is_preset:
                     title = re.sub(r"\s+", " ", str(updates.get("title") or "")).strip()
                     if title:
                         task["title"] = title[:80]
                 if "active" in updates:
                     task["active"] = bool(updates.get("active"))
-                if "frequency" in updates:
+                if "frequency" in updates and not is_preset:
                     frequency = str(updates.get("frequency") or "daily").lower()
                     if frequency in {"daily", "weekdays", "weekends", "weekly", "monthly"}:
                         task["frequency"] = frequency
+                if "goal_id" in updates:
+                    task["goal_id"] = str(updates.get("goal_id") or "").strip() or None
                 if "order" in updates:
                     try:
                         task["order"] = int(updates.get("order"))
@@ -2538,6 +6849,46 @@ class CheckInManager:
                 self.save_data()
                 return True
         return False
+
+    def sync_preset_completion(self, preset, completed, evidence=None, date_str=None):
+        """Persist a read-only task result supplied by its owning integration."""
+        preset = str(preset or "").strip().lower()
+        date_str = self._safe_date(date_str)
+        tasks = [
+            task for task in self._tasks_for_date(date_str)
+            if str(task.get("preset") or "").strip().lower() == preset
+            and str(task.get("completion_mode") or "") == "automatic"
+        ]
+        if not tasks:
+            return {"changed": False, "task_count": 0, "completed": bool(completed)}
+
+        record = self._normalize_record(date_str)
+        completions = record.setdefault("completions", {})
+        automatic = record.setdefault("automatic_completions", {})
+        clean_evidence = evidence if isinstance(evidence, dict) else {}
+        changed = False
+        for task in tasks:
+            task_id = task.get("id")
+            if completions.get(task_id) != bool(completed):
+                completions[task_id] = bool(completed)
+                changed = True
+            detail = {
+                "preset": preset,
+                "completed": bool(completed),
+                "source": str(task.get("completion_source") or preset),
+                **clean_evidence,
+            }
+            if automatic.get(task_id) != detail:
+                automatic[task_id] = detail
+                changed = True
+        if changed:
+            record["updated_at"] = self._now().strftime("%Y-%m-%d %H:%M:%S")
+            self.save_data()
+        return {
+            "changed": changed,
+            "task_count": len(tasks),
+            "completed": bool(completed),
+        }
 
     def reorder_tasks(self, ordered_ids):
         if not isinstance(ordered_ids, list):
@@ -2569,8 +6920,16 @@ class CheckInManager:
         active_ids = {task.get("id") for task in self._tasks_for_date(date_str)}
         incoming = completions if isinstance(completions, dict) else {}
         clean = {}
+        existing = record.get("completions", {})
+        tasks_by_id = {
+            task.get("id"): task for task in self._tasks_for_date(date_str)
+        }
         for task_id in active_ids:
-            clean[task_id] = bool(incoming.get(task_id, False))
+            task = tasks_by_id.get(task_id, {})
+            if str(task.get("completion_mode") or "") == "automatic":
+                clean[task_id] = bool(existing.get(task_id, False))
+            else:
+                clean[task_id] = bool(incoming.get(task_id, False))
         record["completions"] = clean
         if daily_tasks is not None:
             record["daily_tasks"] = self._daily_tasks_for_record({"daily_tasks": daily_tasks})
@@ -2859,6 +7218,71 @@ class CheckInManager:
             "year_summary": self.year_summary(year)
         }
 
+    def goal_progress(self, goal_id, start_date=None, end_date=None, limit=36):
+        """Return bounded Daily task history for a Life Quest without rewriting old records."""
+        goal_id = str(goal_id or "").strip()
+        if not goal_id:
+            return {"done": 0, "total": 0, "events": [], "truncated": False}
+
+        start_date = self._safe_date(start_date) if start_date else "1970-01-01"
+        end_date = self._safe_date(end_date) if end_date else self._today()
+        end_date = min(end_date, self._today())
+        linked_tasks = [
+            task for task in self.data.get("tasks", [])
+            if str(task.get("goal_id") or "") == goal_id and task.get("active", True)
+        ]
+        events = []
+
+        for task in linked_tasks:
+            task_start = max(start_date, self._task_created_date(task))
+            try:
+                cursor = datetime.strptime(task_start, "%Y-%m-%d")
+                end_dt = datetime.strptime(end_date, "%Y-%m-%d")
+            except ValueError:
+                continue
+            while cursor <= end_dt:
+                date_str = cursor.strftime("%Y-%m-%d")
+                if self._is_task_due_on_date(task, date_str):
+                    record = self.data.get("records", {}).get(date_str, {})
+                    completions = record.get("completions", {}) if isinstance(record, dict) else {}
+                    events.append({
+                        "date": date_str,
+                        "task_id": str(task.get("id") or ""),
+                        "title": str(task.get("title") or ""),
+                        "done": completions.get(task.get("id")) is True,
+                        "kind": "fixed"
+                    })
+                cursor += timedelta(days=1)
+
+        for date_str, record in self.data.get("records", {}).items():
+            if not (start_date <= str(date_str) <= end_date) or not isinstance(record, dict):
+                continue
+            for task in self._daily_tasks_for_record(record):
+                if str(task.get("goal_id") or "") != goal_id:
+                    continue
+                events.append({
+                    "date": str(date_str),
+                    "task_id": str(task.get("id") or ""),
+                    "title": str(task.get("title") or ""),
+                    "done": task.get("done") is True,
+                    "kind": "one_off"
+                })
+
+        events.sort(key=lambda item: (item.get("date", ""), item.get("title", ""), item.get("task_id", "")))
+        total = len(events)
+        done = sum(1 for item in events if item.get("done") is True)
+        try:
+            limit = max(1, min(120, int(limit)))
+        except (TypeError, ValueError):
+            limit = 36
+        visible = events[-limit:]
+        return {
+            "done": done,
+            "total": total,
+            "events": visible,
+            "truncated": total > len(visible)
+        }
+
     def get_or_create_chat_session(self, date_str, memory_manager):
         date_str = self._safe_date(date_str)
         if not self.is_date_in_edit_window(date_str):
@@ -3012,9 +7436,93 @@ checkin_manager = CheckInManager()
 
 kb_system = KnowledgeBase()
 
+
+def refresh_daily_activity_memory(record_entry=False, date_str=None):
+    """Refresh the protected memory Saya uses to understand today's state."""
+    date_str = checkin_manager._safe_date(date_str)
+    activity = (
+        checkin_manager.record_app_entry(date_str)
+        if record_entry
+        else checkin_manager.get_daily_activity(date_str)
+    )
+    record = checkin_manager.decorate_record(date_str)
+    fixed_tasks = checkin_manager._tasks_for_date(date_str)
+    completions = record.get("completions", {}) if isinstance(record, dict) else {}
+    task_details = [
+        {
+            "id": task.get("id"),
+            "title": task.get("title", ""),
+            "done": completions.get(task.get("id")) is True,
+            "kind": "fixed",
+        }
+        for task in fixed_tasks
+        if isinstance(task, dict)
+    ]
+    task_details.extend({
+        "id": task.get("id"),
+        "title": task.get("title", ""),
+        "done": task.get("done") is True,
+        "kind": "one_off",
+    } for task in record.get("daily_tasks", []) if isinstance(task, dict))
+    record["task_details"] = task_details
+    chat_stats = memory_manager.get_daily_conversation_stats(date_str)
+    memory = kb_system.upsert_daily_activity_memory(
+        date_str,
+        record,
+        activity.get("entry_count", 0),
+        chat_stats,
+    )
+    return {
+        "date": date_str,
+        "activity": activity,
+        "checkin": {
+            "status": record.get("status"),
+            "done": record.get("done", 0),
+            "total": record.get("total", 0),
+        },
+        "chat": chat_stats,
+        "memory": memory,
+    }
+
+
+def sync_anki_checkin_state(anki_state):
+    """Apply a fresh Anki snapshot to the Daily preset and managed memory."""
+    anki_state = anki_state if isinstance(anki_state, dict) else {}
+    summary = anki_state.get("summary")
+    if not anki_state.get("connected") or not isinstance(summary, dict):
+        return {"status": "unavailable", "task_count": 0, "memory": None}
+
+    completed_decks = [
+        str(name) for name in summary.get("completed_decks_today") or [] if str(name).strip()
+    ]
+    evidence = {
+        "rule": str(summary.get("daily_task_rule") or ""),
+        "completed_decks": completed_decks,
+        "today_reviews": int(summary.get("today_reviews") or 0),
+        "today_cards": int(summary.get("today_cards") or 0),
+        "source_modified_at": str(anki_state.get("source_modified_at") or ""),
+    }
+    task_result = checkin_manager.sync_preset_completion(
+        "anki",
+        bool(summary.get("daily_task_completed")),
+        evidence=evidence,
+    )
+    memory = kb_system.upsert_anki_checkin_memory(anki_state)
+    if task_result.get("changed"):
+        refresh_daily_activity_memory()
+    return {
+        "status": "synced",
+        **task_result,
+        "completed_decks": completed_decks,
+        "memory": memory,
+    }
+
 class AssistantRoleManager:
     SUMMARY_MEMORY_ID = "assistant-role-learning-summary"
-    STATE_VERSION = 2
+    AREA_MEMORY_PREFIX = "assistant-role-learning-area-"
+    NOTE_MEMORY_PREFIX = "assistant-role-learning-note-"
+    CURATED_MEMORY_PREFIX = "assistant-role-curated-"
+    STATE_VERSION = 4
 
     def __init__(self, base_dir=str(KNOWLEDGE_BASE_DIR)):
         self.base_dir = base_dir
@@ -3033,7 +7541,9 @@ class AssistantRoleManager:
             "memories": [],
             "chapter_summary": [],
             "path_memories": [],
-            "session_ids": []
+            "session_ids": [],
+            "curated_extractions": [],
+            "normal_memory_sync_version": 0,
         }
 
     def load_state(self):
@@ -3054,6 +7564,8 @@ class AssistantRoleManager:
             state["path_memories"] = []
         if not isinstance(state.get("session_ids"), list):
             state["session_ids"] = []
+        if not isinstance(state.get("curated_extractions"), list):
+            state["curated_extractions"] = []
         return state
 
     def save_state(self):
@@ -3105,6 +7617,20 @@ class AssistantRoleManager:
             if isinstance(item, dict) and item.get("path")
         ]
         state["path_memory_count"] = len(state["path_memories"])
+        state["curated_extractions"] = [
+            {
+                "memory_id": item.get("memory_id", ""),
+                "path": item.get("path", ""),
+                "chapter": item.get("chapter", ""),
+                "mode": item.get("mode", "simple"),
+                "title": item.get("title", ""),
+                "content_chars": int(item.get("content_chars") or 0),
+                "updated_at": item.get("updated_at"),
+            }
+            for item in state.get("curated_extractions", [])
+            if isinstance(item, dict) and item.get("memory_id")
+        ]
+        state["curated_extraction_count"] = len(state["curated_extractions"])
         state["sessions"] = self.list_sessions(memory_manager) if memory_manager else []
         return state
 
@@ -3158,6 +7684,81 @@ class AssistantRoleManager:
             "current_path": normalized_relative,
             "parent_path": parent,
             "entries": entries,
+        }
+
+    def get_note_outline(self, vault_path=None, relative_path=""):
+        vault, selected_path, normalized_relative = self._resolve_vault_entry(vault_path, relative_path)
+        if not os.path.isfile(selected_path):
+            raise ValueError("Select a Markdown note to inspect its chapters.")
+        text = self._read_note_text(selected_path, limit=300000)
+        lines = text.splitlines()
+        chapters = []
+        for line_index, line in enumerate(lines):
+            match = re.match(r"^(#{1,6})\s+(.+?)\s*$", line.strip())
+            if not match:
+                continue
+            title = self._clean_heading(match.group(2))
+            if not title:
+                continue
+            chapters.append({
+                "selector": f"line:{line_index}",
+                "line": line_index,
+                "level": len(match.group(1)),
+                "title": title,
+                "label": f"{'  ' * (len(match.group(1)) - 1)}{title}",
+            })
+        return {
+            "vault_path": vault,
+            "path": normalized_relative,
+            "title": self._note_title(text, normalized_relative, []),
+            "char_count": len(text),
+            "chapters": chapters[:500],
+            "source_truncated": len(text) >= 300000,
+        }
+
+    def prepare_note_extraction(self, vault_path=None, relative_path="", chapter_selector=""):
+        vault, selected_path, normalized_relative = self._resolve_vault_entry(vault_path, relative_path)
+        if not os.path.isfile(selected_path):
+            raise ValueError("Only a Markdown note or one of its chapters can be extracted.")
+        text = self._read_note_text(selected_path, limit=300000)
+        lines = text.splitlines()
+        chapter_title = ""
+        selected_text = text
+        selector = str(chapter_selector or "").strip()
+        if selector:
+            match = re.fullmatch(r"line:(\d+)", selector)
+            if not match:
+                raise ValueError("Invalid chapter selector.")
+            start = int(match.group(1))
+            if start < 0 or start >= len(lines):
+                raise ValueError("Selected chapter no longer exists. Refresh the note outline.")
+            heading = re.match(r"^(#{1,6})\s+(.+?)\s*$", lines[start].strip())
+            if not heading:
+                raise ValueError("Selected chapter heading no longer exists. Refresh the note outline.")
+            level = len(heading.group(1))
+            chapter_title = self._clean_heading(heading.group(2))
+            end = len(lines)
+            for index in range(start + 1, len(lines)):
+                next_heading = re.match(r"^(#{1,6})\s+(.+?)\s*$", lines[index].strip())
+                if next_heading and len(next_heading.group(1)) <= level:
+                    end = index
+                    break
+            selected_text = "\n".join(lines[start:end]).strip()
+        title = self._note_title(text, normalized_relative, [])
+        source_hash = hashlib.sha256(selected_text.encode("utf-8", errors="ignore")).hexdigest()
+        selection_key = f"{normalized_relative.casefold()}|{selector}"
+        memory_id = self.CURATED_MEMORY_PREFIX + hashlib.sha1(selection_key.encode("utf-8")).hexdigest()[:20]
+        return {
+            "memory_id": memory_id,
+            "vault_path": vault,
+            "path": normalized_relative,
+            "title": title,
+            "chapter": chapter_title,
+            "chapter_selector": selector,
+            "source_text": selected_text,
+            "source_chars": len(selected_text),
+            "source_hash": source_hash,
+            "source_truncated": len(text) >= 300000,
         }
 
     def add_path_memory(self, vault_path=None, relative_path="", description=""):
@@ -3235,6 +7836,7 @@ class AssistantRoleManager:
                     "name": sid.replace("session_", "").replace(".jsonl", ""),
                     "preview": "Empty assistant chat",
                     "time": "",
+                    "last_qa_time": "",
                     "pinned": False,
                     "role_mode": "assistant"
                 }
@@ -3320,6 +7922,8 @@ class AssistantRoleManager:
 
     def _clean_heading(self, value):
         text = re.sub(r"\s+", " ", str(value or "")).strip()
+        text = re.sub(r"<[^>]+>", "", text)
+        text = re.sub(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]", lambda match: match.group(2) or match.group(1), text)
         text = re.sub(r"^[-*+]\s+", "", text)
         return text[:180]
 
@@ -3438,34 +8042,205 @@ class AssistantRoleManager:
         lines = [
             "Assistant role learning map from Obsidian notes.",
             f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.",
-            "This ordinary-mode locked memory records only broad chapter/area names so normal chats know what Doctor has been studying."
+            "This managed overview records only broad areas and representative titles. Individual notes enter long-term memory only after Doctor explicitly extracts them in Assistant."
         ]
         for group in groups[:24]:
-            titles = "; ".join(group.get("titles", [])[:5])
             line = f"- {group.get('name')}: {group.get('note_count', 0)} notes"
+            titles = [self._clean_heading(title) for title in group.get("titles", [])[:5]]
+            titles = [title for title in titles if title]
             if titles:
-                line += f" ({titles})"
+                line += f" ({'; '.join(titles)})"
             lines.append(line)
         if path_memories:
             lines.append("Curated path descriptions:")
-            for item in path_memories[:24]:
+            for item in path_memories[:16]:
                 lines.append(f"- {item.get('path')}: {item.get('description')}")
-        content = "\n".join(lines)
-        if len(content) <= 1800:
-            return content
-        compact = lines[:3]
-        if path_memories:
-            compact.append("Curated path descriptions:")
-            for item in path_memories[:12]:
-                compact.append(f"- {item.get('path')}: {item.get('description')}")
-        for group in groups[:40]:
-            compact.append(f"- {group.get('name')}: {group.get('note_count', 0)} notes")
-        return "\n".join(compact)[:2200]
+        return "\n".join(lines)[:2400]
 
-    def update_normal_mode_memory(self, kb):
+    def _area_memory_id(self, area_name):
+        digest = hashlib.sha1(str(area_name or "Vault root").casefold().encode("utf-8")).hexdigest()[:16]
+        return self.AREA_MEMORY_PREFIX + digest
+
+    def _note_memory_id(self, note):
+        note_id = str(note.get("id") or "").strip()
+        if not note_id:
+            note_id = hashlib.sha1(str(note.get("file") or note.get("title") or "note").encode("utf-8")).hexdigest()[:16]
+        return self.NOTE_MEMORY_PREFIX + note_id
+
+    def _normal_mode_area_content(self, group):
+        area_name = str(group.get("name") or "Vault root")
+        lines = [
+            f"Obsidian knowledge area: {area_name}",
+            f"Notes: {int(group.get('note_count') or 0)}",
+        ]
+        titles = [self._clean_heading(title) for title in group.get("titles", [])]
+        titles = [title for title in titles if title]
+        if titles:
+            lines.append("Representative notes: " + "; ".join(titles[:20]))
+        headings = [self._clean_heading(heading) for heading in group.get("headings", [])]
+        headings = [heading for heading in headings if heading]
+        if headings:
+            lines.append("Topics: " + " / ".join(headings[:20]))
+        lines.append("Individual note outlines are stored as child semantic memories and retrieved only when relevant.")
+        return "\n".join(lines)[:6000]
+
+    def _upsert_learning_memory(self, kb, memory_id, values, now):
+        memory = kb._find_memory(memory_id)
+        created = memory is None
+        if created:
+            memory = {
+                "id": memory_id,
+                "creation_time": now,
+                "date": now[:10],
+                "access_count": 0,
+                "last_accessed": None,
+            }
+            kb.memories.append(memory)
+        previous = json.dumps(memory, ensure_ascii=False, sort_keys=True, default=str)
+        memory.update(values)
+        memory["last_updated"] = now
+        kb.normalize_memory(memory)
+        current = json.dumps(memory, ensure_ascii=False, sort_keys=True, default=str)
+        return memory, created or previous != current
+
+    def _update_normal_mode_memory_split_legacy(self, kb):
         content = self._normal_mode_summary_content()
         if not content:
-            return {"updated": False, "memory": None}
+            return {"updated": False, "memory": None, "area_count": 0, "note_count": 0}
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        changed = False
+        memory, item_changed = self._upsert_learning_memory(kb, self.SUMMARY_MEMORY_ID, {
+            "title": "Assistant Role · Obsidian Learning Map",
+            "content": content,
+            "source": "assistant_role",
+            "source_detail": {
+                "type": "assistant_role_learning_index",
+                "updated_at": now
+            },
+            "category": "learning_map",
+            "tags": ["assistant_role", "obsidian", "learning_map", "knowledge_index"],
+            "confidence": 0.95,
+            "importance_score": 0.78,
+            "is_locked": False,
+            "is_important": True,
+            "is_archived": False,
+            "managed_slot": "assistant_role:learning_map:index",
+            "memory_layer": "semantic",
+            "memory_kind": "knowledge_index",
+            "parent_memory_id": None,
+            "child_count": len(self.state.get("chapter_summary", [])),
+            "note_count": len(self.state.get("memories", [])),
+        }, now)
+        changed = changed or item_changed
+
+        active_ids = {self.SUMMARY_MEMORY_ID}
+        area_ids = {}
+        for group in self.state.get("chapter_summary", []):
+            if not isinstance(group, dict):
+                continue
+            area_name = str(group.get("name") or "Vault root")
+            area_id = self._area_memory_id(area_name)
+            area_ids[area_name.casefold()] = area_id
+            active_ids.add(area_id)
+            _, item_changed = self._upsert_learning_memory(kb, area_id, {
+                "title": f"Obsidian Area · {area_name}",
+                "content": self._normal_mode_area_content(group),
+                "source": "assistant_role",
+                "source_detail": {"type": "assistant_role_learning_area", "updated_at": now},
+                "category": "learning_map",
+                "tags": ["assistant_role", "obsidian", "learning_area", self._clean_heading(area_name).lower()[:60]],
+                "confidence": 0.92,
+                "importance_score": 0.58,
+                "is_locked": False,
+                "is_important": False,
+                "is_archived": False,
+                "managed_slot": f"assistant_role:learning_area:{area_id}",
+                "memory_layer": "semantic",
+                "memory_kind": "knowledge_area",
+                "parent_memory_id": self.SUMMARY_MEMORY_ID,
+                "learning_area": area_name,
+                "note_count": int(group.get("note_count") or 0),
+            }, now)
+            changed = changed or item_changed
+
+        note_count = 0
+        for note in self.state.get("memories", []):
+            if not isinstance(note, dict):
+                continue
+            note_id = self._note_memory_id(note)
+            active_ids.add(note_id)
+            note_count += 1
+            area_name = str(note.get("top_group") or note.get("folder") or "Vault root")
+            area_id = area_ids.get(area_name.casefold()) or self._area_memory_id(area_name)
+            title = self._clean_heading(note.get("title")) or "Untitled note"
+            content = str(note.get("content") or "").strip()
+            if not content:
+                content = f"File: {note.get('file') or ''}\nTitle: {title}"
+            note_tags = [self._clean_heading(tag) for tag in list(note.get("tags", []))[:6]]
+            note_tags = [tag for tag in note_tags if tag]
+            _, item_changed = self._upsert_learning_memory(kb, note_id, {
+                "title": f"Obsidian Note · {title}",
+                "content": content[:12000],
+                "source": "obsidian",
+                "source_detail": {
+                    "type": "assistant_role_learning_note",
+                    "file": note.get("file", ""),
+                    "updated_at": note.get("updated_at") or now,
+                },
+                "category": "learning_note",
+                "tags": ["assistant_role", "obsidian", "learning_note", self._clean_heading(area_name).lower()[:60], *note_tags],
+                "confidence": 0.9,
+                "importance_score": 0.46,
+                "is_locked": False,
+                "is_important": False,
+                "is_archived": False,
+                "managed_slot": f"assistant_role:learning_note:{note_id}",
+                "memory_layer": "semantic",
+                "memory_kind": "knowledge_note",
+                "parent_memory_id": area_id,
+                "learning_area": area_name,
+                "note_ref": note.get("file", ""),
+            }, now)
+            changed = changed or item_changed
+
+        archived_count = 0
+        for existing in kb.memories:
+            source_type = ""
+            if isinstance(existing.get("source_detail"), dict):
+                source_type = str(existing["source_detail"].get("type") or "")
+            memory_id = str(existing.get("id") or "")
+            is_learning_memory = (
+                memory_id.startswith((self.AREA_MEMORY_PREFIX, self.NOTE_MEMORY_PREFIX))
+                or source_type in {"assistant_role_learning_area", "assistant_role_learning_note"}
+            )
+            if is_learning_memory and memory_id not in active_ids and not existing.get("is_archived"):
+                existing["is_archived"] = True
+                existing["archived_from_layer"] = "semantic"
+                existing["memory_layer"] = "archive"
+                existing["status"] = "archived"
+                existing["last_updated"] = now
+                archived_count += 1
+                changed = True
+
+        self.state["schema_version"] = self.STATE_VERSION
+        self.state["normal_memory_sync_version"] = self.STATE_VERSION
+        self.state["normal_memory_synced_at"] = now
+        self.save_state()
+        if changed:
+            kb.save_memories()
+        return {
+            "updated": changed,
+            "memory": memory,
+            "area_count": len(area_ids),
+            "note_count": note_count,
+            "archived_count": archived_count,
+        }
+
+    def update_normal_mode_memory(self, kb):
+        """Keep one broad map; only explicitly curated extracts become separate memories."""
+        content = self._normal_mode_summary_content()
+        if not content:
+            return {"updated": False, "memory": None, "archived_split_count": 0}
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         memory = kb._find_memory(self.SUMMARY_MEMORY_ID)
         if not memory:
@@ -3473,31 +8248,176 @@ class AssistantRoleManager:
                 "id": self.SUMMARY_MEMORY_ID,
                 "creation_time": now,
                 "date": now[:10],
+                "access_count": 0,
+                "last_accessed": None,
             }
             kb.memories.append(memory)
         memory.update({
             "title": "Assistant Role · Obsidian Learning Map",
             "content": content,
-            "source": "session_archive",
+            "source": "assistant_role",
             "source_detail": {
                 "type": "assistant_role_learning_map",
                 "captured_at": memory.get("creation_time", now),
-                "updated_at": now
+                "updated_at": now,
             },
-            "category": "conversation_summary",
-            "tags": ["assistant_role", "obsidian", "learning_map", "archive"],
-            "confidence": 0.9,
-            "importance_score": 0.86,
+            "category": "learning_map",
+            "tags": ["assistant_role", "obsidian", "learning_map"],
+            "confidence": 0.92,
+            "importance_score": 0.72,
             "is_locked": True,
             "is_important": True,
             "is_archived": False,
-            "last_updated": now
+            "managed_slot": "assistant_role:learning_map:index",
+            "memory_layer": "semantic",
+            "memory_kind": "knowledge_index",
+            "parent_memory_id": None,
+            "note_count": len(self.state.get("memories", [])),
+            "last_updated": now,
         })
         kb.normalize_memory(memory)
+
+        legacy_split_count = 0
+        for existing in kb.memories:
+            memory_id = str(existing.get("id") or "")
+            source_type = ""
+            if isinstance(existing.get("source_detail"), dict):
+                source_type = str(existing["source_detail"].get("type") or "")
+            was_automatic_split = (
+                memory_id.startswith((self.AREA_MEMORY_PREFIX, self.NOTE_MEMORY_PREFIX))
+                or source_type in {"assistant_role_learning_area", "assistant_role_learning_note"}
+            )
+            if was_automatic_split:
+                legacy_split_count += 1
+
+        self.state["schema_version"] = self.STATE_VERSION
+        self.state["normal_memory_sync_version"] = self.STATE_VERSION
+        self.state["normal_memory_synced_at"] = now
+        self.save_state()
         kb.save_memories()
-        return {"updated": True, "memory": memory}
+        return {
+            "updated": True,
+            "memory": memory,
+            "archived_split_count": 0,
+            "legacy_split_count": legacy_split_count,
+            "curated_extraction_count": len(self.state.get("curated_extractions", [])),
+        }
+
+    def save_curated_extraction(self, kb, prepared, generated_content, mode="simple", model_name=""):
+        mode = "complex" if str(mode).lower() == "complex" else "simple"
+        memory_kind = f"knowledge_extract_{mode}"
+        bounded, was_truncated, generated_chars = kb.bound_generated_memory_content(
+            generated_content,
+            memory_kind=memory_kind,
+            memory_layer="semantic",
+        )
+        if not bounded:
+            raise ValueError("The extraction model returned an empty memory.")
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        memory_id = str(prepared.get("memory_id") or "")
+        if not kb.revive_deleted_memory(memory_id):
+            raise ValueError("Unable to clear the previous deletion marker for this curated memory.")
+        memory = kb._find_memory(memory_id)
+        if not memory:
+            memory = {
+                "id": memory_id,
+                "creation_time": now,
+                "date": now[:10],
+                "access_count": 0,
+                "last_accessed": None,
+            }
+            kb.memories.append(memory)
+        note_title = str(prepared.get("title") or "Obsidian note")
+        chapter = str(prepared.get("chapter") or "")
+        display_title = f"Obsidian · {note_title}" + (f" · {chapter}" if chapter else "")
+        memory.update({
+            "title": display_title[:220],
+            "content": bounded,
+            "source": "obsidian",
+            "source_detail": {
+                "type": "assistant_role_curated_extraction",
+                "file": prepared.get("path", ""),
+                "chapter": chapter,
+                "chapter_selector": prepared.get("chapter_selector", ""),
+                "source_hash": prepared.get("source_hash", ""),
+                "source_chars": int(prepared.get("source_chars") or 0),
+                "extraction_mode": mode,
+                "model": str(model_name or ""),
+                "updated_at": now,
+            },
+            "category": "learning_note",
+            "tags": ["assistant_role", "obsidian", "curated", mode],
+            "confidence": 0.9,
+            "importance_score": 0.84 if mode == "complex" else 0.8,
+            "is_locked": False,
+            "is_important": True,
+            "is_archived": False,
+            "managed_slot": f"assistant_role:curated:{memory_id}",
+            "memory_layer": "semantic",
+            "memory_kind": memory_kind,
+            "parent_memory_id": self.SUMMARY_MEMORY_ID,
+            "note_ref": prepared.get("path", ""),
+            "chapter_ref": chapter,
+            "extraction_mode": mode,
+            "content_truncated": was_truncated,
+            "original_generated_chars": generated_chars,
+            "last_updated": now,
+        })
+        kb.normalize_memory(memory)
+        records = [
+            dict(item) for item in self.state.get("curated_extractions", [])
+            if isinstance(item, dict) and item.get("memory_id") != memory_id
+        ]
+        records.insert(0, {
+            "memory_id": memory_id,
+            "path": prepared.get("path", ""),
+            "chapter": chapter,
+            "chapter_selector": prepared.get("chapter_selector", ""),
+            "mode": mode,
+            "title": display_title[:220],
+            "content_chars": len(bounded),
+            "source_chars": int(prepared.get("source_chars") or 0),
+            "source_hash": prepared.get("source_hash", ""),
+            "updated_at": now,
+        })
+        self.state["curated_extractions"] = records[:500]
+        self.save_state()
+        kb.save_memories()
+        return {
+            "memory": memory,
+            "content_limit": kb.memory_content_limit(memory_kind, "semantic"),
+            "content_truncated": was_truncated,
+        }
+
+    def remove_curated_extraction(self, kb, memory_id):
+        memory_id = str(memory_id or "").strip()
+        memory = kb._find_memory(memory_id)
+        if not memory or not str(memory.get("managed_slot") or "").startswith("assistant_role:curated:"):
+            return {"removed": False}
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        memory["is_archived"] = True
+        memory["archived_from_layer"] = "semantic"
+        memory["memory_layer"] = "archive"
+        memory["status"] = "archived"
+        memory["last_updated"] = now
+        self.state["curated_extractions"] = [
+            item for item in self.state.get("curated_extractions", [])
+            if isinstance(item, dict) and str(item.get("memory_id") or "") != memory_id
+        ]
+        self.save_state()
+        kb.save_memories()
+        return {"removed": True, "memory_id": memory_id}
 
 assistant_role_manager = AssistantRoleManager()
+
+if (
+    assistant_role_manager.state.get("memories")
+    and int(assistant_role_manager.state.get("normal_memory_sync_version") or 0) < AssistantRoleManager.STATE_VERSION
+):
+    try:
+        assistant_role_manager.update_normal_mode_memory(kb_system)
+    except Exception as exc:
+        print(f"Assistant learning-map migration deferred: {exc}")
 
 class VisionService:
     def __init__(self):
@@ -3785,9 +8705,96 @@ class EmotionEngine:
 emotion_engine = EmotionEngine()
 
 class MotionIntelligence:
+    CHAT_MOTION_CATEGORIES = {
+        'surprised',
+        'happy',
+        'angry',
+        'coquettish',
+        'helpless',
+        'refusal',
+        'worried',
+        'confused_thinking',
+        'giving_answer',
+    }
+    CHAT_MOTION_EXCLUDED_IDS = set()
+    CHAT_MOTION_POOLS = {
+        'surprised': (
+            'surprised_big',
+            'surprised_small',
+        ),
+        'happy': (
+            'bold_snicker',
+            'cautious_smile',
+            'delighted_surprise',
+            'hearty_laugh',
+            'hold_hands_119',
+            'shy_blush',
+        ),
+        'angry': (
+            'coquettish_you_are_bad',
+            'jealous_pout',
+            'pout_turn_head_hmph',
+            'teasing_are_you_picking_a_fight',
+        ),
+        'coquettish': (
+            'Fairy_idle_362',
+            'hold_hands_119',
+            'looking_96',
+            'playful_finger_gun',
+        ),
+        'helpless': (
+            'helpless_listening_look',
+            'reassuring_nevermind',
+        ),
+        'refusal': (
+            'refusal_no',
+            'refusal_no_alt',
+        ),
+        'worried': (
+            'inviting_left_hand',
+            'timid_door_knock',
+        ),
+        'confused_thinking': (
+            'confused_head_scratch_left',
+            'confused_head_scratch_right',
+            'detective_thinking',
+            'thinking',
+            'troubled_left_head_scratch',
+        ),
+        'giving_answer': (
+            'got_an_idea',
+            'got_an_idea_alt',
+            'pointing_to_self_me',
+        ),
+    }
+    KEYWORD_MOTION_POOLS = {
+        'farewell_keyword': (
+            'loud_greeting',
+            'farewell_wave',
+        ),
+    }
+    RUNTIME_MOTION_POOLS = {
+        'startup_required': (
+            'apologizing',
+            'door_knock',
+            'looking_96',
+        ),
+        'touch_face_required': (
+            'confused_cheek_scratch',
+        ),
+        'sleepy_idle': (
+            'sleepy_eyes_closed',
+        ),
+        'reply_fallback': (
+            'Idle_motion_confident_148',
+            'Idle_searchong_173',
+        ),
+    }
+
     def __init__(self):
         self._last_motion_name = None
         self._last_motion_at = 0.0
+        self._recent_motion_by_intent = {}
         self.motion_categories = {
             'normal_idle': [
                 {'name': 'Idle_normal_187', 'weight': 25},
@@ -3830,11 +8837,11 @@ class MotionIntelligence:
             ],
             'night_sleepy': [
                 {'name': 'Sleepy_yawn_idle_113', 'weight': 50},
-                {'name': 'Sleepy_idle_158', 'weight': 50}
+                {'name': 'sleepy_eyes_closed', 'weight': 50}
             ],
             'easter_egg': [
-                {'name': 'Robot_idle_418', 'weight': 70},
-                {'name': 'Fairy_idle_362', 'weight': 30}
+                {'name': 'Fairy_idle_362', 'weight': 70},
+                {'name': 'looking_96', 'weight': 30}
             ],
             'curious_interest': [
                 {'name': 'looking_96', 'weight': 50},
@@ -3858,11 +8865,18 @@ class MotionIntelligence:
                 {'name': 'Idle_normal_187', 'weight': 40}
             ]
         }
+        self.fallback_motion_categories = self.motion_categories
+        self.manifest_enabled = False
+        self.motion_manifest_path = None
+        self.motion_manifest_error = ""
+        self.motion_categories = self.apply_required_motion_pools(
+            self.load_motion_categories()
+        )
 
     def is_night_time(self):
-        """Check if it's night time (18:00 - 06:00)"""
+        """Check if it's night time (21:00 - 06:00)."""
         hour = datetime.now().hour
-        return hour >= 18 or hour <= 6
+        return hour >= 21 or hour < 6
 
     def analyze_user_input(self, text):
         """Analyze user input to determine motion category - Improved heuristics"""
@@ -3870,9 +8884,6 @@ class MotionIntelligence:
         
         if any(k in text for k in ['人机舞', '跳舞', '机器人', '舞蹈', '转圈', '变身', 'robot', 'dance', 'dancing']):
             return 'easter_egg'
-
-        if any(k in text for k in ['困', '想睡', '睡了', '晚安', 'good night', 'sleepy']):
-            return 'night_sleepy'
 
         if any(k in text for k in ['谢谢', '好棒', '厉害', '很好', '真棒', 'love you', '喜欢你', '爱你', 'thanks', 'great job']):
             return 'praised'
@@ -3938,7 +8949,7 @@ class MotionIntelligence:
             category = 'happy_mood'
         elif context.get('emotion') == 'sad':
             category = 'sad_emotion'
-        elif self.is_night_time() and random.random() < 0.3:
+        elif context.get('allow_night_idle') is True and self.is_night_time():
             category = 'night_sleepy'
         else:
             category = 'giving_answer' if context.get('is_responding') else 'normal_idle'
@@ -3948,6 +8959,818 @@ class MotionIntelligence:
             'category': category,
             'motion_name': motion_name,
             'is_night': self.is_night_time()
+        }
+
+    # Manifest-aware implementations below override the legacy methods above.
+    def get_manifest_candidates(self):
+        configured = os.environ.get("SAYA_MOTION_MANIFEST_FILE")
+        candidates = []
+        if configured:
+            candidates.append(Path(configured))
+        candidates.append(Path(MMD_DIRECTORY) / "motion" / "motion_manifest.json")
+        candidates.append(Path(PROJECT_ROOT) / "static" / "config" / "motion_manifest.default.json")
+        return candidates
+
+    def load_motion_categories(self):
+        for path in self.get_manifest_candidates():
+            try:
+                if not path.exists():
+                    continue
+                with path.open("r", encoding="utf-8-sig") as source:
+                    manifest = json.load(source)
+                categories = self.build_categories_from_manifest(manifest)
+                if categories:
+                    self.manifest_enabled = True
+                    self.motion_manifest_path = str(path)
+                    self.motion_manifest_error = ""
+                    return categories
+            except Exception as exc:
+                self.motion_manifest_error = f"{path}: {exc}"
+                log_to_file(f"Motion manifest load failed: {self.motion_manifest_error}")
+
+        self.manifest_enabled = False
+        self.motion_manifest_path = None
+        return self.build_fallback_categories()
+
+    def apply_required_motion_pools(self, categories):
+        categories = categories if isinstance(categories, dict) else {}
+        entries_by_id = {}
+        for motions in categories.values():
+            for motion in motions:
+                identifiers = {
+                    str(motion.get("id") or "").strip().lower(),
+                    str(motion.get("name") or "").strip().lower(),
+                    Path(str(motion.get("file") or "")).stem.strip().lower(),
+                }
+                for identifier in identifiers:
+                    if identifier:
+                        entries_by_id.setdefault(identifier, motion)
+
+        looping_ids = {
+            "looking_96",
+            "helpless_listening_look",
+            "detective_thinking",
+            "thinking",
+            "sleepy_eyes_closed",
+            "Idle_motion_confident_148",
+            "Idle_searchong_173",
+        }
+
+        def build_pool(motion_ids):
+            pool = []
+            for motion_id in motion_ids:
+                source = entries_by_id.get(motion_id.lower())
+                if source is None:
+                    is_loop = motion_id in looping_ids
+                    source = self.enrich_motion_entry({
+                        "id": motion_id,
+                        "name": motion_id,
+                        "file": f"{motion_id}.vmd",
+                        "kind": "idle" if is_loop else "reaction",
+                        "playback": "loop" if is_loop else "once_then_idle",
+                        "enabled": True,
+                    })
+                entry = dict(source)
+                entry["weight"] = 1
+                pool.append(entry)
+            return pool
+
+        for category, motion_ids in self.CHAT_MOTION_POOLS.items():
+            categories[category] = build_pool(motion_ids)
+        for category, motion_ids in self.KEYWORD_MOTION_POOLS.items():
+            categories[category] = build_pool(motion_ids)
+        for category, motion_ids in self.RUNTIME_MOTION_POOLS.items():
+            categories[category] = build_pool(motion_ids)
+        return categories
+
+    def build_fallback_categories(self):
+        categories = {}
+        for category, motions in self.fallback_motion_categories.items():
+            categories[category] = []
+            for motion in motions:
+                entry = self.enrich_motion_entry(
+                    {
+                        "id": motion["name"],
+                        "name": motion["name"],
+                        "file": f"{motion['name']}.vmd",
+                        "playback": "loop",
+                        "enabled": True,
+                    }
+                )
+                entry["weight"] = motion["weight"]
+                categories[category].append(entry)
+        return categories
+
+    def build_categories_from_manifest(self, manifest):
+        motions = manifest.get("motions") if isinstance(manifest, dict) else manifest
+        if not isinstance(motions, list):
+            return {}
+
+        categories = {}
+        for raw_motion in motions:
+            if not isinstance(raw_motion, dict) or raw_motion.get("enabled") is False:
+                continue
+            entry = self.enrich_motion_entry(raw_motion)
+            category_weights = raw_motion.get("categories") or {}
+
+            if isinstance(category_weights, list):
+                category_weights = {category: raw_motion.get("weight", 1) for category in category_weights}
+            if not isinstance(category_weights, dict):
+                continue
+
+            for category, weight in category_weights.items():
+                category = str(category or "").strip()
+                try:
+                    weight = max(0, int(weight))
+                except (TypeError, ValueError):
+                    weight = 0
+                if not category or weight <= 0:
+                    continue
+                weighted_entry = dict(entry)
+                weighted_entry["weight"] = weight
+                categories.setdefault(category, []).append(weighted_entry)
+
+        return categories
+
+    def enrich_motion_entry(self, motion):
+        file_name = str(motion.get("file") or motion.get("path") or "").replace("\\", "/").strip("/")
+        name = str(motion.get("name") or motion.get("id") or Path(file_name).stem).strip()
+        motion_id = str(motion.get("id") or name or Path(file_name).stem).strip()
+        if not file_name and name:
+            file_name = f"{name}.vmd"
+
+        playback = str(motion.get("playback") or "loop").strip().lower()
+        if playback not in {"loop", "once", "once_then_idle"}:
+            playback = "loop"
+
+        def list_or_empty(value):
+            return value if isinstance(value, list) else []
+
+        def int_or_default(value, default=0):
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return default
+
+        def float_or_default(value, default=0.0):
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return default
+
+        raw_categories = motion.get("categories") if isinstance(motion.get("categories"), (dict, list)) else {}
+
+        return {
+            "id": motion_id,
+            "name": name or motion_id,
+            "file": file_name,
+            "url": self.motion_file_url(file_name),
+            "description": str(motion.get("description") or ""),
+            "comment": str(motion.get("comment") or ""),
+            "source_name": str(motion.get("source_name") or ""),
+            "kind": str(motion.get("kind") or "idle").strip().lower(),
+            "intent": str(motion.get("intent") or "").strip(),
+            "intents": list_or_empty(motion.get("intents")),
+            "categories": raw_categories,
+            "tags": list_or_empty(motion.get("tags")),
+            "trigger_keywords": list_or_empty(motion.get("trigger_keywords")),
+            "response_keywords": list_or_empty(motion.get("response_keywords")),
+            "phase": str(motion.get("phase") or "").strip().lower(),
+            "startup": motion.get("startup") is True,
+            "startup_weight": int_or_default(motion.get("startup_weight"), 1),
+            "return_category": str(motion.get("return_category") or "normal_idle").strip(),
+            "priority": int_or_default(motion.get("priority"), 0),
+            "intent_weight": int_or_default(motion.get("intent_weight"), 0),
+            "playback": playback,
+            "cooldown_ms": int_or_default(motion.get("cooldown_ms"), 0),
+            "end_hold_seconds": max(0.0, float_or_default(motion.get("end_hold_seconds"), 0.0)),
+            "enabled": motion.get("enabled") is not False,
+        }
+
+    def motion_file_url(self, file_name):
+        if not file_name:
+            return ""
+        mmd_root = Path(MMD_DIRECTORY).resolve()
+        motion_root = (mmd_root / "motion").resolve()
+        path = (motion_root / str(file_name).replace("\\", "/").strip("/")).resolve()
+        try:
+            rel = path.relative_to(mmd_root).as_posix()
+        except ValueError:
+            return ""
+        return "/MMD/" + quote(rel, safe="/:@!$&'()*+,;=-._~")
+
+    def get_motion_file_entries(self):
+        entries = {}
+        for motions in self.motion_categories.values():
+            for motion in motions:
+                url = motion.get("url")
+                if not url:
+                    continue
+                key = motion.get("id") or motion.get("name") or motion.get("file") or url
+                if key not in entries:
+                    clean = dict(motion)
+                    clean.pop("weight", None)
+                    entries[key] = clean
+        return list(entries.values())
+
+    def has_any_motion_keyword(self, text, keywords):
+        return any(str(keyword or "").lower() in text for keyword in keywords if str(keyword or "").strip())
+
+    def is_chat_motion_category(self, category):
+        return str(category or "").strip() in self.CHAT_MOTION_CATEGORIES
+
+    def is_chat_motion_entry_allowed(self, motion):
+        if not motion:
+            return False
+        identifiers = {
+            str(motion.get('id') or '').strip(),
+            str(motion.get('name') or '').strip(),
+            Path(str(motion.get('file') or '')).stem,
+        }
+        return not any(identifier in self.CHAT_MOTION_EXCLUDED_IDS for identifier in identifiers)
+
+    def analyze_motion_context(self, text):
+        text = str(text or "").lower()
+        explicit_farewells = [
+            '再见',
+            '过会见',
+            '过会儿见',
+            '待会见',
+            '待会儿见',
+            '一会见',
+            '一会儿见',
+            '回头见',
+            '下次见',
+            '晚点见',
+            '拜拜',
+            'bye',
+            'goodbye',
+            'see you',
+        ]
+        if self.has_any_motion_keyword(text, explicit_farewells):
+            return {
+                'category': 'farewell_keyword',
+                'reaction_intent': 'farewell_keyword',
+            }
+
+        # Other chat actions are chosen only from the model's reply-side
+        # [MOTION: category] tag.
+        return {
+            'category': 'normal_idle',
+            'reaction_intent': '',
+        }
+
+        text = str(text or "").lower()
+
+        # These are semantic signals from the conversation, not motion-name
+        # descriptions from the manifest.
+        semantic_checks = [
+            (
+                ['你拒绝我', '你说不行', '你说不要', '你不许我', '拒绝我', '请拒绝我', '明确拒绝'],
+                'neutral_waiting',
+                'refusal',
+            ),
+            (
+                [
+                    '吃醋', '嫉妒', '别看别人', '只看我', 'jealous',
+                    '喜欢别人', '喜欢她', '喜欢他', '陪别人', '找别人',
+                    '别的女生', '别的女孩子', '别的ai', '另一个ai', '别的助手',
+                    '换个ai', '别人比你', '其他女孩子', '其他ai',
+                    '新的助手', '别的bot', '另一个助手', '她比你', '他比你',
+                    '不理你了', '不理我', '你不理我', '不陪我', '别陪别人', '只陪别人',
+                    '冷落你', '冷落我', '你会不会在意', '你会在意吗',
+                    '你是不是在意', '你吃不吃醋', '你会吃醋吗', '你是不是不理我了',
+                    '你不理我了吗', '怎么不理我', '怎么不陪我', '去陪别人'
+                ],
+                'sad_emotion',
+                'jealous_pout',
+            ),
+            (
+                ['不行', '不要', '不可以', '别这样', '拒绝', 'stop it', 'no way'],
+                'neutral_waiting',
+                '',
+            ),
+            (
+                ['拜拜', '再见', '回头见', '下次见', '一会儿见', '待会儿见', '先走了', '先去忙', '下线了', '回头聊', '晚点聊', 'bye', 'goodbye', 'see you'],
+                'normal_idle',
+                'farewell',
+            ),
+            (
+                ['你好', '你好呀', '早上好', '早安', '早呀', '早啊', '中午好', '晚上好', '在吗', '回来啦', '我回来了', '嗨', '哈喽', 'hello', 'hi '],
+                'happy_mood',
+                'greeting',
+            ),
+            (
+                ['人机舞', '跳舞', '机器人', '舞蹈', '转圈', '变身', 'robot', 'dance', 'dancing'],
+                'easter_egg',
+                'easter_egg',
+            ),
+            (
+                ['开枪', 'biu', '耍可爱', '比心开枪', '朝我开一枪'],
+                'playful_magic',
+                'finger_gun',
+            ),
+            (
+                ['你是在找茬吗', '找茬', '挑衅', '抬杠', '故意气你', '逗你玩'],
+                'playful_magic',
+                'picking_a_fight',
+            ),
+            (
+                [
+                    '你坏坏', '坏坏', '撒娇', '撒个娇', '撒撒娇', '撒一下娇',
+                    '撒娇一下', '对我撒娇', '跟我撒娇', '娇一下', '娇一点',
+                    '卖萌', '卖个萌', '卖一下萌', '装可爱', '可爱一点',
+                    'act cute', 'be cute', 'coquettish',
+                ],
+                'playful_magic',
+                'coquettish_tease',
+            ),
+            (
+                ['向我道歉', '给我道歉', '你道歉', '道个歉', '道歉一下', '说对不起', '应该道歉'],
+                'apology',
+                'apology_from_saya',
+            ),
+            (
+                ['对不起', '抱歉', '不好意思', '是我的错', '我错了', '原谅我', '别生我的气'],
+                'gentle_comfort',
+                'forgive_doctor',
+            ),
+            (
+                ['敲门', '看这里', '看我', '注意我', '叫你呢', '喂喂', '回应我', '理理我'],
+                'attention_call',
+                'attention_call',
+            ),
+            (
+                ['哼', '生气了', '不高兴了', '委屈巴巴', '坏蛋', '讨厌你', '气死我了'],
+                'complaint_reaction',
+                'complaint',
+            ),
+            (
+                ['笑一个', '笑一下', '微笑一下', '给我笑笑', '温柔地笑'],
+                'happy_mood',
+                'cautious_smile',
+            ),
+            (
+                ['调皮', '开玩笑', '玩一下', '逗逗', '闹一下', '整活'],
+                'playful_magic',
+                'playful_tease',
+            ),
+            (
+                ['偷笑', '坏笑', '嘻嘻', '嘿嘿', '偷偷笑'],
+                'playful_magic',
+                'snicker',
+            ),
+            (
+                ['害羞', '脸红', '喜欢你', '爱你', '亲亲', '抱一下', 'love you', 'i love you'],
+                'praised',
+                'shy_blush',
+            ),
+            (
+                ['哈哈', '大笑', '太好笑', '笑死', '乐死', '好欢乐'],
+                'happy_mood',
+                'laugh',
+            ),
+            (
+                ['谢谢', '好棒', '厉害', '很好', '真棒', '可爱', '夸夸你', 'thanks', 'great job', 'good job'],
+                'praised',
+                'praised',
+            ),
+            (
+                ['难过', '伤心', '想哭', '压力', '焦虑', '委屈', '抱抱', '陪陪我', '安慰我', '不开心', '低落', '好烦', '烦死了', '心累', '崩溃', '破防', '郁闷', '难受', 'emo', 'sad', 'depressed', 'anxious'],
+                'gentle_comfort',
+                'comfort',
+            ),
+            (
+                ['惊喜', '太好了', '哇', '哇哦', '好耶', 'nice'],
+                'happy_mood',
+                'delighted_surprise',
+            ),
+            (
+                ['震惊', '很吃惊', '真的假的', '太离谱了', '不可思议'],
+                'curious_interest',
+                'surprise_big',
+            ),
+            (
+                ['真的吗', '不会吧', '居然', '惊讶', '吃惊', '诶', '咦', 'wow', 'really'],
+                'curious_interest',
+                'surprise',
+            ),
+            (
+                ['我吗', '是我吗', '指我', '轮到我', 'why me'],
+                'curious_interest',
+                'self_question',
+            ),
+            (
+                ['小心敲门', '害怕地敲门', '害怕的敲门', '试探敲门'],
+                'gentle_comfort',
+                'timid_knock',
+            ),
+            (
+                ['害怕', '有点怕', '怕怕', '我怕'],
+                'gentle_comfort',
+                'comfort',
+            ),
+            (
+                ['困扰', '头疼', '麻烦', '纠结', '为难', '卡住了'],
+                'searching_task',
+                'troubled',
+            ),
+            (
+                ['什么意思', '啥意思', '什么含义', '没懂', '没看懂', '看不懂', '不懂', '困惑', '奇怪', '不明白', '怎么回事', '为什么会这样'],
+                'curious_interest',
+                'confused',
+            ),
+            (
+                ['福尔摩斯', '推理', '查一下', '认真分析', '深入分析', '推断'],
+                'searching_task',
+                'detective_thinking',
+            ),
+            (
+                ['想想', '思考', '分析', '研究一下', '看看怎么', '帮我看看', '怎么办', '怎么做', '想一想', '帮我想'],
+                'searching_task',
+                'thinking',
+            ),
+            (
+                ['有办法', '想到了', '有主意', '解决方案', '方案来了', 'idea'],
+                'giving_answer',
+                '',
+            ),
+            (
+                ['牵手', '伸手', '过来', '邀请', '拉我', 'hold hands'],
+                'gentle_comfort',
+                'invite',
+            ),
+            (
+                ['好奇', '原来如此', 'curious'],
+                'curious_interest',
+                'curious',
+            ),
+            (
+                ['如何', '怎么', '什么', '为什么', '解释', '帮我', 'how', 'what', 'why', 'explain', 'help', '?', '？'],
+                'searching_task',
+                '',
+            ),
+        ]
+
+        for keywords, category, intent in semantic_checks:
+            if self.has_any_motion_keyword(text, keywords):
+                return {
+                    'category': category,
+                    'reaction_intent': intent,
+                }
+
+        return {
+            'category': 'normal_idle',
+            'reaction_intent': '',
+        }
+
+    def should_play_immediate_reaction(self, analysis):
+        return (
+            isinstance(analysis, dict)
+            and analysis.get('reaction_intent') == 'farewell_keyword'
+        )
+
+    def analyze_response_context(self, response_text, user_text="", input_analysis=None):
+        # Response text is no longer keyword-scanned for concrete reactions.
+        # If the model supplied a valid [MOTION: category] tag, the stream
+        # handler has already selected from that category pool. Otherwise the
+        # answer falls back to the ordinary explaining pool.
+        return {
+            'category': 'giving_answer',
+            'reaction_intent': '',
+        }
+
+        response_text = str(response_text or "").lower()
+        user_text = str(user_text or "").lower()
+        input_analysis = input_analysis if isinstance(input_analysis, dict) else {}
+        input_intent = str(input_analysis.get('reaction_intent') or "")
+
+        if self.has_any_motion_keyword(response_text, ['对不起', '抱歉', '不好意思', '我错了', '我说错', '我搞错', 'sorry']):
+            return {
+                'category': 'apology',
+                'reaction_intent': 'apology_from_saya',
+            }
+
+        if input_intent == 'forgive_doctor' or self.has_any_motion_keyword(response_text, ['没关系', '不要紧', '不用道歉', '别自责', '我不怪你']):
+            return {
+                'category': 'reassurance',
+                'reaction_intent': 'forgive_doctor',
+            }
+
+        if input_intent == 'apology_from_saya':
+            return {
+                'category': 'apology',
+                'reaction_intent': 'apology_from_saya',
+            }
+
+        # Preserve a clear requested reaction before scanning Saya's generic
+        # response wording. Otherwise a reply such as "好呀，我很开心" can
+        # replace the requested coquettish action with an ordinary happy one.
+        input_priority_intents = {
+            'apology_from_saya',
+            'refusal',
+            'jealous_pout',
+            'farewell',
+            'greeting',
+            'easter_egg',
+            'finger_gun',
+            'picking_a_fight',
+            'attention_call',
+            'complaint',
+            'playful_tease',
+            'coquettish_tease',
+            'cautious_smile',
+            'snicker',
+            'shy_blush',
+            'laugh',
+            'delighted_surprise',
+            'surprise_big',
+            'surprise',
+            'self_question',
+            'confused',
+            'timid_knock',
+            'troubled',
+            'invite',
+            'curious',
+        }
+        if input_intent in input_priority_intents:
+            return {
+                'category': input_analysis.get('category', 'giving_answer'),
+                'reaction_intent': input_intent,
+            }
+
+        response_checks = [
+            (['有办法', '想到了', '可以这样', '方案', '我建议', '解决办法', '办法是', '可以试试'], 'idea', 'idea'),
+            (['不行', '不可以', '不能答应', '不要这样', '我拒绝', '这个不行'], 'refusal', 'refusal'),
+            (['吃醋', '嫉妒', '只看我', '别看别人', '有点在意', '不许找别人'], 'jealousy', 'jealous_pout'),
+            (['撒娇', '坏坏', '娇一点', '卖个萌', '装可爱'], 'playful_magic', 'coquettish_tease'),
+            (['调皮', '开玩笑', '逗你', '整活'], 'playful_magic', 'playful_tease'),
+            (['小心敲门', '害怕地敲门', '害怕的敲门'], 'timid_knock', 'timid_knock'),
+            (['谢谢', '开心', '高兴', '害羞', '喜欢', '被夸'], 'praised', input_intent if input_intent in {'praised', 'shy_blush'} else 'praised'),
+            (['哈哈', '好笑', '笑死', '太有趣了'], 'happy_mood', 'laugh'),
+            (['惊喜', '太好了', '好耶', '哇'], 'happy_mood', 'delighted_surprise'),
+            (['不会吧', '真的吗', '吃惊', '震惊', '诶'], 'curious_interest', 'surprise'),
+        ]
+
+        for keywords, category, intent in response_checks:
+            if self.has_any_motion_keyword(response_text, keywords):
+                return {
+                    'category': category,
+                    'reaction_intent': intent,
+                }
+
+        if self.has_any_motion_keyword(response_text, ['我陪你', '抱抱', '别难过', '没事的', '慢慢来', '我在', '别怕']):
+            return {
+                'category': 'gentle_comfort',
+                'reaction_intent': 'comfort',
+            }
+
+        response_safe_intents = {
+            'apology_from_saya',
+            'forgive_doctor',
+            'refusal',
+            'jealous_pout',
+            'farewell',
+            'greeting',
+            'easter_egg',
+            'finger_gun',
+            'picking_a_fight',
+            'attention_call',
+            'complaint',
+            'playful_tease',
+            'coquettish_tease',
+            'cautious_smile',
+            'snicker',
+            'shy_blush',
+            'laugh',
+            'delighted_surprise',
+            'surprise_big',
+            'surprise',
+            'self_question',
+            'timid_knock',
+            'troubled',
+            'invite',
+            'curious',
+            'confused',
+            'comfort',
+        }
+        if input_intent in response_safe_intents:
+            return {
+                'category': input_analysis.get('category', 'giving_answer'),
+                'reaction_intent': input_intent,
+            }
+
+        return {
+            'category': 'giving_answer',
+            'reaction_intent': '',
+        }
+
+    def analyze_user_input(self, text):
+        return self.analyze_motion_context(text).get('category', 'normal_idle')
+
+    def select_weighted_motion(self, motions, allow_reaction=True):
+        if not motions:
+            return None
+        if not allow_reaction:
+            motions = [
+                motion for motion in motions
+                if motion.get('kind') != 'reaction'
+                and motion.get('playback') not in {'once', 'once_then_idle'}
+            ]
+            if not motions:
+                return None
+
+        total_weight = sum(max(0, int(motion.get('weight', 0))) for motion in motions)
+        if total_weight <= 0:
+            return None
+        random_value = random.random() * total_weight
+
+        for motion in motions:
+            random_value -= max(0, int(motion.get('weight', 0)))
+            if random_value <= 0:
+                selected = dict(motion)
+                if self._last_motion_name and selected.get('name') == self._last_motion_name and len(motions) > 1:
+                    alternatives = [m for m in motions if m.get('name') != self._last_motion_name]
+                    if alternatives:
+                        selected = dict(random.choice(alternatives))
+                self._last_motion_name = selected.get('name')
+                self._last_motion_at = datetime.now().timestamp()
+                return selected
+
+        selected = dict(motions[0])
+        if self._last_motion_name and selected.get('name') == self._last_motion_name and len(motions) > 1:
+            selected = dict(motions[1])
+        self._last_motion_name = selected.get('name')
+        self._last_motion_at = datetime.now().timestamp()
+        return selected
+
+    def select_motion_entry_by_intent(self, intent, preferred_category=None, prefer_reaction=True):
+        intent = str(intent or "").strip()
+        if not intent:
+            return None
+
+        ordered_categories = []
+        if preferred_category in self.motion_categories:
+            ordered_categories.append(preferred_category)
+        ordered_categories.extend(
+            category for category in self.motion_categories.keys()
+            if category != preferred_category
+        )
+
+        candidates = []
+        seen = set()
+        for category in ordered_categories:
+            for motion in self.motion_categories.get(category, []):
+                motion_intents = []
+                primary_intent = str(motion.get('intent') or '').strip()
+                if primary_intent:
+                    motion_intents.append(primary_intent)
+                motion_intents.extend(str(item or '').strip() for item in motion.get('intents', []))
+                if intent not in motion_intents:
+                    continue
+
+                key = motion.get('id') or motion.get('file') or motion.get('url')
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                weighted = dict(motion)
+                if weighted.get('intent_weight'):
+                    weighted['weight'] = weighted['intent_weight']
+                elif weighted.get('priority'):
+                    weighted['weight'] = weighted['priority']
+                else:
+                    weighted['weight'] = weighted.get('weight', 1)
+                candidates.append(weighted)
+
+        if prefer_reaction:
+            reaction_candidates = [
+                motion for motion in candidates
+                if motion.get('kind') == 'reaction'
+                or motion.get('playback') in {'once', 'once_then_idle'}
+            ]
+            if reaction_candidates:
+                candidates = reaction_candidates
+
+        candidates = self.filter_recent_intent_motions(intent, candidates)
+        selected = self.select_weighted_motion(candidates)
+        self.remember_intent_motion(intent, selected)
+        return selected
+
+    def select_motion_entry_from_category(self, category, allow_reaction=True, chat_motion=False):
+        motions = self.motion_categories.get(category, [])
+        if chat_motion:
+            motions = [motion for motion in motions if self.is_chat_motion_entry_allowed(motion)]
+        return self.select_weighted_motion(motions, allow_reaction=allow_reaction)
+
+    def select_motion_from_category(self, category):
+        selected = self.select_motion_entry_from_category(category)
+        return selected.get('name') if selected else None
+
+    def filter_recent_intent_motions(self, intent, candidates):
+        intent = str(intent or "").strip()
+        if not intent or len(candidates) <= 1:
+            return candidates
+
+        recent_keys = self._recent_motion_by_intent.get(intent, [])
+        if not recent_keys:
+            return candidates
+
+        fresh_candidates = [
+            motion for motion in candidates
+            if (motion.get('id') or motion.get('file') or motion.get('url')) not in recent_keys
+        ]
+        return fresh_candidates or candidates
+
+    def remember_intent_motion(self, intent, motion):
+        intent = str(intent or "").strip()
+        if not intent or not motion:
+            return
+
+        key = motion.get('id') or motion.get('file') or motion.get('url')
+        if not key:
+            return
+
+        recent = [item for item in self._recent_motion_by_intent.get(intent, []) if item != key]
+        recent.insert(0, key)
+        self._recent_motion_by_intent[intent] = recent[:3]
+
+    def get_motion_suggestion(self, context):
+        context = context if isinstance(context, dict) else {}
+        is_night = self.is_night_time()
+        chat_motion = context.get('chat_motion') is True
+        allow_night_idle = context.get('allow_night_idle') is True and is_night
+        allow_sleepy_interruption = context.get('allow_sleepy_interruption') is True and is_night
+        override = context.get('category_override')
+        if chat_motion and not self.is_chat_motion_category(override):
+            override = None
+        if override in {'night_sleepy', 'sleepy_idle'} and not allow_night_idle:
+            override = None
+        if override == 'sleepy_interruption' and not allow_sleepy_interruption:
+            override = None
+
+        if override and override in self.motion_categories:
+            category = override
+        elif context.get('is_listening'):
+            question_type = context.get('question_type', 'task')
+            category = 'listening_emotional' if question_type == 'emotional' else 'searching_task'
+        elif context.get('is_easter_egg') and not chat_motion:
+            category = 'easter_egg'
+        elif context.get('is_praised'):
+            category = 'praised'
+        elif context.get('is_comforting'):
+            category = 'gentle_comfort'
+        elif context.get('is_curious'):
+            category = 'curious_interest'
+        elif context.get('is_playful'):
+            category = 'playful_magic'
+        elif context.get('emotion') == 'happy':
+            category = 'happy_mood'
+        elif context.get('emotion') == 'sad':
+            category = 'sad_emotion'
+        elif allow_night_idle:
+            category = 'night_sleepy'
+        else:
+            category = 'giving_answer' if context.get('is_responding') else 'normal_idle'
+
+        if chat_motion and not self.is_chat_motion_category(category):
+            category = 'giving_answer' if context.get('is_responding') else 'normal_idle'
+
+        reaction_intent = str(context.get('reaction_intent') or context.get('intent') or '').strip()
+        if chat_motion:
+            reaction_intent = ''
+        if reaction_intent in {'sleepy', 'sleepy_idle'} and not allow_night_idle:
+            reaction_intent = ''
+        if reaction_intent == 'sleepy_startled' and not allow_sleepy_interruption:
+            reaction_intent = ''
+        allow_reaction = context.get('allow_reaction') is not False
+        motion_entry = None
+        if reaction_intent and allow_reaction:
+            motion_entry = self.select_motion_entry_by_intent(
+                reaction_intent,
+                category,
+            prefer_reaction=allow_reaction,
+            )
+        motion_entry = motion_entry or self.select_motion_entry_from_category(
+            category,
+            allow_reaction=allow_reaction,
+            chat_motion=chat_motion,
+        ) or {}
+        response_reaction_intent = '' if chat_motion else (reaction_intent or motion_entry.get('intent'))
+        return {
+            'category': category,
+            'reaction_intent': response_reaction_intent,
+            'motion_id': motion_entry.get('id'),
+            'motion_name': motion_entry.get('name'),
+            'motion_file': motion_entry.get('file'),
+            'motion_url': motion_entry.get('url'),
+            'motion_kind': motion_entry.get('kind'),
+            'return_category': motion_entry.get('return_category'),
+            'playback': motion_entry.get('playback', 'loop'),
+            'cooldown_ms': motion_entry.get('cooldown_ms', 0),
+            'is_night': is_night,
+            'night_idle_allowed': allow_night_idle,
+            'manifest_enabled': self.manifest_enabled,
         }
 
 motion_ai = MotionIntelligence()
@@ -4102,18 +9925,49 @@ def sync_life_memory():
     else:
         content += "(None)\n"
 
-    # Update or Create
+    # Update or create the protected system-managed slot.
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if target_mem:
-        # If it was "Achievements Log", rename it too
-        kb_system.update_memory(target_mem["id"], {
+        target_mem.update({
             "title": "Life Quests Summary",
-            "content": content, 
-            "is_locked": True
+            "content": content,
+            "source": "system",
+            "source_detail": {
+                "type": "life_quests_summary",
+                "captured_at": target_mem.get("creation_time", now),
+                "updated_at": now,
+            },
+            "category": "goal",
+            "tags": ["life_quests", "goals", "achievements", "reflections"],
+            "confidence": 1.0,
+            "importance_score": 0.95,
+            "is_locked": True,
+            "is_important": True,
+            "is_archived": False,
+            "managed_slot": "life_quests:summary",
+            "memory_layer": "core",
+            "memory_kind": "goal_summary",
+            "date": now[:10],
+            "last_updated": now,
         })
-        target_mem["date"] = datetime.now().strftime("%Y-%m-%d")
-        target_mem["last_updated"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        kb_system.normalize_memory(target_mem)
         kb_system.save_memories()
     else:
-        mem = kb_system.add_memory(content, title="Life Quests Summary", source="system", is_important=True)
-        kb_system.update_memory(mem["id"], {"is_locked": True})
+        kb_system.add_memory(
+            content,
+            title="Life Quests Summary",
+            source="system",
+            is_important=True,
+            category="goal",
+            tags=["life_quests", "goals", "achievements", "reflections"],
+            confidence=1.0,
+            source_detail={"type": "life_quests_summary", "captured_at": now, "updated_at": now},
+            metadata={
+                "is_locked": True,
+                "managed_slot": "life_quests:summary",
+                "memory_layer": "core",
+                "memory_kind": "goal_summary",
+                "importance_score": 0.95,
+            },
+        )
 

@@ -1,0 +1,751 @@
+{
+  "schema_version": 3,
+  "tasks": [
+    {
+      "id": "5a9e2f28-b434-4ba8-97ea-95bbe10db7df",
+      "title": "全球医疗AI发展",
+      "source_type": "web",
+      "topic": "查找最新全球医疗AI发展，告诉我哪个国家目前发展最好。",
+      "creator_ids": [],
+      "schedule_type": "once",
+      "run_when": "now",
+      "run_at": "2026-08-13T18:28:27",
+      "time": "09:00",
+      "weekdays": [],
+      "read_memory": false,
+      "manage_memory": true,
+      "web_max_pages": 15,
+      "web_reference_count": 6,
+      "web_min_references": 3,
+      "web_source_policy": "flexible",
+      "enabled": false,
+      "created_at": "2026-08-13T17:44:34",
+      "updated_at": "2026-08-13T23:31:04",
+      "last_run_at": "2026-08-13T23:31:04",
+      "last_status": "completed",
+      "processed_source_ids": [
+        "https://hai.stanford.edu/ai-index/2026-ai-index-report/medicine",
+        "https://spap.jst.go.jp/asean/news/260802/topic_na_01.html",
+        "https://www.familydoctor.cn/news/yiliaojiankang-lingyu-rengongzhineng-zuixinxinwen-tupo-452922.html",
+        "https://practiceguides.chambers.com/practice-guides/healthcare-ai-2026/china/trends-and-developments/O26510",
+        "http://www.cn-witmed.com/list/9/21311.html",
+        "https://www.crescendo.ai/news/ai-in-healthcare-news",
+        "https://blog.puranmurti.com/best-colleges-in-sonipat-courses-career-guide-2026/",
+        "https://aihealthindex.io/brief",
+        "https://worldpopulationreview.com/country-rankings/best-healthcare-in-the-world",
+        "https://www.familydoctor.cn/news/yiliaojiankang-lingyu-ai-yingyong-tongjishuju-476002.html",
+        "https://www.getprosper.ai/blog/ai-healthcare-companies",
+        "https://theaidaily.nl/en/statistics/ai-in-healthcare-statistics-2026/"
+      ],
+      "defer_session_id": null,
+      "next_run_at": null
+    },
+    {
+      "id": "be09c393-4080-4506-9319-d3b3d023f0dc",
+      "title": "日本新闻",
+      "source_type": "web",
+      "topic": "日本目前的经济以及政治形势，尤其是可能会影响去日本留学的相关方面。",
+      "creator_ids": [],
+      "schedule_type": "once",
+      "run_when": "now",
+      "run_at": "2026-08-14T17:28:04",
+      "time": "09:00",
+      "weekdays": [],
+      "read_memory": false,
+      "manage_memory": true,
+      "web_max_pages": 15,
+      "web_reference_count": 6,
+      "web_min_references": 3,
+      "web_source_policy": "flexible",
+      "enabled": false,
+      "created_at": "2026-08-14T17:28:04",
+      "updated_at": "2026-08-14T17:28:40",
+      "last_run_at": "2026-08-14T17:28:40",
+      "last_status": "completed",
+      "processed_source_ids": [
+        "https://www.studyinjapan.go.jp/ja/",
+        "https://www.mext.go.jp/a_menu/koutou/ryugaku/1412692_00003.htm",
+        "https://www.moj.go.jp/isa/applications/status/student.html",
+        "https://www.jasso.go.jp/statistics/ryugaku_zaiseki.html",
+        "https://tobitate-mext.jasso.go.jp:443/about/case/",
+        "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00159.html"
+      ],
+      "defer_session_id": null,
+      "next_run_at": null
+    }
+  ],
+  "runs": [
+    {
+      "id": "1b7b744e-9d5e-4cd0-8276-f129419cfac9",
+      "task_id": "5a9e2f28-b434-4ba8-97ea-95bbe10db7df",
+      "task_title": "全球医疗AI发展",
+      "source_type": "web",
+      "status": "completed",
+      "stage": "completed",
+      "progress": 100,
+      "created_at": "2026-08-13T23:30:23",
+      "started_at": "2026-08-13T23:30:23",
+      "finished_at": "2026-08-13T23:31:04",
+      "summary": "# 全球医疗AI发展最新动态汇报\n\n**最新结论**：截至2026年8月，美国仍是全球医疗AI发展最成熟、商业化程度最高的国家。FDA已授权超1,300款AI医疗设备（76%集中于放射学），75%的美国医疗系统至少运行一种AI应用，美国医生AI使用率2026年达81%（较2023年38%翻倍以上）。全球医疗AI市场2025年约390亿美元，预计2034年近6,140亿美元，北美占45%–49%份额。中国方面，政策端2024年11月发布84个医疗AI应用场景参考指南、2025年3月强化AI与医疗机器人监管，但商业化和临床落地数据透明度明显低于美国。\n\n---\n\n## 最新动态索引（按时间从新到旧）\n\n**2026-08-02 美国AI医疗Top30榜单发布，头部企业融资与部署数据密集披露** [1]\n- Polaris（患者端非诊断生成式Agent，Polaris安全架构3.0含22个大模型、约4.2万亿参数）：2025年11月C轮融资1.26亿美元、估值35亿美元，累计融资约4.04亿美元；商业化15个月合作50+大型医疗系统/支付方/药企，覆盖6国，累计1.15亿+次患者交互且无安全事件。\n- 某医生端垂直医学LLM（仅基于同行评审文献、回答带可点击文献溯源）：2026年1月D轮融资2.5亿美元、估值约120亿美元，12个月累计融资约7亿美元；覆盖美国40%+执业医师、10,000+医院，2025年12月单月1,800万+次临床咨询，为全球估值最高医疗AI公司。\n- 环境式AI（医患对话实时转结构化病历写入EHR，基于150万+医疗对话自研数据集）：2025年6月E轮融资3亿美元、估值53亿美元，累计融资约8亿美元；部署150+医疗系统，支持55个专科、28种语言，年度支持5,000万+次对话。\n- Viz.ai One平台：含50+个FDA批准算法（截至2026年7月），覆盖神经/心血管/血管/创伤，CT自动检测LVO卒中并手机推送警报；覆盖1,700+美国医院、2.3亿+人群，累计融资约2.9亿美元。\n- CARE平台（foundation-model驱动临床影像设备）：2026年1月获FDA批准业界首个此类设备，体部CT一次性分诊14种病变，pivotal灵敏度97%/特异98%；150+医疗系统使用，累计融资约3.7亿美元，研发源自以色列。\n- 罗氏（Roche）2026年5月7日签署最终收购协议收购数字病理AI公司AISight Dx，对价最高10.5亿美元（7.5亿美元预付款+最高3亿美元里程碑），预计2026下半年交割，截至2026年7月进行中。\n- Google Med-PaLM 2与AMIE：2025年Nature发表AMIE诊断对话研究，表现接近/超过医生，但以研究试点为主，未作为独立上市产品大规模部署、未走FDA审批。\n\n**2026-07-15 美国医疗AI采用率与诊断差距统计报告** [2]\n- 75%的美国医疗系统至少运行一种AI应用（较一年前59%上升16个百分点），其中50%运行三种或更多；更广泛医院调查显示AI使用率接近80%。\n- 核心临床诊断中实现可靠AI应用的比例不足20%，与75%的部署率之间形成核心差距。\n- 医生使用率：2024年66%的医生使用健康AI，高于2023年的38%（AMA数据）。\n- 专用影像模型准确率：糖尿病视网膜病变检测约96%，早期乳腺癌检测敏感度90%–92%；83项研究荟萃分析显示，通用型生成式AI开放式诊断平均准确率仅52.1%，两者相差44个百分点。\n- 文档记录收益：临床医生记录时间减少40%–45%；约90%美国医疗系统实现部分EHR文档自动化；马萨诸塞州总医院布莱根医院环境语音记录研究显示每位医生每周节省约4小时。\n- 市场规模：2024年266.9亿美元→2025年约390亿美元→2034年预计约6,140亿美元，年复合增长率约37%；北美占45%、欧洲27%、亚太22%。\n- 投资回报：AI每投入1美元约获3.20美元回报（微软-IDC/Azumo/DemandSage数据），回报期约12–18个月；NVIDIA 2026年调查中81%受访者报告AI带来更高收入、73%报告运营成本降低。\n- FDA批准数量从2025年5月约1,250款增至2026年2月1,357款，每年新增约200款，自2020年以来增长约五倍。\n- 约三分之一美国成年人使用AI聊天机器人获取健康信息（约为前一年两倍）；53%预计AI将改善医疗服务获取，46%预计AI将降低医疗成本。\n\n**2026-06-22 全球医疗AI综合统计（75+事实）** [3]\n- 2025年全球医疗AI市场370亿美元以上，年复合增长率38%–44%（MarketsandMarkets、Fortune Business Insights）；多家研究机构估计2025年市场规模在220亿至390亿美元区间（口径差异）。\n- 2025年美国数字健康风投142亿美元，同比增长35%（Rock Health）。\n- McKinsey和Harvard估计AI可为美国医疗系统每年节省2,000亿至3,600亿美元，相当于总医疗支出的5%–10%、人均每年600至1,100美元。\n- 医学影像与诊断是最大应用细分，占医疗AI市场的22.3%（Precedence Research, 2025），反映放射学与病理学数十年的临床验证积累。\n- 北美占全球医疗AI市场49%，美国2025年市场约180亿美元（Grand View Research）。\n- 2026年81%的美国医生在专业场景使用AI，是2023年38%的两倍以上。\n- Menlo Ventures数据：2025年22%的医疗组织落地领域专用AI，而全行业平均仅9%；医疗AI采用同比增长7倍、较2023年增长10倍。\n\n**2026-06-19 2026年医疗AI新闻与突破合辑** [4]\n- OpenAI扩展医疗布局：最新医疗AI模型在临床基准测试中表现强劲，正在开发用于支持医疗专业人员获得更准确、个性化医学见解的系统；近期多项同行评审研究显示先进AI系统在特定诊断与临床决策任务中表现达到或超过医生水平。\n- Midjourney推出“Midjourney Medical”：基于全身超声扫描仪的医疗倡议，约60秒生成详细3D身体图谱。\n- 监管机构更新资源与指南，支持医疗环境中AI技术安全、有效、透明的使用，并提高AI设备透明度（帮助医疗机构更好理解已批准技术）。\n- 赛诺菲（Sanofi）与AI生物科技公司Owkin达成多年合作，开发下一代生物制药AI智能体：Owkin授权其K Pro平台，提供生物与临床研究的多模态AI能力，并开发专用生物制药AI智能体以支持赛诺菲的研发与运营工作流。\n\n**日期未知 斯坦福HAI《2026 AI指数报告·医学分册》（高权威）** [5]\n- 基础模型进展：MSAPairformer（1.11亿参数蛋白语言模型）在ProteinGym基准上超越此前领先方法；GPN-Star（2亿参数基因组学模型）超越400亿参数模型。\n- 2025年结构预测转向：共折叠（cofolding）模型已覆盖蛋白质数据库中所有结构类型，训练集从数十万条目扩展至数千万条目。\n- 医生文书时间减少：多个医院系统报告医生写笔记时间减少最高83%、倦怠显著下降；一家医院系统报告112%的投资回报率。\n- FDA设备审批路径：绝大多数AI医疗设备通过基于现有安全性和有效性证据的器械修改途径进入市场（而非新随机试验），仅2.4%有临床研究的设备有随机试验数据支持。\n- 诊断表现：Microsoft AI Diagnostic Orchestrator 配合OpenAI o3在挑战性病例中优于无常规工具辅助的医生；多智能体框架诊断准确率较单智能体基线提升7%至超60%。\n- 健康信息搜索：症状和常见健康问题触发AI概览的比例达92%（Google AI Overview），AI摘要已成为健康信息搜索的常规功能。\n- 糖尿病管理：150名糖尿病患者的随机试验中，71%在安全减少药物的情况下一年内达到健康血糖水平。\n- 治理现状：治理讨论主导AI医疗话语，而算法问责、生物安全和全球健康公平仍探索不足。\n\n**日期未知 中国医疗AI政策与市场趋势（Chambers法律指南）** [6]\n- 2024年11月，中国发布《卫生健康行业人工智能应用场景参考指引》，确定84个应用场景、分四大类（医疗服务管理、公共卫生与基层医疗、健康产业创新如机器人和药物研发、医学教育与研究）。\n- 2025年3月，国务院办公厅《关于全面深化药品医疗器械监管改革促进医药产业高质量发展的意见》强化对包括AI和医疗机器人在内的下一代医疗技术监管，完善国家技术标准和监管体系。\n- 新冠疫情期间AI工具已用于疫情建模、接触追踪和实时政策支持。\n- 中国医疗AI市场在强政策支持和产业需求下快速发展；推行动力来自系统性需求（提升结局、效率与临床决策支持）与创新机遇，同时面临安全、责任、监管和临床工作流整合等挑战。\n\n---\n\n## 对任务的影响/下一步\n\n1. **国家比较结论**：综合证据显示，美国处于全球医疗AI发展领先地位——拥有最大市场规模（约占全球45%–49%）、最成熟的监管通道（FDA超1,300款授权设备）、最高的医生采用率（81%）、最强的商业化与资本生态（多个估值数十亿至120亿美元公司、罗氏10.5亿美元收购案例）。中国在政策引导（84个场景指引）和监管框架建设上进展明确，但公开的商业化部署和临床效果数据明显不足，难以进行同等维度的比较评估。\n2. **待补充追踪方向**：为更全面回答“哪个国家发展最好”，建议追加查找：中国头部医疗AI公司（如数坤科技、推想科技等）的具体融资与医院部署数据；英国、德国、以色列等国的监管与市场动态；FDA“基础模型”设备（CARE平台）获批后对全球监管格局的影响。注意：仅从现有证据看，中国数据缺口较大，需谨慎下结论。\n3. **关键判断维度**：区分“发展最好”的衡量标准——若看监管审批与商业化规模，美国领先明确；若看政策推动速度与场景覆盖广度，中国进展显著；若看前沿研究（如蛋白质模型、多智能体诊断），美国仍占主导。\n\n---\n\n**证据边界**：本报告基于已读取全文的6个来源。其中来源5和6未标发布日期，按内容推断为2026年上半年或更早；“美国AI医疗Top30榜单”仅包含部分企业数据，非完整榜单；中国相关证据以政策法律文本为主，缺乏可比的商业与临床量化数据。",
+      "sources": [
+        {
+          "id": 1,
+          "kind": "web",
+          "title": "2026美国AI医疗Top30 ｜榜单-海外-智慧医疗网",
+          "url": "http://www.cn-witmed.com/list/9/21311.html",
+          "domain": "www.cn-witmed.com",
+          "source_type": "web",
+          "authority": "unknown",
+          "acceptance": "flexible_readable",
+          "published_at": "2026-08-02T16:05:37",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "美国是全球 AI 医疗最成熟的市场之一：FDA 的 De Novo / 510(k) / Breakthrough 审批通道清晰，Biotech 与 Big Pharma 的 BD 合作高度活跃，资本市场发达、退出路径多元（IPO 与并购并举），且以大模型驱动的临床辅助与文书自动化正快速渗透医院工作流。本榜单基于公开资料和信息，梳理出30家代表性企业供参考。\n\nPolaris 安全架构（3.0 含 22 个大模型、约 4.2 万亿参数）打造面向患者的非诊断生成式 Agent。2025-11 Series C 融资 $1.26 亿、估值 $35 亿（报道/未审计），累计融资约 $4.04 亿；商业化 15 个月合作 50+ 大型医疗系统/支付方/药企，覆盖 6 国，累计 1.15 亿+ 次患者交互且无安全事件。以\"临床安全\"为核心，差异化于通用大模型。\n\n医生端垂直医学 LLM + 多智能体架构，仅基于同行评审文献，回答带可点击文献溯源。2026-01 Series D 融资 $2.5 亿、估值约 $120 亿（报道/未审计），12 个月累计融资约 $7 亿；覆盖美国 40%+ 执业医师、10,000+ 医院，2025-12 单月 1,800 万+ 次临床咨询。全球估值最高的医疗 AI 公司，以免费+广告 PLG 绕开医院采购周期。\n\n环境式 AI 将医患对话实时转为结构化病历并写入 EHR ，基于 150 万+ 医疗对话自研数据集。2025-06 Series E 融资 $3 亿、估值 $53 亿（报道/未审计），累计融资约 $8 亿；部署 150+ 医疗系统，支持 55 个专科、28 种语言，年度支持 5,000 万+ 次对话。环境式医疗文书赛道公认领导者，正从\"病历\"向医疗基础设施/营收周期智能扩展。\n\nMed-PaLM 2、AMIE（Articulate Medical Intelligence Explorer）为基础临床对话模型，2025 年 Nature 发表 AMIE 诊断对话研究、表现接近/超过医生。母公司 Alphabet（NASDAQ:GOOGL）体"
+        },
+        {
+          "id": 2,
+          "kind": "web",
+          "title": "2026年医疗健康领域AI应用统计数据 - AI与医疗健康 - 家医大健康",
+          "url": "https://www.familydoctor.cn/news/yiliaojiankang-lingyu-ai-yingyong-tongjishuju-476002.html",
+          "domain": "www.familydoctor.cn",
+          "source_type": "web",
+          "authority": "unknown",
+          "acceptance": "flexible_readable",
+          "published_at": "2026-07-15T12:45:31",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "2026年医疗健康领域AI应用统计数据 AI in Healthcare Adoption Statistics 2026\n\n据Eliciting Insights调查，目前75%的美国医疗系统至少运行一种AI应用，较一年前的59%有所上升。但在核心临床诊断中实现可靠AI应用的比例不足20%。本文基于2025年和2026年的数据，涵盖了医疗健康领域AI应用在采用率、诊断准确性、市场规模、投资回报率以及FDA批准方面的统计数据。\n\n2026年，75%的美国医疗系统至少使用一种AI应用，高于2025年的59%。\n\n全球医疗健康AI市场在2025年达到约390亿美元，预计到2034年将接近6140亿美元。\n\n美国食品药品监督管理局(FDA)已授权超过1,300款AI医疗设备，其中约76%用于放射学领域。\n\n医疗健康领域的AI统计数据表明采用速度很快但不均衡。在文档记录和后台工作方面，AI部署几乎普及，而在核心诊断应用方面仍有限制。专用影像模型的表现达到或超过专家水平；而通用型AI在开放式诊断方面仍表现不佳。报告的投资回报率约为每投入1美元可获得3.20美元的回报，主要集中在行政任务方面。\n\n采用率在一年内上升了16个百分点。Eliciting Insights对120家美国医疗系统的高管进行了调查，发现75%的系统正在使用至少一种AI应用，其中50%运行三种或更多AI应用。医生使用率增长更快，根据美国医学会(AMA)的数据，2024年有66%的医生使用健康AI，高于2023年的38%。更广泛的医院调查显示，AI使用率接近80%。\n\n来源：Eliciting Insights AI采用调查（通过Fierce Healthcare）；AMA增强智能调查；同行评议综述（PMC）。\n\n75%的系统在某些方面部署AI与不足20%的系统在核心临床诊断方面取得高成功率之间的差距是核心发现。大多数支出集中在文档记录、运营和试点项目，而非诊断路径方面。\n\n准确性因任务类型而异。在标记图像上训练的专用模型达到专家水平：糖尿病视网膜病变检测准确率约为96%，早期乳腺癌检测敏感度为90%至92%。在"
+        },
+        {
+          "id": 3,
+          "kind": "web",
+          "title": "AI in Healthcare Statistics 2026: 75+ Facts & Trends | TheAIDaily",
+          "url": "https://theaidaily.nl/en/statistics/ai-in-healthcare-statistics-2026/",
+          "domain": "theaidaily.nl",
+          "source_type": "web",
+          "authority": "unknown",
+          "acceptance": "flexible_readable",
+          "published_at": "2026-06-22T14:10:24",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "$37B+ global healthcare AI market in 2025, growing at 38-44% CAGR (MarketsandMarkets, Fortune Business Insights)\n\n$14.2B in US digital health venture funding in 2025, a 35% increase year-over-year (Rock Health)\n\nMultiple research firms estimate the 2025 market at $22 billion to $39 billion, depending on how broadly \"healthcare AI\" is defined.\n\nThe consensus CAGR across major research firms is 37-44%, making healthcare one of the fastest-growing AI verticals globally.\n\nMcKinsey and Harvard estimate that AI could save the US healthcare system $200 billion to $360 billion annually, representing 5-10% of total healthcare spending.\n\nMedical imaging and diagnostics holds the largest application segment at 22.3% of the healthcare AI market, reflecting decades of clinical validation in radiology and pathology (Precedence Research, 2025).\n\nNorth America accounts for 49% of the global healthcare A"
+        },
+        {
+          "id": 4,
+          "kind": "web",
+          "title": "2026's AI News, Innovations, Breakthroughs in Healthcare and Medical | News",
+          "url": "https://www.crescendo.ai/news/ai-in-healthcare-news",
+          "domain": "www.crescendo.ai",
+          "source_type": "web",
+          "authority": "unknown",
+          "acceptance": "flexible_readable",
+          "published_at": "2026-06-19T00:00:00",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "The Latest AI News and Breakthroughs in Healthcare and Medical | 2026\n\nIn this roundup, we've gathered some of the most important AI healthcare news, breakthroughs, and innovations in 2026 that are shaping the future of medicine.\n\nLet's explore the AI news that matters the most.\n\nOpenAI Expands Healthcare Efforts with Specialized Medical AI Models\n\nOpenAI revealed significant progress in developing AI systems designed specifically for healthcare applications.\n\nThe company stated that its latest medical AI models have achieved strong performance on clinical benchmarks and are being developed to support healthcare professionals with more accurate and personalized medical insights.\n\nRecent studies published in leading scientific journals demonstrated that advanced AI systems can perform at or above physician level in selected diagnostic and clinical decision-making tasks.\n\nResearchers belie"
+        },
+        {
+          "id": 5,
+          "kind": "web",
+          "title": "Medicine | The 2026 AI Index Report | Stanford HAI",
+          "url": "https://hai.stanford.edu/ai-index/2026-ai-index-report/medicine",
+          "domain": "hai.stanford.edu",
+          "source_type": "official",
+          "authority": "high",
+          "acceptance": "flexible_readable",
+          "published_at": "",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "MSAPairformer , a 111-million-parameter protein language model, outperformed previous leading methods on the benchmark, ProteinGym; and GPN-Star , a 200-million-parameter genomics model, outperformed a model with 40 billion parameters.\n\nThese models aim to predict cellular responses to drugs and genetic perturbations without running wet-lab experiments, though current systems still require experimental validation.\n\nWith cofolding models now representing all structure types in the Protein Data Bank, 2025 saw a turn toward distilled datasets of AI-predicted structures and training on combined experimental data sources, expanding training sets from hundreds of thousands of entries to tens of millions.\n\nAcross multiple hospital systems, physicians reported they were spending up to 83% less time writing notes, experiencing significant reductions in burnout, with one hospital system reporting "
+        },
+        {
+          "id": 6,
+          "kind": "web",
+          "title": "Healthcare AI 2026 - China | Global Practice Guides | Chambers and Partners",
+          "url": "https://practiceguides.chambers.com/practice-guides/healthcare-ai-2026/china/trends-and-developments/O26510",
+          "domain": "practiceguides.chambers.com",
+          "source_type": "web",
+          "authority": "unknown",
+          "acceptance": "flexible_readable",
+          "published_at": "",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "Fangda Partners was founded in 1993 and is a leading full-service law firm with approximately 800 lawyers across offices in Beijing, Guangzhou, Hong Kong, Nanjing, Shanghai, Shenzhen and Singapore.\n\nIn November 2024, the Reference Guide for AI Application Scenarios in the Healthcare Industry (the “AI Application Scenarios Reference Guide”) identified 84 use cases across four categories: medical service management, public health and primary care, health industry innovation (such as robotics and drug development), and medical education and research.\n\nIn March 2025, the Opinions on Comprehensively Deepening the Reform of Drug and Medical Device Regulation to Promote the High-Quality Development of the Pharmaceutical Industry strengthened the regulation of next-generation medical technologies, including AI and medical robotics, by improving national technical standards and regulatory systems"
+        }
+      ],
+      "memory_result": {
+        "created_ids": [
+          "1786635063.96535",
+          "1786635064.019057",
+          "1786635064.054577",
+          "1786635064.105901"
+        ],
+        "merged_ids": [],
+        "archived_duplicate_ids": [],
+        "preserved_important_ids": [],
+        "graph_rebuilt": true
+      },
+      "error": "",
+      "is_read": true,
+      "read_at": "2026-08-13T23:31:45",
+      "response_language": "zh-cn",
+      "used_model": true,
+      "summary_method": "model",
+      "summary_diagnostic": "The model report passed language, citation, coverage, and originality checks.",
+      "model_name": "deepseek-v4-flash",
+      "evidence_chars": 14000,
+      "readable_source_count": 6,
+      "recalled_memory_ids": [],
+      "citation_check": {
+        "version": 1,
+        "method": "deterministic_lexical",
+        "status": "needs_review",
+        "summary": {
+          "cited_claims": 6,
+          "supported": 0,
+          "partial": 1,
+          "unsupported": 5,
+          "snippet_only": 0,
+          "invalid_references": 0,
+          "uncited_specific_claims": 20
+        },
+        "claims": [
+          {
+            "claim": "**2026-08-02 美国AI医疗Top30榜单发布，头部企业融资与部署数据密集披露**",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.128,
+                "passage": "美国是全球 AI 医疗最成熟的市场之一：FDA 的 De Novo / 510(k) / Breakthrough 审批通道清晰，Biotech 与 Big Pharma 的 BD 合作高度活跃，资本市场发达、退出路径多元（IPO 与并购并举），且以大模型驱动的临床辅助与文书自动化正快速渗透医院工作流。 本榜单基于公开资料和信息，梳理出30家代表性企业供参考。 ② 商业化落地：含 FDA 获证、医院与支付方部署规模 注：数据截至2026-07。 FDA 批准数量均标注统计时点。 排名为AI小医综合判断，仅供参考。 收录口径说明： 本榜聚焦“在美国市场拥有显著业务线、临床部署或上市主体的 AI 医疗企业”， 不局限于总部设于美国 。…",
+                "source_id": 1,
+                "source_status": "read",
+                "title": "2026美国AI医疗Top30 ｜榜单-海外-智慧医疗网"
+              }
+            ]
+          },
+          {
+            "claim": "**2026-07-15 美国医疗AI采用率与诊断差距统计报告**",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.294,
+                "passage": "2026年医疗健康领域AI应用统计数据 AI in Healthcare Adoption Statistics 2026 据Eliciting Insights调查，目前75%的美国医疗系统至少运行一种AI应用，较一年前的59%有所上升。 但在核心临床诊断中实现可靠AI应用的比例不足20%。 本文基于2025年和2026年的数据，涵盖了医疗健康领域AI应用在采用率、诊断准确性、市场规模、投资回报率以及FDA批准方面的统计数据。 2026年，75%的美国医疗系统至少使用一种AI应用，高于2025年的59%。 2024年，66%的美国医生使用健康AI，高于2023年的38%。 全球医疗健康AI市场在2025年达到约390亿美元，预计…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "2026年医疗健康领域AI应用统计数据 - AI与医疗健康 - 家医大健康"
+              }
+            ]
+          },
+          {
+            "claim": "**2026-06-22 全球医疗AI综合统计（75+事实）**",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 3,
+                "source_status": "read",
+                "title": "AI in Healthcare Statistics 2026: 75+ Facts & Trends | TheAIDaily"
+              }
+            ]
+          },
+          {
+            "claim": "**2026-06-19 2026年医疗AI新闻与突破合辑**",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 4,
+                "source_status": "read",
+                "title": "2026's AI News, Innovations, Breakthroughs in Healthcare and Medical | News"
+              }
+            ]
+          },
+          {
+            "claim": "**日期未知 斯坦福HAI《2026 AI指数报告·医学分册》（高权威）**",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 5,
+                "source_status": "read",
+                "title": "Medicine | The 2026 AI Index Report | Stanford HAI"
+              }
+            ]
+          },
+          {
+            "claim": "**日期未知 中国医疗AI政策与市场趋势（Chambers法律指南）**",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.05,
+                "passage": "Fangda’s team includes lawyers qualified in the PRC, Hong Kong, the United States, the United Kingdom, Australia and Singapore, offering strong cross-border capabilities with a distinct China focus. Fangda has extensive experience in the AI and life sciences sectors, such as personalised medicine, digital health and b…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "Healthcare AI 2026 - China | Global Practice Guides | Chambers and Partners"
+              }
+            ]
+          }
+        ]
+      },
+      "quality_tier": "flexible_readable",
+      "quality_notice": "",
+      "requested_source_policy": "flexible"
+    },
+    {
+      "id": "2290c257-29b6-4f50-abe1-0bccaa73bf98",
+      "task_id": "be09c393-4080-4506-9319-d3b3d023f0dc",
+      "task_title": "日本新闻",
+      "source_type": "web",
+      "status": "completed",
+      "stage": "completed",
+      "progress": 100,
+      "created_at": "2026-08-14T17:28:04",
+      "started_at": "2026-08-14T17:28:04",
+      "finished_at": "2026-08-14T17:28:40",
+      "summary": "# 最新结论\n\n2026年8月时点，日本留学领域最核心的变化是**在日外国人留学生总数在2025年5月达到408,069人，同比大增21.2%，连续刷新历史纪录**，其中来自南亚（尤其是尼泊尔）的学生增幅超过五成，直接带动日语教育机构和专门学校入学人数激增 [2]。与此同时，**日本政府正在收紧“留学”在留资格的审核与在籍管理**，包括设立文部科学大臣认定制度以保障日语教育机构质量，并明确警告留学生不得依赖打工负担学费生活费 [2][6]。对计划赴日留学的中国学生而言，**日本本地生源赴海外留学人数增长放缓（2024年度仅增2.1%）**，而中国仍是日本第一大留学生来源国（131,097人），这一基本面未变 [2]。\n\n---\n\n# 最新动态索引\n\n## 一、在日外国留学生规模：总量与结构变动（核心事件）\n\n**1. 总量创历史新高（2025年5月1日数据，2026年5月29日公布）** \n据日本学生支援机构（JASSO）调查，2025年5月1日时点的在日外国人留学生数为**408,069人**，比上年度增加**71,361人（+21.2%）**，连续第二年创下历史最高纪录 [2]。所有学校类型的留学生人数均呈增加态势，其中**专修学校（专门课程）为106,829人（+39.8%）**、**日语教育机构为140,174人（+30.7%）**，两类的增幅与增量最为突出 [2]。\n\n**2. 生源国结构变化：南亚崛起（2025年5月数据）** \n主要来源国依次为——**中国131,097人（+6.2%）**、**尼泊尔100,239人（+54.7%）**、**越南43,366人（+7.5%）** [2]。文部科学省明确提到“南西亚洲圏（尼泊尔、缅甸、斯里兰卡、孟加拉国）からの受入れ数が大幅に増加” [2]。中国学生虽仍居首位，但增速显著低于尼泊尔，意味着留学生群体内部的生源结构正在发生剧烈变化。\n\n**3. 各教育阶段详细数据（2025年5月1日）** \n大学（含大学院、短期大学）156,593人（+5.2%）；高等专门学校527人（+4.2%）；准备教育课程3,946人（+7.9%） [2]。可以看出，增长主要集中于非大学层级的教育机构，大学本科/研究生阶段的增幅相对温和。\n\n**4. 日本政府表态：将加强对专修学校和日语教育机构的监管（2026年5月29日）** \n文部科学省在公布统计数据的同一份文件中表示，针对专修学校中留学生急增的情况，将通过与所辖都道府县合作，推进“教育质量提升”和“在籍管理徹底”；针对日语教育机构，则依托2024年度新创设的“日本語教育機関認定制度”（文部科学大臣认定），通过制度施行与在籍管理“继续充实日语教育” [2]。这表明官方已注意到部分学校留学生过密可能带来的质量问题。\n\n## 二、留学在留资格与入学手续相关规定（直接影响申请人的制度动态）\n\n**5. 日本語教育機関认定制度适用范围与时间节点（2026年现行制度）** \n出入国在留管理厅（ISA）官网显示，持“留学”在留资格进入日语教育机构学习的条件是：必须入读**法务省告示指定的日语教育机构**或**认定日本語教育機関** [6]。在留期间通常**最长2年**；修了后若升入大学或专修学校，通常需要**日语能力N2以上** [6]。\n\n**6. 重要时间节点：令和12年（2030年）4月入学的材料规则变更（2026年现行规定）** \n在留资格“留学”的申请材料要求中明确标注：**除认定日本語教育機関的留学生、正科生、交换留学生、国费留学生外，预定于令和12年（2030年）4月以后入学的人员，须参照专修学校、各种学校类别的要求准备材料**（即不再适用大学类别下的简化材料） [3]。对正在规划中长期赴日路径的学生，这一规则差异需要提前纳入申请材料准备计划。\n\n**7. 英语授课学生同样适用上述规则** \n同上，认定日本語教育機関以外的留学生，若预定2030年4月以后入学，同样须按更严格类别准备申请文件 [3]。这意味着以英语授课项目赴日、但未入读认定日语教育机构的学生，未来将面临不同的材料审查标准。\n\n**8. 日语能力最低门槛：A1相当（2026年现行规定）** \n申请日语教育机构入学时，需通过考试或面试确认学生具备“日本語教育の参照枠”中**A1相当以上**的日语能力 [6]。入国管理局列出了被视为满足该要求的考试清单，并发布了“留学”在留资格所需的日语考试命题指南（PDF） [6]。\n\n**9. 留学签证申请流程与时间特征** \nISA明确：留学签证（在留资格认定证明书交付申请）**通常由日语教育机构代申请人提交**；入学时间通常为**每年2次（4月、10月）或4次（1月、4月、7月、10月）**；由于申请量庞大，各地入国管理局会指定受理期间，因此**确定学校后需尽早确认日程** [6]。\n\n**10. 打工限制与官方风险警告（2026年现行）** \n“留学”在留资格本身不允许工作；取得“資格外活動許可”后，**每周可打工28小时以内**（长假期间每天8小时以内），且不得从事风俗营业相关店铺的工作 [6]。ISA特别警告：超过时限打工可能导致**退去強制或再留更新被拒**，并明确指出“学费・生活费的全额用打工来负担是不被认可的” [6]。此外，官方点名批评部分留学中介散布“每月可赚30万日元以上、无需国内汇款”的虚假信息，提醒学生不要轻信 [6]。\n\n**11. 日语教育机构毕业后的进学要求** \nISA规定：从日语教育机构毕业后若想升入日本高等教育机构，通常需要**N2以上**日语能力，以便理解日语授课内容，因此建议学生根据升学目标选择适当的日语教育机构和课程 [6]。\n\n## 三、日本人学生海外留学动向（对比参照，影响日本留学环境预期）\n\n**12. 日本人海外留学者数（2024年度，2026年5月29日公布）** \n日本大学等机构掌握的日本人海外留学者数为**91,054人**（比上年+1,875人，+2.1%），虽增加但增幅放缓 [2]。其中**1个月以内的短期留学为60,301人（+5.7%）**，而1个月以上的中长期留学人数反而减少 [2]。就目的国/地区而言：**美国12,627人（-6.6%）、澳大利亚9,329人（+1.8%）、韩国8,360人（-0.3%）** [2]。按地区看，**赴亚洲留学36,904人（+7.0%）**，**赴北美19,363人（-8.4%）** [2]。\n\n**13. 海外机构统计的日本长期留学生（主要基于2023年数据）** \n根据UNESCO、美国国际教育研究所（IIE）等2023年统计数据，海外机构掌握的在海外学习的日本留学生数为**50,139人（+2.3%）** [2][5]。其中**美国13,959人（-13.0%）、台湾9,888人（+35.0%）、中国6,140人（-13.3%）** [2][5]。文部科学省注明：自2023年统计起，因OECD不再公布成员国国别留学生数，已不再使用OECD数据为出典 [2][5]。\n\n**14. 日本高中生海外交流恢复（2023年度数据，2025年3月28日公布）** \n日本全国高中掌握的**3个月以上留学及3个月以内海外研修总人数在2023年度恢复到约3.5万人**（2017年度峰值约4.7万，2021年度疫情期间降至约3千人） [5]。该数据来自文部科学省2025年3月28日发布的《高校生の留学生交流・国際交流等に関する調査研究》 [5]。\n\n## 四、留学支援与相关活动信息\n\n**15. 国土交通省主办外国人材建设企业联合说明会（2026年8月12日发布招募）** \n日本政府留学信息网站Study in Japan于2026年8月12日发布通知：国土交通省主办“外国人材のための建設企業合同企業説明会2026”，面向教育机构征集参加者 [1]。该活动表明建筑行业正通过留学生渠道招募外国人才，对考虑在日本就业的留学生是值得关注的动向。\n\n**16. 静冈县“外国人材受入体制整備支援事業”实习生招募（2026年8月7日发布）** \n静冈县主办的外国人材接收体制整备支援事业正在招募实习生，面向教育机构 [1]。显示地方政府层面持续推动外国留学生的实习与就业对接。\n\n**17. 2026年度留学生调查实施通知（2026年7月15日）** \n日本学生支援机构发布通知，针对日语教育机构和准备教育课程实施“2026（令和8）年度留学生調査” [1]。该调查的结果预计将成为下一轮留学政策的统计依据。\n\n**18. 奖学金检索功能可用（截至2026年6月10日网页更新）** \nStudy in Japan官网明确其网站支持按“专攻分野、校园所在地、教授语言”检索学校，并可检索地方自治体、国际交流团体、民间团体的奖学金以及学校独自的奖学金和学费减免制度 [1]。对准备赴日留学的学生而言，该政府公认同站是查询学费减免和奖学金信息的主要入口。\n\n---\n\n# 对任务的影响 / 下一步\n\n1. **政策收紧信号明确，申请策略需相应调整**：日本政府已明确将加强对专修学校和日语教育机构的在籍管理，且2030年4月起非认定日语教育机构留学生的材料审查路径将变更 [2][3]。若计划在此时间点后入学，建议优先选择**文部科学大臣认定的日本語教育機関**，以适用更稳定的申请流程。\n\n2. **打工收入不可作为资金计划基础**：入国管理局明确“学费生活费全额靠打工不被认可”，且每周28小时上限是硬约束 [6]。申请签证时仍需备足经費支弁（资金证明）材料，勿轻信中介的“打工可覆盖全部费用”宣传。\n\n3. **日语能力门槛是硬条件，宜尽早准备**：进入日语教育机构需A1以上，升学需N2以上 [6]。考虑到申请量大、各地入国管理局受理时间有限，建议尽早确定学校并启动签证材料准备 [6]。\n\n---\n\n**证据边界**：本报告事实均来自日本政府机构（文部科学省、出入国在留管理厅、JASSO、Study in Japan官网）网页正文，全部为可读取全文的页面；其中Source 3与Source 6页面存在大量重复导航文本，实际信息密度有限，已尽量提取规则性内容。无仅依据搜索摘要的条目。统计数据发布时点为2026年5月29日，政策规则为2026年8月检索时的现行有效版本。",
+      "sources": [
+        {
+          "id": 1,
+          "kind": "web",
+          "title": "日本留学情報サイト Study in Japan",
+          "url": "https://www.studyinjapan.go.jp/ja/",
+          "domain": "www.studyinjapan.go.jp",
+          "source_type": "government",
+          "authority": "primary",
+          "acceptance": "flexible_readable",
+          "published_at": "2026-06-10T23:55:31",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "Japan creates the future.\n\nThe future is what you create.\n\n専攻分野や、キャンパス所在地、教授言語など、自分の関心に従って学校の検索ができます。\n\n地方自治体や国際交流団体、各種民間団体の奨学金に加えて、学校独自の奨学金や授業料減免制度が検索できます。\n\n2026.8.12 【教育機関の皆様】国土交通省主催「外国人材のための建設企業合同企業説明会2026」参加者募集\n\n【教育機関の皆様】国土交通省主催「外国人材のための建設企業合同企業説明会2026」参加者募集\n\n2026.8.7 【教育機関の皆様】静岡県主催「外国人材受入体制整備支援事業」インターン生募集\n\n【教育機関の皆様】静岡県主催「外国人材受入体制整備支援事業」インターン生募集\n\n2026.7.15 【教育機関の皆様】2026（令和8）年度留学生調査の実施について（日本語教育機関・準備教育課程）\n\n【教育機関の皆様】2026（令和8）年度留学生調査の実施について（日本語教育機関・準備教育課程）\n\n「富士山」や「和食」等の文化遺産、そして「おもてなし」の心\n\n海に囲まれ、春・夏・秋・冬の季節が楽しめる自然豊かな日本。\n\n日本には大きく分けて8つの地方があり、それぞれに独特の文化、伝統、自然景観があります。\n\n日本の地域の魅力や特徴を知り、留学先を決めるのに役立てましょう。"
+        },
+        {
+          "id": 2,
+          "kind": "web",
+          "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省",
+          "url": "https://www.mext.go.jp/a_menu/koutou/ryugaku/1412692_00003.htm",
+          "domain": "www.mext.go.jp",
+          "source_type": "government",
+          "authority": "primary",
+          "acceptance": "flexible_readable",
+          "published_at": "2026-05-29T00:00:00",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について\n\n独立行政法人日本学生支援機構では、毎年、日本人学生の海外留学状況や外国人留学生の在籍状況の調査を行っており、最新の調査結果が取りまとめられましたので、お知らせします。また、文部科学省においてユネスコ統計局等による統計をもとに、日本人の海外留学者数を集計して、最新の状況を取りまとめましたので併せて公表します。\n\n（1）日本の大学等が把握する日本人留学者数（大学間交流協定に基づく留学等）［独立行政法人日本学生支援機構による調査］ 独立行政法人日本学生支援機構が実施している「日本人学生留学状況調査」によると、大学等が把握している日本人学生の海外留学者数は、2024（令和６）年度で91,054人（対前年度比1,875人（2.1％）増）となり、前年度から増加しているものの増加率は鈍化しています。\n\nその中で、留学期間別に見ると、１か月未満の短期留学は60,301人（対前年度比3,257人（5.7％）増）であり前年度から増加していますが、それ以外の期間別留学者数は減少しています。\n\n留学者数の多い国・地域は、アメリカ合衆国12,627人（対前年度比890人（6.6％)減）、オーストラリア9,329人（対前年度比166人（1.8％）増）、韓国8,360人（対前年度比24人（0.3％）減）でした。また、地域別で見た場合、アジア諸国への留学者数が最も多く、36,904人（対前年度比2,401人（7.0％）増）となり、北米への留学者数は19,363人（対前年度比1,775人（8.4％）減）となりました。\n\n（2）海外の機関が把握する日本人留学者数（主に長期留学）［OECD等による統計］ ユネスコ、米国国際教育研究所(IIE)等の2023（令和５）年統計をもとに、海外の機関が把握している、日本人の海外留学者数（主に長期留学）を文部科学省が集計したところ、50,139人（対前年度比1,148人（2.3％）増）となりました。\n\n留学者数の多い国・地域は、アメリカ合衆国13,959人（対前年度比2,095人（13.0％）減）"
+        },
+        {
+          "id": 3,
+          "kind": "web",
+          "title": "在留資格「留学」 | 出入国在留管理庁",
+          "url": "https://www.moj.go.jp/isa/applications/status/student.html",
+          "domain": "www.moj.go.jp",
+          "source_type": "government",
+          "authority": "primary",
+          "acceptance": "flexible_readable",
+          "published_at": "",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "在留手続 在留資格から探す 手続の種類から探す オンライン手続 育成就労制度 特定技能制度 外国人技能実習制度 高度人材ポイント制 J-Skip/J-Find スタートアップ関連施策 留学生の就職 各種公表資料\n\nその他・必要書類 申請に当たっての留意事項（PDF：171KB） 別表（PDF：29KB） 経費支弁書（PDF：281KB） 奨学金の給付に関する証明書一覧（PDF：106KB） 別紙（各種確認書）（Excel：97KB） （１）大学（短期大学、大学院を含む。）、大学に準ずる機関、高等専門学校（認定日本語教育機関を除く。） 適正校（クラスⅠ又はクラスⅡ）である旨の通知を受けた機関（PDF：167KB） 適正校である旨の通知を受けていない機関（PDF：174KB） （注１）認定日本語教育機関の留学生、正科生、交換留学生、国費留学生を除いて、令和１２年４月以降に入学予定の場合は、下記（２）をご確認ください。\n\n（注２）認定日本語教育機関の留学生については、下記（３）をご確認ください。\n\n（２）専修学校、各種学校、設備及び編制に関して各種学校に準ずる機関（告示日本語教育機関及び認定日本語教育機関を除く。） 適正校（クラスⅠ）である旨の通知を受けた機関（PDF：152KB） 適正校（クラスⅡ）である旨の通知を受けた機関（PDF：161KB） 適正校である旨の通知を受けていない機関（PDF：165KB） （３）告示日本語教育機関及び認定日本語教育機関 適正校（クラスⅠ）である旨の通知を受けた機関（PDF：151KB） 適正校（クラスⅡ）である旨の通知を受けた機関（PDF：164KB） 適正校である旨の通知を受けていない機関（PDF：162KB） （４）高等学校、中学校、小学校 高等学校、中学校、小学校（PDF：170KB） ※令和８年９月以前に入学を予定する学生に係る申請については従前の各種確認書を提出いただいて差し支えありません。\n\nその他・必要書類 申請に当たっての留意事項（PDF：171KB） 別表（PDF：29KB） 経費支弁書（PDF：281KB） 奨学金の給"
+        },
+        {
+          "id": 4,
+          "kind": "web",
+          "title": "外国人留学生在籍状況調査 | JASSO",
+          "url": "https://www.jasso.go.jp/statistics/ryugaku_zaiseki.html",
+          "domain": "www.jasso.go.jp",
+          "source_type": "government",
+          "authority": "primary",
+          "acceptance": "flexible_readable",
+          "published_at": "",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "我が国の大学等における外国人留学生の5月1日現在の在籍状況に関する調査です。 調査結果は日本留学情報サイトに掲載しています。\n\n※ 日本留学情報サイトは、文部科学省及び外務省の協力の下、日本学生支援機構が運営する政府公認の日本留学情報サイトです。\n\n外国人留学生在籍状況調査（日本留学情報サイトにリンク）"
+        },
+        {
+          "id": 5,
+          "kind": "web",
+          "title": "データでみる日本の留学 | トビタテ！留学JAPANとは？ | トビタテ！留学JAPAN | 文部科学省",
+          "url": "https://tobitate-mext.jasso.go.jp:443/about/case/",
+          "domain": "tobitate-mext.jasso.go.jp",
+          "source_type": "government",
+          "authority": "primary",
+          "acceptance": "flexible_readable",
+          "published_at": "",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "ユネスコ、米国国際教育研究所(IIE)等の 2023（令和５）年統計をもとに、海外の機関が把握している、日本人の海外留学者数（主に長期留学）を文部科学省が集計したところ、50,139 人（対前年度比 1,148 人（2.3％）増）となりました。\n\n留学者数の多い国・地域は、アメリカ合衆国13,959人（対前年度比2,095人（13.0％）減）、台湾 9,888 人（対前年度比 2,565 人（35.0％）増）、中国 6,140 人（対前年度比 938 人（13.3％）減）でした。前年度に引き続き、アメリカ合衆国、英国、オーストラリア等の英語圏や、東アジア圏への留学者数が上位となっています。\n\n（注）国・地域については、ユネスコ統計局による統計や Institute of International Education (IIE)「Open Doors」等、各国等が発表している数値をもとにしており、調査時点や調査対象は、国・地域によって異なります。\n\nまた、受入れ国の特定の日または特定の期間の在学者情報から収集したものであり、留学期間が１年に満たない学生や在学を必要としない交換留学プログラムに参加する学生で計上されていない者がいることに留意。\n\n※2012 年統計までは、外国人学生（受入れ国の国籍を持たない学生）が対象だったが、2013 年統計より、高等教育機関に在籍する外国人留学生（勉学を目的として前居住国・出身国から他の国に移り住んだ学生）が対象となったため、比較ができなくなっている。\n\n※2022 年統計までは OECD 統計を出典に含め留学者数を集計していたが、2023 年統計から OECD 加盟国における国別留学生数が非公表扱いに変更されたため、出典とはしていない。\n\n※複数の統計の数値を合算しており、統計により、対象となる「留学生」や「高等教育機関」の定義が異なる場合がある。\n\n・中国教育部 学生ビザ（Ｘビザ《留学期間が 180 日以上》）又は訪問ビザ（滞在 180 日未満）等で中国の大学に在学している者。\n\n・OECD「Education at a Glan"
+        },
+        {
+          "id": 6,
+          "kind": "web",
+          "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁",
+          "url": "https://www.moj.go.jp/isa/applications/resources/nyuukokukanri07_00159.html",
+          "domain": "www.moj.go.jp",
+          "source_type": "government",
+          "authority": "primary",
+          "acceptance": "flexible_readable",
+          "published_at": "",
+          "status": "read",
+          "evidence_type": "full_page",
+          "excerpt": "組織・採用 出入国在留管理庁の概要 機構図 幹部一覧 地方出入国在留管理官署 採用案内\n\n出入国手続 出入（帰）国手続について（解説） 再入国許可申請 トラスティド・トラベラー・プログラム（TTP） 乗員上陸許可申請（NACCS） 各種公表資料 出入国審査・在留審査Q&A\n\n在留手続 在留資格から探す 手続の種類から探す オンライン手続 育成就労制度 特定技能制度 外国人技能実習制度 高度人材ポイント制 J-Skip/J-Find スタートアップ関連施策 留学生の就職 各種公表資料\n\n在留支援 ロードマップ 総合的対応策 HarmoniUP! 新規入国者向けガイダンスページ 外国人生活支援ポータルサイト 生活・就労ガイドブック 外国人在留支援センター(FRESC／フレスク） 相談窓口 外国人との共生施策に係る御意見・御要望（御意見箱）\n\n外国人との共生施策に係る御意見・御要望（御意見箱）\n\n退去強制手続 退去強制手続と出国命令制度 監理措置制度 仮放免制度 各種申請 入管法違反者に関する情報提供 各種公表資料 退去強制手続・出国命令制度・上陸拒否期間の短縮決定Q&A\n\n退去強制手続・出国命令制度・上陸拒否期間の短縮決定Q&A\n\n難民の認定等 難民認定手続・補完的保護対象者認定手続 難民旅行証明書交付申請手続 第三国定住による難民の受入れ 一時庇護上陸許可 各種公表資料\n\n政策情報（会議・統計等） 会議・委員会等 統計 基本計画・白書・パンフレット 関係法令 その他政策情報\n\n広報・情報公開等 プレスリリース 更新情報 広報 調達情報 情報公開・個人情報保護 公文書管理 ご意見・情報提供 その他の公表情報 よくあるお問い合わせ（FAQ）\n\n在留資格「留学」が認められる日本語教育機関及び在籍期間について\n\n日本語教育機関における勉学を目的とし、「留学」の在留資格で在留するためには、法務省が告示をもって定める日本語教育機関又は認定日本語教育機関に入学する必要があります。\n\n日本語教育機関に在籍できる期間は、通常、最長２年間です。\n\n日本語教育機関修了後、高等教育機関（大学、専"
+        }
+      ],
+      "memory_result": {
+        "created_ids": [
+          "c2472c14-5b4c-4664-a314-7afea0ad0003",
+          "1bed1bec-9fdf-4ffe-9dfc-47692f34ffb5",
+          "1e4dbf6d-4690-46a4-b1b2-83f3e0fc4b0a",
+          "c14466b1-4e90-4471-8380-65c199d9fdcf"
+        ],
+        "merged_ids": [],
+        "archived_duplicate_ids": [],
+        "preserved_important_ids": [],
+        "graph_rebuilt": true
+      },
+      "error": "",
+      "is_read": true,
+      "read_at": "2026-08-14T17:30:20",
+      "response_language": "zh-cn",
+      "used_model": true,
+      "summary_method": "model",
+      "summary_diagnostic": "The model report passed language, citation, coverage, and originality checks.",
+      "model_name": "deepseek-v4-flash",
+      "evidence_chars": 10924,
+      "readable_source_count": 6,
+      "recalled_memory_ids": [],
+      "citation_check": {
+        "version": 1,
+        "method": "deterministic_lexical",
+        "status": "needs_review",
+        "summary": {
+          "cited_claims": 24,
+          "supported": 1,
+          "partial": 7,
+          "unsupported": 16,
+          "snippet_only": 0,
+          "invalid_references": 0,
+          "uncited_specific_claims": 20
+        },
+        "claims": [
+          {
+            "claim": "2026年8月时点，日本留学领域最核心的变化是**在日外国人留学生总数在2025年5月达到408,069人，同比大增21.2%，连续刷新历史纪录**，其中来自南亚（尤其是尼泊尔）的学生增幅超过五成，直接带动日语教育机构和专门学校入学人数激增",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "与此同时，**日本政府正在收紧“留学”在留资格的审核与在籍管理**，包括设立文部科学大臣认定制度以保障日语教育机构质量，并明确警告留学生不得依赖打工负担学费生活费",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.227,
+                "passage": "文部科学省としては、大学（大学院、短大を含む）及び高等専門学校における外国人留学生の受入れについては、経済安全保障の観点に留意した上で、G7やASEAN等の重点地域からの誘致等に取り組むとともに、今後、我が国の大学の国際競争力の強化を行いつつ、在籍管理の一層の徹底等を通じて「質の向上」を図る視点を重視し、多様で優秀な留学生の確保に努めてまいります。 また、専修学校（専門課程）における外国人留学生の急増にも適切に対応できるよう、所轄庁である都道府県と連携し、教育の質の向上や在籍管理のより一層の徹底など、必要な取組を行ってまいります。 日本語教育機関については、令和６年度に質の担保された日本語教育機関を文部科学大臣が認定する「日本語教…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "与此同时，**日本政府正在收紧“留学”在留资格的审核与在籍管理**，包括设立文部科学大臣认定制度以保障日语教育机构质量，并明确警告留学生不得依赖打工负担学费生活费 [2]",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "对计划赴日留学的中国学生而言，**日本本地生源赴海外留学人数增长放缓（2024年度仅增2.1%）**，而中国仍是日本第一大留学生来源国（131,097人），这一基本面未变",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "据日本学生支援机构（JASSO）调查，2025年5月1日时点的在日外国人留学生数为**408,069人**，比上年度增加**71,361人（+21.2%）**，连续第二年创下历史最高纪录",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.131,
+                "passage": "（注3）2022年統計まではOECD統計を出典に含め留学者数を集計していたが、2023年統計からOECD加盟国における国別留学生数が非公表扱いに変更されたため、出典とはしていないことに留意する必要があります。 独立行政法人日本学生支援機構が実施している「外国人留学生在籍状況調査」によると、2025（令和７）年５月１日現在の外国人留学生数は408,069人（対前年度比71,361人（21.2％）増）となり、前年度に引き続き過去最大となりました。 在学段階別に見ると、すべての学校種において外国人留学生数が増加しているところ、特に専修学校（専門課程）と日本語教育機関において大幅に増加しました。",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "所有学校类型的留学生人数均呈增加态势，其中**专修学校（专门课程）为106,829人（+39.8%）**、**日语教育机构为140,174人（+30.7%）**，两类的增幅与增量最为突出",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "主要来源国依次为——**中国131,097人（+6.2%）**、**尼泊尔100,239人（+54.7%）**、**越南43,366人（+7.5%）**",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.042,
+                "passage": "・大学（大学院、短大を含む）は156,593人（対前年度比7,692人（5.2％）増） ・高等専門学校は527人（対前年度比21人（4.2％）増） ・準備教育課程は3,946人（対前年度比288人（7.9％）増） ・専修学校（専門課程）は106,829人（対前年度比30,427人（39.8％）増） ・日本語教育機関は140,174人（対前年度比32,933人（30.7％）増） 主な出身国（地域）別に見ると、中国131,097人（対前年度比7,612人（6.2％）増）、ネパール100,239人（対前年度比35,423人（54.7％）増）、ベトナム43,366人（対前年度比3,043人（7.5％）増）となっており、特に南西アジア圏（ネ…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "文部科学省明确提到“南西亚洲圏（尼泊尔、缅甸、斯里兰卡、孟加拉国）からの受入れ数が大幅に増加”",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.185,
+                "passage": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について 独立行政法人日本学生支援機構では、毎年、日本人学生の海外留学状況や外国人留学生の在籍状況の調査を行っており、最新の調査結果が取りまとめられましたので、お知らせします。 また、文部科学省においてユネスコ統計局等による統計をもとに、日本人の海外留学者数を集計して、最新の状況を取りまとめましたので併せて公表します。 （1）日本の大学等が把握する日本人留学者数（大学間交流協定に基づく留学等）［独立行政法人日本学生支援機構による調査］ 独立行政法人日本学生支援機構が実施している「日本人学生留学状況調査」によると、大学等が把握している日本人学生の海外留学者数は、2024（…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "准备教育课程3,946人（+7.9%）",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.106,
+                "passage": "・大学（大学院、短大を含む）は156,593人（対前年度比7,692人（5.2％）増） ・高等専門学校は527人（対前年度比21人（4.2％）増） ・準備教育課程は3,946人（対前年度比288人（7.9％）増） ・専修学校（専門課程）は106,829人（対前年度比30,427人（39.8％）増） ・日本語教育機関は140,174人（対前年度比32,933人（30.7％）増） 主な出身国（地域）別に見ると、中国131,097人（対前年度比7,612人（6.2％）増）、ネパール100,239人（対前年度比35,423人（54.7％）増）、ベトナム43,366人（対前年度比3,043人（7.5％）増）となっており、特に南西アジア圏（ネ…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "针对日语教育机构，则依托2024年度新创设的“日本語教育機関認定制度”（文部科学大臣认定），通过制度施行与在籍管理“继续充实日语教育”",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.276,
+                "passage": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について 独立行政法人日本学生支援機構では、毎年、日本人学生の海外留学状況や外国人留学生の在籍状況の調査を行っており、最新の調査結果が取りまとめられましたので、お知らせします。 また、文部科学省においてユネスコ統計局等による統計をもとに、日本人の海外留学者数を集計して、最新の状況を取りまとめましたので併せて公表します。 （1）日本の大学等が把握する日本人留学者数（大学間交流協定に基づく留学等）［独立行政法人日本学生支援機構による調査］ 独立行政法人日本学生支援機構が実施している「日本人学生留学状況調査」によると、大学等が把握している日本人学生の海外留学者数は、2024（…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "出入国在留管理厅（ISA）官网显示，持“留学”在留资格进入日语教育机构学习的条件是：必须入读**法务省告示指定的日语教育机构**或**认定日本語教育機関**",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.229,
+                "passage": "難民の認定等 難民認定手続・補完的保護対象者認定手続 難民旅行証明書交付申請手続 第三国定住による難民の受入れ 一時庇護上陸許可 各種公表資料 政策情報（会議・統計等） 会議・委員会等 統計 基本計画・白書・パンフレット 関係法令 その他政策情報 広報・情報公開等 プレスリリース 更新情報 広報 調達情報 情報公開・個人情報保護 公文書管理 ご意見・情報提供 その他の公表情報 よくあるお問い合わせ（FAQ） 在留資格「留学」が認められる日本語教育機関及び在籍期間について 日本語教育機関における勉学を目的とし、「留学」の在留資格で在留するためには、法務省が告示をもって定める日本語教育機関又は認定日本語教育機関に入学する必要があります…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "修了后若升入大学或专修学校，通常需要**日语能力N2以上**",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.273,
+                "passage": "難民の認定等 難民認定手続・補完的保護対象者認定手続 難民旅行証明書交付申請手続 第三国定住による難民の受入れ 一時庇護上陸許可 各種公表資料 政策情報（会議・統計等） 会議・委員会等 統計 基本計画・白書・パンフレット 関係法令 その他政策情報 広報・情報公開等 プレスリリース 更新情報 広報 調達情報 情報公開・個人情報保護 公文書管理 ご意見・情報提供 その他の公表情報 よくあるお問い合わせ（FAQ） 在留資格「留学」が認められる日本語教育機関及び在籍期間について 日本語教育機関における勉学を目的とし、「留学」の在留資格で在留するためには、法務省が告示をもって定める日本語教育機関又は認定日本語教育機関に入学する必要があります…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "在留资格“留学”的申请材料要求中明确标注：**除认定日本語教育機関的留学生、正科生、交换留学生、国费留学生外，预定于令和12年（2030年）4月以后入学的人员，须参照专修学校、各种学校类别的要求准备材料**（即不再适用大学类别下的简化材料）",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.054,
+                "passage": "※ 在留カードの交付の日において年齢が１歳に満たない方は、写真の提出は不要です（令和８年６月１３日以前は写真の提出が不要なのは１６歳未満の方でしたが、令和８年６月１４日以降に交付される在留カードからは１歳以上の方について写真の提出が必要となりました。 ）。 また、中長期在留者とならない在留資格への変更を希望される場合も写真の提出は必要ありません。 その他・必要書類 申請に当たっての留意事項（PDF：171KB） 別表（PDF：29KB） 経費支弁書（PDF：281KB） 奨学金の給付に関する証明書一覧（PDF：106KB） 別紙（各種確認書）（Excel：97KB） （１）大学（短期大学、大学院を含む。 ）、大学に準ずる機関、高等…",
+                "source_id": 3,
+                "source_status": "read",
+                "title": "在留資格「留学」 | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "同上，认定日本語教育機関以外的留学生，若预定2030年4月以后入学，同样须按更严格类别准备申请文件",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.109,
+                "passage": "） 適正校（クラスⅠ又はクラスⅡ）である旨の通知を受けた機関（PDF：167KB） 適正校である旨の通知を受けていない機関（PDF：174KB） （注１）認定日本語教育機関の留学生、正科生、交換留学生、国費留学生を除いて、令和１２年４月以降に入学予定の場合は、下記（２）をご確認ください。 ※ 正科生とは、学位・称号等の取得を目的として入学する者を指します。 （注２）認定日本語教育機関の留学生については、下記（３）をご確認ください。 （２）専修学校、各種学校、設備及び編制に関して各種学校に準ずる機関（告示日本語教育機関及び認定日本語教育機関を除く。",
+                "source_id": 3,
+                "source_status": "read",
+                "title": "在留資格「留学」 | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "申请日语教育机构入学时，需通过考试或面试确认学生具备“日本語教育の参照枠”中**A1相当以上**的日语能力",
+            "citations": [
+              {
+                "support": "supported",
+                "overlap_score": 0.351,
+                "passage": "本邦における勉学の意思及び能力を測る指標の一つとして、日本語教育機関へ入学する者に対しては「日本語教育の参照枠」におけるＡ１相当以上の日本語能力を有することを試験又は面接により確認しています。 「日本語教育の参照枠」におけるＡ1相当以上の日本語能力を有することを証明する試験は次のとおり。 当面の間、「日本語教育の参照枠」におけるＡ1相当以上の日本語能力を有するものとみなす試験は次のとおり。 在留資格「留学」により本邦の教育機関において教育を受けるために必要な日本語能力を測定する日本語試験の作成のためのガイドライン 在留資格「留学」により本邦の教育機関において教育を受けるために必要な日本語能力を測定する日本語試験の作成のためのガイド…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "入国管理局列出了被视为满足该要求的考试清单，并发布了“留学”在留资格所需的日语考试命题指南（PDF）",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.154,
+                "passage": "留学査証（留学ビザ）を取得するための事前手続である在留資格認定証明書交付申請は、通常、日本語教育機関が留学希望者に代わって申請します。 日本語教育機関の入学時期は各教育機関ごとに異なりますが、通常年２回（原則として４月、１０月）又は年４回（原則として１月、４月、７月、１０月）です。 日本語教育機関からの在留資格認定証明書交付申請件数が膨大であり、入学時期に間にあわせるため、原則として地方入国管理局ごとに申請を受け付ける時期が指定されています。 希望する日本語教育機関が決まり次第、早めにスケジュールを確認することをお勧めします。 在留資格認定証明書交付申請のために必要な書類は、入学する日本語教育機関及び留学希望者の国籍・地域により異…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "由于申请量庞大，各地入国管理局会指定受理期间，因此**确定学校后需尽早确认日程**",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.167,
+                "passage": "留学査証（留学ビザ）を取得するための事前手続である在留資格認定証明書交付申請は、通常、日本語教育機関が留学希望者に代わって申請します。 日本語教育機関の入学時期は各教育機関ごとに異なりますが、通常年２回（原則として４月、１０月）又は年４回（原則として１月、４月、７月、１０月）です。 日本語教育機関からの在留資格認定証明書交付申請件数が膨大であり、入学時期に間にあわせるため、原則として地方入国管理局ごとに申請を受け付ける時期が指定されています。 希望する日本語教育機関が決まり次第、早めにスケジュールを確認することをお勧めします。 在留資格認定証明書交付申請のために必要な書類は、入学する日本語教育機関及び留学希望者の国籍・地域により異…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "取得“資格外活動許可”后，**每周可打工28小时以内**（长假期间每天8小时以内），且不得从事风俗营业相关店铺的工作",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.036,
+                "passage": "留学査証（留学ビザ）を取得するための事前手続である在留資格認定証明書交付申請は、通常、日本語教育機関が留学希望者に代わって申請します。 日本語教育機関の入学時期は各教育機関ごとに異なりますが、通常年２回（原則として４月、１０月）又は年４回（原則として１月、４月、７月、１０月）です。 日本語教育機関からの在留資格認定証明書交付申請件数が膨大であり、入学時期に間にあわせるため、原則として地方入国管理局ごとに申請を受け付ける時期が指定されています。 希望する日本語教育機関が決まり次第、早めにスケジュールを確認することをお勧めします。 在留資格認定証明書交付申請のために必要な書類は、入学する日本語教育機関及び留学希望者の国籍・地域により異…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "ISA特别警告：超过时限打工可能导致**退去強制或再留更新被拒**，并明确指出“学费・生活费的全额用打工来负担是不被认可的”",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.111,
+                "passage": "資格外活動許可で認められた制限時間を超えてアルバイトをした場合、退去強制されたり在留期間の更新が認められず、学業の継続ができなくなる場合がありますので注意が必要です。 したがって、日本で安定した留学生活を送るためには、これらのことを念頭に資金計画を立てる必要があります。 なお、学費・生活費の全額をアルバイトで賄うということは認められません。 留学斡旋業者の中には、「日本に行けばアルバイトで月に３０万円以上稼ぐことができ、学費・生活費の全額をアルバイトで賄えるため、本国からの送金は不要であり、逆に本国に送金もできる。 」などと、事実と異なる情報を流す悪質な業者も存在します。 そのような情報を信じて仲介手数料を支払うことにより、入国当…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "此外，官方点名批评部分留学中介散布“每月可赚30万日元以上、无需国内汇款”的虚假信息，提醒学生不要轻信",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "ISA规定：从日语教育机构毕业后若想升入日本高等教育机构，通常需要**N2以上**日语能力，以便理解日语授课内容，因此建议学生根据升学目标选择适当的日语教育机构和课程",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.14,
+                "passage": "難民の認定等 難民認定手続・補完的保護対象者認定手続 難民旅行証明書交付申請手続 第三国定住による難民の受入れ 一時庇護上陸許可 各種公表資料 政策情報（会議・統計等） 会議・委員会等 統計 基本計画・白書・パンフレット 関係法令 その他政策情報 広報・情報公開等 プレスリリース 更新情報 広報 調達情報 情報公開・個人情報保護 公文書管理 ご意見・情報提供 その他の公表情報 よくあるお問い合わせ（FAQ） 在留資格「留学」が認められる日本語教育機関及び在籍期間について 日本語教育機関における勉学を目的とし、「留学」の在留資格で在留するためには、法務省が告示をもって定める日本語教育機関又は認定日本語教育機関に入学する必要があります…",
+                "source_id": 6,
+                "source_status": "read",
+                "title": "日本語教育機関への入学をお考えのみなさまへ | 出入国在留管理庁"
+              }
+            ]
+          },
+          {
+            "claim": "日本大学等机构掌握的日本人海外留学者数为**91,054人**（比上年+1,875人，+2.1%），虽增加但增幅放缓",
+            "citations": [
+              {
+                "support": "partial",
+                "overlap_score": 0.175,
+                "passage": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について 独立行政法人日本学生支援機構では、毎年、日本人学生の海外留学状況や外国人留学生の在籍状況の調査を行っており、最新の調査結果が取りまとめられましたので、お知らせします。 また、文部科学省においてユネスコ統計局等による統計をもとに、日本人の海外留学者数を集計して、最新の状況を取りまとめましたので併せて公表します。 （1）日本の大学等が把握する日本人留学者数（大学間交流協定に基づく留学等）［独立行政法人日本学生支援機構による調査］ 独立行政法人日本学生支援機構が実施している「日本人学生留学状況調査」によると、大学等が把握している日本人学生の海外留学者数は、2024（…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "其中**1个月以内的短期留学为60,301人（+5.7%）**，而1个月以上的中长期留学人数反而减少",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.037,
+                "passage": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について 独立行政法人日本学生支援機構では、毎年、日本人学生の海外留学状況や外国人留学生の在籍状況の調査を行っており、最新の調査結果が取りまとめられましたので、お知らせします。 また、文部科学省においてユネスコ統計局等による統計をもとに、日本人の海外留学者数を集計して、最新の状況を取りまとめましたので併せて公表します。 （1）日本の大学等が把握する日本人留学者数（大学間交流協定に基づく留学等）［独立行政法人日本学生支援機構による調査］ 独立行政法人日本学生支援機構が実施している「日本人学生留学状況調査」によると、大学等が把握している日本人学生の海外留学者数は、2024（…",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          },
+          {
+            "claim": "就目的国/地区而言：**美国12,627人（-6.6%）、澳大利亚9,329人（+1.8%）、韩国8,360人（-0.3%）**",
+            "citations": [
+              {
+                "support": "unsupported",
+                "overlap_score": 0.0,
+                "passage": "",
+                "source_id": 2,
+                "source_status": "read",
+                "title": "「日本人学生の海外留学状況」及び「外国人留学生の在籍状況調査」について：文部科学省"
+              }
+            ]
+          }
+        ]
+      },
+      "quality_tier": "flexible_readable",
+      "quality_notice": "",
+      "requested_source_policy": "flexible"
+    }
+  ]
+}

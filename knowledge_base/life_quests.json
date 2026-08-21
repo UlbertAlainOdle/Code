@@ -29,9 +29,10 @@
         "id": "1783683917.357666",
         "title": "WJG paper publication",
         "description": "",
-        "status": "active",
+        "status": "completed",
         "created_at": "2026-07-10 19:45:17",
-        "completed_at": null
+        "completed_at": "2026-08-06 23:25:48",
+        "achieved_at": "2026-08-06 23:25:48"
     },
     {
         "id": "1783683975.514994",
@@ -50,5 +51,15 @@
         "created_at": "2026-07-10 19:47:12",
         "completed_at": "2026-07-10 19:47:16",
         "achieved_at": "2026-07-10 19:47:16"
+    },
+    {
+        "id": "1786699988.894992",
+        "title": "日本留学计划",
+        "description": "",
+        "status": "active",
+        "created_at": "2026-08-14 17:33:08",
+        "achieved_at": null,
+        "failed_at": null,
+        "completed_at": null
     }
 ]

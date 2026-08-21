@@ -1,0 +1,353 @@
+{
+    "schema_version": 1,
+    "deleted": {
+        "1785619321.707485": {
+            "deleted_at": "2026-08-02 06:31:39",
+            "reason": "user_delete"
+        },
+        "assistant-role-learning-area-58e412cbe2ec7e4e": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-9a53b0819e7b65ce": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-09670cd2ad8b1573": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-dad3b4d79fbbadb4": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-b709a00c4f8e51c1": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-3803aebc9169d2be": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-760e36f90d1730e6": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-b8d2551d612b977f": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-06c9b8e813d1bcc6": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-59aaaf042d33f5a8": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-df5ec1db0aa46edf": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-22a88f6640df7471": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-61e62b213a1a56f7": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-6e96ab09c7d5f23a": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-3240aa0fe3ca1505": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-area-a94a8fe5ccb19ba6": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-53383a29e5a42d6e": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-ef48f4c844f5a290": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-babd02950019c943": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-eb88ae81180ab417": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-239e46309b2cdc4d": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-6025f1b46cfe9947": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-0383c6363b2aef85": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-6541e449e0b95851": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-ac6c3321311c3a34": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-95f20cb56d4b91a7": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-c2eb5119aa38ef16": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-887290196411b430": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-a1fe235b6fd76122": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-64a43452b3671a27": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-f9f62571ba9f69af": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-90984b2aadd99e7d": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-314179d27a0eabb8": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-5bfb6cc44178bd3f": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-c1e31abb5abd4f79": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-85f3245d8dae4daf": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-55287d768f5b0ab9": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-5d9779963cace6da": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-00a22877930be119": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-2d0b48d53d447997": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-60873cb1902a8f2a": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-349708a84be34ea3": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-7da0f9d24e46ddac": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-958ced39764ec8f6": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-c4235c61ae66a7d5": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-f55388b35ad8a781": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-cc1ff050ef870358": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-c84f17b6ced19e46": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-6fee30f5eb8ee9e0": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-7be774fc2b77875e": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-0ed22f62b1720918": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-3df32f7e5f2e77b8": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-6875c19144383b68": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-53085819f11afd42": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-fee8c8074fed7f04": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-c385791632a8c3bf": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-2567ecb1f3e14b83": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-2e75a34b9181e0c7": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-3840306d6bd8b6fe": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-d06766c070b4c0d1": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-e5e5a3b411c0a30e": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-2db4bf051ea980a7": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-f70379160dc2e1c8": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-62f73be2a78df1ef": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-c288375483a99ad4": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-1d1c5745105afdc9": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-0b43c11add01dda0": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-77a21594439fb5c8": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-c0af922b6743e2df": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-0ae88497b252896c": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-f6a74dabebb780a9": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-3350f4140f456edf": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-bd74bd1e3e6eb373": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-d888e9577b8d3a63": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-4a6b132450608e29": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "assistant-role-learning-note-ebad2acfcdea5192": {
+            "deleted_at": "2026-08-02 07:12:55",
+            "reason": "user_bulk_delete"
+        },
+        "legacy-769a500c260be7ee1547": {
+            "deleted_at": "2026-08-08 00:11:46",
+            "reason": "user_delete"
+        },
+        "legacy-e949f4d8c89c714873ef": {
+            "deleted_at": "2026-08-08 00:11:56",
+            "reason": "user_delete"
+        },
+        "legacy-b5f412d0768c1171d9a9": {
+            "deleted_at": "2026-08-08 00:12:05",
+            "reason": "user_delete"
+        },
+        "legacy-740fc279cc7ca7d59b36": {
+            "deleted_at": "2026-08-08 00:12:30",
+            "reason": "user_bulk_delete"
+        },
+        "legacy-37994000f980c551cb21": {
+            "deleted_at": "2026-08-08 00:12:30",
+            "reason": "user_bulk_delete"
+        },
+        "legacy-abf431f988f0fc0b5fc7": {
+            "deleted_at": "2026-08-08 00:12:30",
+            "reason": "user_bulk_delete"
+        },
+        "legacy-01e36a2d9f3235d7db94": {
+            "deleted_at": "2026-08-08 00:12:30",
+            "reason": "user_bulk_delete"
+        },
+        "legacy-5c1dd36a6691e7196f76": {
+            "deleted_at": "2026-08-08 00:12:30",
+            "reason": "user_bulk_delete"
+        },
+        "legacy-5c2d10b1a776a6f0018b": {
+            "deleted_at": "2026-08-08 00:12:30",
+            "reason": "user_bulk_delete"
+        },
+        "1786574706.296011": {
+            "deleted_at": "2026-08-14 17:10:31",
+            "reason": "learner_orphan_cleanup"
+        }
+    }
+}

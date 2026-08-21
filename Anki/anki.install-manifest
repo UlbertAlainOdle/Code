@@ -1,0 +1,7 @@
+.python-version
+anki-console.exe
+anki.exe
+pyproject.toml
+uv.exe
+uvw.exe
+versions.py

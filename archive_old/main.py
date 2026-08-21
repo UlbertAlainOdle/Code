@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 
-DEAR_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEAR_ROOT = PROJECT_ROOT.parents[2]
 
 app = FastAPI()
 
@@ -17,7 +18,7 @@ app.mount(
 
 app.mount(
     "/static",
-    StaticFiles(directory=str(DEAR_ROOT / "Talk" / "mistral_models" / "static"), html=True),
+    StaticFiles(directory=str(PROJECT_ROOT / "static"), html=True),
     name="static",
 )
 
