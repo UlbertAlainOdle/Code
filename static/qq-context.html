@@ -1,0 +1,27 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QQ 对话时效</title><style>body{font:16px system-ui;max-width:720px;margin:36px auto;padding:0 20px;background:#f6f7fb;color:#222}form{background:white;border-radius:14px;padding:22px}label{display:block;margin:18px 0}input,select,button{font:inherit;padding:7px}p{line-height:1.7}#status{white-space:pre-wrap}</style>
+<a href="/static/qq.html">返回QQ接入</a><h1>QQ 对话时效</h1>
+<p>凌晨4点划分聊天日，旧日与旧话题降低优先级。不会删除原聊天或长期记忆。默认关闭，原时区保留为 Asia/Shanghai。</p>
+<form id="policy"><label>设置身份 <select id="owner" required><option value="">先读取并选择主人账号</option></select></label>
+<label><input type="checkbox" id="enabled"> 启用分日与软切题</label>
+<label>聊天时区 <input id="timezone" maxlength="64" required value="Asia/Shanghai"></label>
+<label>历史预算（估算token） <input id="history_token_budget" type="number" min="100" max="32000" value="6000" required></label>
+<label>旧日/旧题最大占比 <input id="old_fraction" type="number" min="0" max="0.4" step="0.05" value="0.2" required></label>
+<button id="read" type="button">读取当前值</button> <button id="save" type="submit" disabled>保存设置</button></form>
+<p>启用后可直接说“我们换个话题吧，聊聊电影”。也可使用 /topic new、/topic status；主人好友私聊可用 /topic on/off。</p>
+<p id="status" role="status">尚未读取，未修改设置。</p>
+<section><h2>个人事件与旧身份迁移</h2><p>旧身份迁移先预览，不会开启事件或关系学习。下方统一模式启用后，本人可跨场合使用自己的事件；来源仅作证据出处。主人可在此核对个人事件和容量。</p>
+<label>筛选账号 <input id="events-subject" inputmode="numeric" maxlength="20" placeholder="留空查看全部"></label>
+<button id="events-read" type="button">读取事件与迁移预览</button> <button id="events-migrate" type="button" disabled>确认当前迁移预览</button>
+<pre id="events-status" role="status">尚未读取。</pre></section>
+<section><h2>统一个人事件与群公共事件</h2>
+<p>个人事件仅本人改写，可在本人发问的群和私聊接续。群事件保留各方主张；只有明确指定的协调人能够定案。</p>
+<button id="unified-read" type="button">读取统一事件设置与预览</button>
+<label><input id="unified-enabled" type="checkbox">启用统一事件</label>
+<label><input id="unified-topics" type="checkbox">持续话题与个人/群双归属（沿用群唤醒规则）</label>
+<label>好友与个人事件资格 <select id="unified-level"><option value="important">重要及以上</option><option value="familiar">熟悉及以上</option></select></label>
+<label>每群活跃事件 <input id="unified-active" type="number" min="1" max="30" value="5"></label>
+<label>每群总事件 <input id="unified-total" type="number" min="1" max="100" value="20"></label>
+<button id="unified-save" type="button" disabled>保存当前预览</button><pre id="unified-status" role="status">尚未读取。</pre></section>
+<script src="/static/js/qq_context.js?v=20261104-unified99"></script>
+<script src="/static/js/qq_unified_events.js?v=20261104-unified99"></script></html>

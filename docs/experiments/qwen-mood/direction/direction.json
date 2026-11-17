@@ -1,0 +1,602 @@
+{
+  "texts": {
+    "arrival": "博士，你终于回来了。我一直在等你。先坐下来，慢慢告诉我今天发生了什么。",
+    "waiting": "这件事真的让我很在意。你说会来的，可是我等了很久。现在，我想听你亲口解释。",
+    "comfort": "我们可以先停一下。刚才的事情已经过去了。你不用急着回答，我会在这里陪着你。"
+  },
+  "instructions": {
+    "neutral": "",
+    "happy": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+    "sad": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。",
+    "stressed": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。"
+  },
+  "settings": {
+    "enabled": true,
+    "provider": "qwen_local",
+    "auto_read": false,
+    "engine": "vllm_omni",
+    "stream_audio": true,
+    "stream_chat": true,
+    "stream_buffer_seconds": 0.8,
+    "mode": "clone",
+    "language": "Chinese",
+    "description": "年轻成年女性，清亮柔和的二次元声线，活泼亲切，有自然的情绪起伏，咬字清楚，避免夸张尖叫和机械感。",
+    "voice_id": "1fd8568ff260441587cbe97a01c0ca83",
+    "x_vector_only": false,
+    "temperature": 0.9,
+    "top_p": 1.0,
+    "top_k": 50,
+    "repetition_penalty": 1.05,
+    "max_new_tokens": 2048,
+    "seed": 42,
+    "chunk_chars": 100,
+    "volume": 1.0,
+    "playback_rate": 1.0,
+    "mood_prosody": false,
+    "idle_unload_seconds": 0
+  },
+  "results": [
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "neutral",
+      "instruction": "",
+      "file": "arrival-42-neutral.wav",
+      "elapsed_seconds": 1.7617769999997108,
+      "duration": 6.8,
+      "rms": 0.07682744761945064,
+      "sha256": "aefb29e33e364e1663c83ce63c0d3669997f384e059b35386e27fdd6a2735832",
+      "matched_file": "arrival-42-neutral-matched.wav",
+      "matched": {
+        "duration": 6.8,
+        "rms": 0.05573034749093426,
+        "sha256": "287be700601ba44f1d000f5b49d927cca5336b9b5ed513fd917bc7c38aeee0e4"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.7253961164125887,
+        "method": "none"
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "happy",
+      "instruction": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+      "file": "arrival-42-happy.wav",
+      "elapsed_seconds": 1.1539499000027718,
+      "duration": 6.88,
+      "rms": 0.06556509663181304,
+      "sha256": "737011bc359d50adc8a5a2208bfa73b7ad47e6113cbfd2827696befa51997439",
+      "matched_file": "arrival-42-happy-matched.wav",
+      "matched": {
+        "duration": 6.804875,
+        "rms": 0.056072274609551394,
+        "sha256": "c29c69746e2589ffdb755c46b6b92d4a3f8cfc4b0584b0c06690e7d6660244d4"
+      },
+      "normalization": {
+        "mood": "happy",
+        "tempo": 1.011764705882353,
+        "gain": 0.85,
+        "method": "none"
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "sad",
+      "instruction": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。",
+      "file": "arrival-42-sad.wav",
+      "elapsed_seconds": 1.2807107000007818,
+      "duration": 7.92,
+      "rms": 0.07101204919100249,
+      "sha256": "5970ea168f08d7a61b61f812e76da3de0cecb69527256cdfd19169519aab54ca",
+      "matched_file": "arrival-42-sad-matched.wav",
+      "matched": {
+        "duration": 6.81725,
+        "rms": 0.05522305161334229,
+        "sha256": "3327c1ca77acbf3efe7a7ce647c00c7e19c26c8dfd371e0a542e4b82e35b0402"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.1647058823529413,
+        "gain": 0.7848010692825118,
+        "method": "none"
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "stressed",
+      "instruction": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。",
+      "file": "arrival-42-stressed.wav",
+      "elapsed_seconds": 1.0873570000003383,
+      "duration": 6.64,
+      "rms": 0.06613817782897558,
+      "sha256": "bd0af3a2afa3c9436632335c7ed613ef723392a67d5f814af718664f9ca6bb90",
+      "matched_file": "arrival-42-stressed-matched.wav",
+      "matched": {
+        "duration": 6.791291666666667,
+        "rms": 0.056408056407045035,
+        "sha256": "d049b668efb9d1512e5aabe34ea4090d9c909d9deebe3142282a963b1c67ad97"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 0.9764705882352941,
+        "gain": 0.8426348285728739,
+        "method": "none"
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "neutral",
+      "instruction": "",
+      "file": "arrival-77-neutral.wav",
+      "elapsed_seconds": 1.1623336999982712,
+      "duration": 6.96,
+      "rms": 0.08091416188396963,
+      "sha256": "7ec2d1c28b2d7feb43af6e43274c93067df66d50f0a4bfb38f5356e5b5d2f330",
+      "matched_file": "arrival-77-neutral-matched.wav",
+      "matched": {
+        "duration": 6.96,
+        "rms": 0.05797005317206187,
+        "sha256": "42a2b759e9d77009235e019bcd4a7a0944a2fb8d9a9de257347a56a3ee5afff9"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.7164386197898818,
+        "method": "none"
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "happy",
+      "instruction": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+      "file": "arrival-77-happy.wav",
+      "elapsed_seconds": 1.1655678000024636,
+      "duration": 7.12,
+      "rms": 0.0687555895286504,
+      "sha256": "66df00aa8176e0fc7fec8a25b86e873d0fac31e4fe83e5db59c1cd386e0c7fdc",
+      "matched_file": "arrival-77-happy-matched.wav",
+      "matched": {
+        "duration": 6.964708333333333,
+        "rms": 0.05813180658972284,
+        "sha256": "d99d73000360c8dd4cde8fecedacb20f36b9fcf94e7f60e0fbaf5b638c380598"
+      },
+      "normalization": {
+        "mood": "happy",
+        "tempo": 1.0229885057471264,
+        "gain": 0.8431318945705528,
+        "method": "none"
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "sad",
+      "instruction": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。",
+      "file": "arrival-77-sad.wav",
+      "elapsed_seconds": 1.2821480000020529,
+      "duration": 7.76,
+      "rms": 0.06820003583718384,
+      "sha256": "1b8e316decaa0203d6444a8fff85b3421274b20c7f3c1826f491d54e569a9069",
+      "matched_file": "arrival-77-sad-matched.wav",
+      "matched": {
+        "duration": 6.975791666666667,
+        "rms": 0.057014891258186526,
+        "sha256": "7e2cad5c3b03912fa420899db190a8ccbf6b2ae16a21ef0a62899f592e93f0e3"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.1149425287356323,
+        "gain": 0.85,
+        "method": "none"
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "stressed",
+      "instruction": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。",
+      "file": "arrival-77-stressed.wav",
+      "elapsed_seconds": 1.09472470000037,
+      "duration": 6.56,
+      "rms": 0.07396195158927747,
+      "sha256": "43ff0fed394494dd35c77df529deff3905689b6600c5b8d6180185e4921fdcbc",
+      "matched_file": "arrival-77-stressed-matched.wav",
+      "matched": {
+        "duration": 6.944166666666667,
+        "rms": 0.05897740572229742,
+        "sha256": "8f89f53b31044e50d59006b2a44f61e51efddd5c60eebcac8dfb21c322ed4277"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 0.9425287356321839,
+        "gain": 0.7837817853093317,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 42,
+      "mood": "neutral",
+      "instruction": "",
+      "file": "waiting-42-neutral.wav",
+      "elapsed_seconds": 1.4090948999983084,
+      "duration": 8.64,
+      "rms": 0.06462091489081531,
+      "sha256": "5847926d4bc1438d0aab64a11cc755f43028c619505db793a2169830d4c87941",
+      "matched_file": "waiting-42-neutral-matched.wav",
+      "matched": {
+        "duration": 8.64,
+        "rms": 0.053208515985765745,
+        "sha256": "c479ca69259ec9636b5977899483d6018fa7d0be8ea991ef7e5d8e70899de766"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.8233953883498484,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 42,
+      "mood": "happy",
+      "instruction": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+      "file": "waiting-42-happy.wav",
+      "elapsed_seconds": 1.3868195000031847,
+      "duration": 8.64,
+      "rms": 0.0712200339531318,
+      "sha256": "7816377208466b2eef10355db80bb3e03a70e55f76233a10971b12683a6e1fe5",
+      "matched_file": "waiting-42-happy-matched.wav",
+      "matched": {
+        "duration": 8.64,
+        "rms": 0.05320854415051179,
+        "sha256": "13fe685612afba9fcdfc191305eec4f9398504a2eee7b0563b420195c3f2ac3a"
+      },
+      "normalization": {
+        "mood": "happy",
+        "tempo": 1.0,
+        "gain": 0.747101066352491,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 42,
+      "mood": "sad",
+      "instruction": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。",
+      "file": "waiting-42-sad.wav",
+      "elapsed_seconds": 1.4007571000001917,
+      "duration": 8.56,
+      "rms": 0.07037896940372565,
+      "sha256": "c49a2f29bbb097e38874d64b759107e11b9ec97892bae469aa46163ac1c0d9f3",
+      "matched_file": "waiting-42-sad-matched.wav",
+      "matched": {
+        "duration": 8.631958333333333,
+        "rms": 0.053452533668243464,
+        "sha256": "9c610fefcbfa664f3e41ae9643883fddfed3743132e793744763cfd58eb181b6"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 0.9907407407407407,
+        "gain": 0.7560293048171387,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 42,
+      "mood": "stressed",
+      "instruction": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。",
+      "file": "waiting-42-stressed.wav",
+      "elapsed_seconds": 1.4011272999996436,
+      "duration": 8.64,
+      "rms": 0.06259830977887691,
+      "sha256": "da7c50ba43cc8558cf54e16ca414d2ccc8b467d4c2748796ca2d59296f1aae46",
+      "matched_file": "waiting-42-stressed-matched.wav",
+      "matched": {
+        "duration": 8.64,
+        "rms": 0.05320855366157365,
+        "sha256": "32a8456f5e9818a127a0caf0ef35e0e39cc8caa157d0dbb25fdaa36c29bcd946"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 1.0,
+        "gain": 0.85,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 77,
+      "mood": "neutral",
+      "instruction": "",
+      "file": "waiting-77-neutral.wav",
+      "elapsed_seconds": 1.286258000000089,
+      "duration": 8.0,
+      "rms": 0.06740552954710512,
+      "sha256": "c3e37d19f944df91c02520267fc100036509787b29d1d88cd8837020c15a9a2b",
+      "matched_file": "waiting-77-neutral-matched.wav",
+      "matched": {
+        "duration": 8.0,
+        "rms": 0.053074909004340115,
+        "sha256": "9e357098ae65e5b5c18efd3ff7c83a7c737363c81273f571ae2bc0c0ed6371b8"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.7873956859172818,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 77,
+      "mood": "happy",
+      "instruction": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+      "file": "waiting-77-happy.wav",
+      "elapsed_seconds": 1.2601987999987614,
+      "duration": 7.52,
+      "rms": 0.07253426314445528,
+      "sha256": "376d63b02dc39f4ab8f58a62ea4b1f80389d8db4b8c3ceca461f228c9001919e",
+      "matched_file": "waiting-77-happy-matched.wav",
+      "matched": {
+        "duration": 7.98175,
+        "rms": 0.05364083282790569,
+        "sha256": "64aa9ba963671c84ba2eab8b322ab7f4ee3093ec543254302196aa7afa52163b"
+      },
+      "normalization": {
+        "mood": "happy",
+        "tempo": 0.94,
+        "gain": 0.7317207188919741,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 77,
+      "mood": "sad",
+      "instruction": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。",
+      "file": "waiting-77-sad.wav",
+      "elapsed_seconds": 1.2880523999992874,
+      "duration": 8.0,
+      "rms": 0.06244096843807111,
+      "sha256": "c7627397ca681606d6f26c9d09ba8726260a0ade61b06c1b1055e659139d35c5",
+      "matched_file": "waiting-77-sad-matched.wav",
+      "matched": {
+        "duration": 8.0,
+        "rms": 0.05307481861494043,
+        "sha256": "5866c04dfb73aa02e48480912d023f81d741cb0b3a0d9d46be1cfdc39789c9a4"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.0,
+        "gain": 0.85,
+        "method": "none"
+      }
+    },
+    {
+      "case": "waiting",
+      "seed": 77,
+      "mood": "stressed",
+      "instruction": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。",
+      "file": "waiting-77-stressed.wav",
+      "elapsed_seconds": 1.443588299996918,
+      "duration": 8.72,
+      "rms": 0.06723254902561614,
+      "sha256": "5520b10a74896e83f40ad07697fe092ab1afb183f91488932e21554567f8a84d",
+      "matched_file": "waiting-77-stressed-matched.wav",
+      "matched": {
+        "duration": 8.018625,
+        "rms": 0.05289080006543824,
+        "sha256": "537af886a6a2f78353846dd704a41c86cba301d0b4a6a77a52854af36c060e4a"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 1.09,
+        "gain": 0.7894215516377121,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "neutral",
+      "instruction": "",
+      "file": "comfort-42-neutral.wav",
+      "elapsed_seconds": 1.1610278000007384,
+      "duration": 6.96,
+      "rms": 0.06556806517714367,
+      "sha256": "0abbd7a286ce0fe14198247a1216bf379b06acdd52f2afdea3a875384382c214",
+      "matched_file": "comfort-42-neutral-matched.wav",
+      "matched": {
+        "duration": 6.96,
+        "rms": 0.0531368567116706,
+        "sha256": "cffc42b7d024767c458e9b13e70d09d2d6c905540c0299597d7ea2b737ab93e6"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.810408092261232,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "happy",
+      "instruction": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+      "file": "comfort-42-happy.wav",
+      "elapsed_seconds": 1.0697786000018823,
+      "duration": 6.56,
+      "rms": 0.06350252685561131,
+      "sha256": "7d743191b1957dcf64b4857cc78a0dc19d44d11f7f110e2602c5873b445de1d6",
+      "matched_file": "comfort-42-happy-matched.wav",
+      "matched": {
+        "duration": 6.9445,
+        "rms": 0.05436402380836329,
+        "sha256": "4adb5b63e14d8d2724ae1651c5b8d9a7104d588a6a8c1e475dd2e368f571f1c3"
+      },
+      "normalization": {
+        "mood": "happy",
+        "tempo": 0.9425287356321839,
+        "gain": 0.8367681294681231,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "sad",
+      "instruction": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。",
+      "file": "comfort-42-sad.wav",
+      "elapsed_seconds": 1.2319470000002184,
+      "duration": 7.68,
+      "rms": 0.0625139889570225,
+      "sha256": "a3c644581a72aee0119060231b1a5e3076c3414cc3e27b7d8c133828e61d5146",
+      "matched_file": "comfort-42-sad-matched.wav",
+      "matched": {
+        "duration": 6.967875,
+        "rms": 0.05293021863128348,
+        "sha256": "c73ea45cd1e3dfa25b860f70e49b4e7c8739bcacef1a48d5fae7794dfe4c9ec3"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.103448275862069,
+        "gain": 0.85,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "stressed",
+      "instruction": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。",
+      "file": "comfort-42-stressed.wav",
+      "elapsed_seconds": 1.2151544999978796,
+      "duration": 7.36,
+      "rms": 0.06267473700806024,
+      "sha256": "e4aeb76ed58ea7844b33b050fcaf8a0a1b5770b1bb2725c13b5e8a27c0533c4e",
+      "matched_file": "comfort-42-stressed-matched.wav",
+      "matched": {
+        "duration": 6.9595,
+        "rms": 0.05316993223744099,
+        "sha256": "d7e72433e97e5664c9bbbadb89308b1ee8b2ce2df39b54197e8cef3cd372758f"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 1.0574712643678161,
+        "gain": 0.847819921552052,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "neutral",
+      "instruction": "",
+      "file": "comfort-77-neutral.wav",
+      "elapsed_seconds": 1.0839373000017076,
+      "duration": 6.56,
+      "rms": 0.06808689004068191,
+      "sha256": "dd6b51f9d6a6a6f58c52db4c1ccb9277e89da897deaee9d64343c21a4c8d469d",
+      "matched_file": "comfort-77-neutral-matched.wav",
+      "matched": {
+        "duration": 6.56,
+        "rms": 0.05256992594908042,
+        "sha256": "8f1e7754d405dbf336f93697d998cd1f41e8e6724c3071952ef306eb00b9daa5"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.7721007591160481,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "happy",
+      "instruction": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+      "file": "comfort-77-happy.wav",
+      "elapsed_seconds": 1.1406038999994053,
+      "duration": 7.04,
+      "rms": 0.06336425736097993,
+      "sha256": "240a10057a25c9a1b51e91363d4db7bd1b24125e4539f35f6f265a178ccc88ed",
+      "matched_file": "comfort-77-happy-matched.wav",
+      "matched": {
+        "duration": 6.56625,
+        "rms": 0.052082823928760645,
+        "sha256": "c4f67fe2b6972edc2af9e7ebdd563735e5e78204d4c493a7c07aca910615dc5a"
+      },
+      "normalization": {
+        "mood": "happy",
+        "tempo": 1.0731707317073171,
+        "gain": 0.8296465811439347,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "sad",
+      "instruction": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。",
+      "file": "comfort-77-sad.wav",
+      "elapsed_seconds": 1.2616364000023168,
+      "duration": 7.28,
+      "rms": 0.061846987630895765,
+      "sha256": "c5c32968555e3e314838e35d7f6988b3c98a2e24500d167d20efee0458bcd376",
+      "matched_file": "comfort-77-sad-matched.wav",
+      "matched": {
+        "duration": 6.5640833333333335,
+        "rms": 0.05208375524727706,
+        "sha256": "655b1145b139cef9b0e5b0efa061672685f4e79e0f149559ec44cf2e029a1876"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.1097560975609757,
+        "gain": 0.85,
+        "method": "none"
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "stressed",
+      "instruction": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。",
+      "file": "comfort-77-stressed.wav",
+      "elapsed_seconds": 1.2556581999997434,
+      "duration": 7.52,
+      "rms": 0.06521633817977572,
+      "sha256": "0fed364dff7ef32ff55bcb2df1156b6ab96105b116d9461985846b29a886c13b",
+      "matched_file": "comfort-77-stressed-matched.wav",
+      "matched": {
+        "duration": 6.569791666666666,
+        "rms": 0.05191005000547812,
+        "sha256": "7ab2ee416a2a6f114655b87caa2e37c7ee3629ddb30ad9b5727d5badc87ddc8f"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 1.146341463414634,
+        "gain": 0.8060854220509409,
+        "method": "none"
+      }
+    }
+  ],
+  "user_feedback_v1": "Only speed changes; no perceived emotional phrasing",
+  "listening_status": "Human listening: some phrasing change; sad/stressed expression insufficient. No reliable negative emotion acceptance.",
+  "reference_sha256": "5297a210f300cc7d70559499b6c360dec066241886d82f26a79c4a16e6ebb962",
+  "state_unchanged": {
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.wav": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\settings.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\emotion_state.json": true
+  },
+  "user_feedback_v2": "有一些变化，但是难过和紧张的两个没那么明显，感觉语气还是很轻快，尤其是紧张"
+}

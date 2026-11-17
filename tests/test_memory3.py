@@ -11,11 +11,16 @@ from pathlib import Path
 
 
 TEST_ROOT = Path(tempfile.mkdtemp(prefix="saya-memory3-tests-"))
-os.environ["PROJECT_ROOT"] = str(TEST_ROOT / "project")
-os.environ["DEAR_ROOT"] = str(TEST_ROOT / "dear")
-Path(os.environ["PROJECT_ROOT"]).mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 atexit.register(lambda: shutil.rmtree(TEST_ROOT, ignore_errors=True))
+
+# Test isolation (V4 plan section 3.7): this module MUST NOT mutate global
+# os.environ (PROJECT_ROOT / DEAR_ROOT) at import time. pytest collects all
+# test modules in one process, and that pollution leaked into
+# saya_app.config's import-time path resolution, breaking modules that load
+# the server afterwards (StaticFiles mount on a nonexistent temp dir).
+# Every manager constructed in this file receives an explicit temp base_dir,
+# so no env override is needed.
 
 from core_services import AssistantRoleManager, KnowledgeBase, MemoryManager, ProjectManager  # noqa: E402
 
@@ -835,6 +840,7 @@ class Memory3Tests(unittest.TestCase):
         self.assertGreater(selected_by_id[target["id"]].get("_embedding_score", 0), 0.9)
 
     def test_embedding_index_is_incremental_after_content_change(self):
+        self.kb.settings["embedding_auto_index_new"] = False
         self.kb.settings["embedding_enabled"] = True
         self.kb.embedding_provider = FakeEmbeddingProvider()
         memory = self.kb.add_memory(
@@ -857,7 +863,9 @@ class Memory3Tests(unittest.TestCase):
             "embedding_provider": "sentence_transformers",
             "embedding_model": "BAAI/bge-m3",
         })
-        init_status = self.kb.initialize_embedding_provider()
+        from unittest.mock import patch
+        with patch('saya_app.services.embedding_provider.importlib.util.find_spec', return_value=None):
+            init_status = self.kb.initialize_embedding_provider()
         self.assertEqual(init_status["status"], "dependency_missing")
         self.assertTrue(self.kb.sqlite_store.available)
         memory = self.kb.add_memory(

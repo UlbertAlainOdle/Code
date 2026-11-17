@@ -425,7 +425,8 @@ def has_recall_trigger(message: str) -> bool:
     # Explicit search request words also justify recalling relevant memories.
     if has_explicit_request(message):
         return True
-    return False
+    from ..memory_recall_contract import personal_recall_intent
+    return personal_recall_intent(message)
 
 
 def should_recall(recall_mode: str, message: str) -> bool:
@@ -434,8 +435,8 @@ def should_recall(recall_mode: str, message: str) -> bool:
     - ``off``: never — skip all memory context.
     - ``on``: always — use deep recall mode.
     - ``auto``: recall in normal mode only when the message references past
-      context or contains explicit request/search words; emotional chat is
-      excluded to keep it natural.
+      context or contains explicit request/search words. Emotional language
+      does not veto an explicit reference to a past experience.
     """
     mode = normalize_recall_mode(recall_mode)
     if mode == "off":
@@ -444,7 +445,5 @@ def should_recall(recall_mode: str, message: str) -> bool:
         return True
     # auto
     if not message:
-        return False
-    if is_emotional_or_persona(message):
         return False
     return has_recall_trigger(message)

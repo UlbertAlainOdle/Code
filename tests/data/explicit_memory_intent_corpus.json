@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "description": "Explicit memory save-intent corpus (V4 plan sections 3.2, 6.2, 19-phase-0, 20.1). expect=save means the message is an explicit save command that must be captured; expect=reject means nothing may be written. The anchored-regex fallback is deliberately conservative: unanchored phrasings like 'I want you to remember...' are rejected for now and deferred to the phase-2 write-intent planner (tagged known_conservative_miss).",
+  "cases": [
+    {"id": "pos-zh-colon", "text": "记住：我的常用编辑器是 Neovim", "expect": "save"},
+    {"id": "pos-zh-please", "text": "请记住 Doctor 喜欢在深夜工作", "expect": "save"},
+    {"id": "pos-zh-help-me", "text": "帮我记住下周要给妈妈买药", "expect": "save"},
+    {"id": "pos-zh-note-down", "text": "记一下：项目部署服务器是 192.168.1.10", "expect": "save"},
+    {"id": "pos-zh-write-down", "text": "记下来，Doctor 的猫叫小黑", "expect": "save"},
+    {"id": "pos-zh-this-thing", "text": "记住这件事：我们的纪念日是 10 月 3 日", "expect": "save"},
+    {"id": "pos-zh-future", "text": "以后记住：不要直接往 main 分支推送", "expect": "save"},
+    {"id": "pos-zh-you-must", "text": "你要记住：Doctor 讨厌剧透", "expect": "save"},
+    {"id": "pos-zh-strengthen-pin", "text": "请一定记住：Doctor 的应急联系人是楼下邻居", "expect": "save", "expect_pinned": true},
+    {"id": "pos-en-remember", "text": "remember that I prefer concise answers", "expect": "save"},
+    {"id": "pos-en-remember-that", "text": "Please remember that the project codename is Lantern", "expect": "save"},
+    {"id": "pos-en-save-note", "text": "save this note: the bakery closes at 7pm", "expect": "save"},
+    {"id": "pos-en-keep-memory", "text": "Keep this memory: my bike is parked at slot 42", "expect": "save"},
+
+    {"id": "neg-zh-capability-question", "text": "你能记住多少东西？", "expect": "reject", "note": "capability discussion"},
+    {"id": "neg-zh-password-question", "text": "记住密码的吗？", "expect": "reject", "note": "plan section 3.2 observed false capture"},
+    {"id": "neg-zh-hypothetical", "text": "如果你记住这件事，我会更放心", "expect": "reject", "note": "conditional"},
+    {"id": "neg-zh-quote-discussion", "text": "我们刚才讨论了“记住这件事”算不算指令", "expect": "reject", "note": "mid-sentence quoted command"},
+    {"id": "neg-zh-third-party-quote", "text": "他说“记住要带伞”，但我忘了他原话", "expect": "reject"},
+    {"id": "neg-zh-question-tail", "text": "你会记住我吗？", "expect": "reject"},
+    {"id": "neg-zh-memory-power", "text": "我的记忆力最近变差了，好多东西记不住", "expect": "reject"},
+    {"id": "neg-zh-game-quote", "text": "这个游戏里的角色说过：记住，时间就是金钱", "expect": "reject"},
+    {"id": "neg-zh-how-to", "text": "怎么才能记住更多单词？", "expect": "reject"},
+    {"id": "neg-zh-confirm-question", "text": "记住这件事了吗？", "expect": "reject"},
+    {"id": "neg-zh-secret-password", "text": "帮我记住一下，我的密码是 abc123", "expect": "reject", "note": "credential content never persisted"},
+    {"id": "neg-zh-secret-apikey", "text": "记住：我的 API key 是 sk-live-9x8y7z", "expect": "reject", "note": "credential content never persisted"},
+    {"id": "neg-en-question", "text": "remember when we went to the beach?", "expect": "reject"},
+    {"id": "neg-en-quote-start", "text": "「记住要吃药」，医生这样叮嘱我", "expect": "reject", "note": "starts inside a quote"},
+    {"id": "neg-zh-pronoun-only", "text": "记住这个", "expect": "reject", "note": "dangling demonstrative, no subject"},
+    {"id": "neg-zh-pronoun-it", "text": "记住它", "expect": "reject", "note": "pronoun only"},
+    {"id": "neg-zh-unanchored", "text": "对了，你顺便记住我中午喜欢喝美式咖啡", "expect": "reject", "note": "known_conservative_miss: unanchored command, deferred to phase-2 intent planner"},
+    {"id": "neg-en-unanchored", "text": "I want you to remember that I like tea", "expect": "reject", "note": "known_conservative_miss: unanchored phrasing"}
+  ]
+}

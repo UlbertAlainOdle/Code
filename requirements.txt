@@ -2,7 +2,9 @@
 #
 # The upper bounds keep a fresh installation on the current major API
 # versions used by the project while still allowing normal patch releases.
-fastapi>=0.110,<1.0
+# The application still uses FastAPI's legacy event-handler API; keep the
+# framework below the Starlette 1.x breaking change.
+fastapi>=0.110,<0.116
 uvicorn[standard]>=0.27,<1.0
 pydantic>=2.7,<3.0
 requests>=2.31,<3.0
@@ -21,12 +23,21 @@ pypdf>=5.0,<7.0
 # Test runner (the repository test suite uses unittest and can also be run
 # through pytest).
 pytest>=8.0,<9.0
+# FastAPI's TestClient uses httpx in the repository smoke tests.
+httpx>=0.27,<0.29
 
-# Optional: install only when using local GGUF models or local image vision.
-# The correct wheel/build depends on the local Python, CUDA and CPU setup.
-# llama-cpp-python>=0.2.90
+# Local GGUF model runtime (optional only for API-only deployments). The
+# correct wheel/build can still depend on the local Python, CUDA and CPU setup.
+llama-cpp-python>=0.3.9,<0.4
 
 # Optional: install only when Memory 3.0 uses a local sentence-transformers
 # embedding provider. This may download a large model separately; BGE-M3 is
 # intentionally not downloaded automatically by the application.
 # sentence-transformers>=3.0
+
+# Minecraft companion runs on the Node.js Mineflayer worker
+# (minecraft_worker/, Node 22 + npm install); no Python Minecraft client.
+
+# Optional: desktop Companion Console (desktop/saya_companion_console.py).
+# PySide6 includes QtWebSockets, so no extra websocket dependency is needed.
+pyside6>=6.6,<7.0

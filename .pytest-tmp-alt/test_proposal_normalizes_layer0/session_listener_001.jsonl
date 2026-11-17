@@ -1,0 +1,2 @@
+{"role": "user", "content": "我喜欢爬山", "listener": "input"}
+{"role": "ai", "content": "记忆提案：Doctor 喜欢爬山", "listener": "proposal", "listener_proposal": {"title": "偏好", "content": "Doctor 喜欢爬山", "category": "general", "layer": "semantic"}}

@@ -1,0 +1,54 @@
+{"time": "2026-09-27 22:16:28", "role": "user", "content": "你今天很好，给我做把镐子吧", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 22:16:28", "role": "ai", "content": "嘿嘿，被主人夸得更有干劲了～我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-27 22:16:28", "role": "user", "content": "麻烦帮我留意着泥土的事", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 22:16:28", "role": "ai", "content": "我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-27 22:16:28", "role": "user", "content": "follow Doctor", "source": "desktop", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 22:16:28", "role": "ai", "content": "任务已经识别，但机器人连接不可用，指令没有发出。", "source": "desktop", "kind": "task"}
+{"time": "2026-09-27 22:16:30", "role": "user", "content": "你跟在我身后别走丢呀", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 22:16:30", "role": "ai", "content": "任务已经识别，但机器人连接不可用，指令没有发出。", "source": "test", "kind": "task", "route": "clarify"}
+{"time": "2026-09-27 22:16:30", "role": "user", "content": "帮我弄两块牛排吃吃看", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 22:16:30", "role": "ai", "content": "我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-27 22:16:30", "role": "user", "content": "今天心情不错呀", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-27 22:16:30", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-27 22:16:30", "role": "user", "content": "随便说点什么", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-27 22:16:30", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-27 22:16:30", "role": "user", "content": "今天心情不错呀", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-27 22:16:30", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-27 22:16:30", "role": "user", "content": "帮我弄点那个啥", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 22:16:30", "role": "ai", "content": "听起来这是个任务，但我不确定具体目标，请把物品、数量或位置说清楚。", "source": "test", "kind": "task", "route": "clarify"}
+{"time": "2026-09-27 23:57:46", "role": "user", "content": "你今天很好，给我做把镐子吧", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 23:57:46", "role": "ai", "content": "嘿嘿，被主人夸得更有干劲了～我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-27 23:57:46", "role": "user", "content": "麻烦帮我留意着泥土的事", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 23:57:46", "role": "ai", "content": "我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-27 23:57:46", "role": "user", "content": "follow Doctor", "source": "desktop", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 23:57:46", "role": "ai", "content": "任务已经识别，但机器人连接不可用，指令没有发出。", "source": "desktop", "kind": "task"}
+{"time": "2026-09-27 23:57:48", "role": "user", "content": "你跟在我身后别走丢呀", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 23:57:48", "role": "ai", "content": "任务已经识别，但机器人连接不可用，指令没有发出。", "source": "test", "kind": "task", "route": "clarify"}
+{"time": "2026-09-27 23:57:48", "role": "user", "content": "帮我弄两块牛排吃吃看", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 23:57:48", "role": "ai", "content": "我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-27 23:57:48", "role": "user", "content": "今天心情不错呀", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-27 23:57:48", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-27 23:57:48", "role": "user", "content": "随便说点什么", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-27 23:57:48", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-27 23:57:48", "role": "user", "content": "今天心情不错呀", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-27 23:57:48", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-27 23:57:48", "role": "user", "content": "帮我弄点那个啥", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-27 23:57:48", "role": "ai", "content": "听起来这是个任务，但我不确定具体目标，请把物品、数量或位置说清楚。", "source": "test", "kind": "task", "route": "clarify"}
+{"time": "2026-09-28 00:50:35", "role": "user", "content": "你今天很好，给我做把镐子吧", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-28 00:50:35", "role": "ai", "content": "嘿嘿，被主人夸得更有干劲了～我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-28 00:50:35", "role": "user", "content": "麻烦帮我留意着泥土的事", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-28 00:50:35", "role": "ai", "content": "我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-28 00:50:35", "role": "user", "content": "follow Doctor", "source": "desktop", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-28 00:50:35", "role": "ai", "content": "任务已经识别，但机器人连接不可用，指令没有发出。", "source": "desktop", "kind": "task"}
+{"time": "2026-09-28 00:50:37", "role": "user", "content": "你跟在我身后别走丢呀", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-28 00:50:37", "role": "ai", "content": "任务已经识别，但机器人连接不可用，指令没有发出。", "source": "test", "kind": "task", "route": "clarify"}
+{"time": "2026-09-28 00:50:37", "role": "user", "content": "帮我弄两块牛排吃吃看", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-28 00:50:37", "role": "ai", "content": "我现在没连上游戏，等进服了再做这个。", "source": "test", "kind": "task", "route": "goal"}
+{"time": "2026-09-28 00:50:37", "role": "user", "content": "今天心情不错呀", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-28 00:50:37", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-28 00:50:37", "role": "user", "content": "随便说点什么", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-28 00:50:37", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-28 00:50:37", "role": "user", "content": "今天心情不错呀", "source": "test", "speaker": "Tester", "kind": "chat"}
+{"time": "2026-09-28 00:50:37", "role": "ai", "content": "我听到了，但对话 API 还没有同步，复杂任务暂时无法规划。", "source": "test", "kind": "chat", "backend": "local_fallback"}
+{"time": "2026-09-28 00:50:37", "role": "user", "content": "帮我弄点那个啥", "source": "test", "speaker": "Tester", "kind": "task"}
+{"time": "2026-09-28 00:50:37", "role": "ai", "content": "听起来这是个任务，但我不确定具体目标，请把物品、数量或位置说清楚。", "source": "test", "kind": "task", "route": "clarify"}

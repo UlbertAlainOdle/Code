@@ -1,0 +1,20 @@
+{
+    "schema_version": 2,
+    "tasks": [
+        {
+            "id": "08906980-546e-4931-acb8-339311f48d18",
+            "title": "daily",
+            "frequency": "daily",
+            "goal_id": null,
+            "order": 0,
+            "active": true,
+            "created_at": "2026-09-27 23:54:57"
+        }
+    ],
+    "records": {},
+    "activity": {},
+    "auto_reports": {
+        "months": {},
+        "years": {}
+    }
+}

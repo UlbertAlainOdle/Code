@@ -4,7 +4,82 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f0a9ceb7-30b9-4c6f-ae58-3699500763f1" name="更改" comment="" />
+    <list default="true" id="f0a9ceb7-30b9-4c6f-ae58-3699500763f1" name="更改" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core_services.py" beforeDir="false" afterPath="$PROJECT_DIR$/core_services.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/backend-layout.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/backend-layout.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260817-223750-345916.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260817-224018-962149.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260817-224041-428623.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260817-224101-417032.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260818-044033-276597.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260818-044146-590671.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260818-044256-412860.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260818-044350-290694.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260818-044446-114383.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260819-160033-042167.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260820-124618-916453.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260820-130736-209207.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260820-131241-425702.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-032515-223143.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-032605-628757.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-033255-947749.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-040453-959885.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-050743-592574.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-052253-507697.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-053019-185930.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-053240-611386.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-054016-362366.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-054133-293927.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-143422-672224.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-143838-831396.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-144007-623692.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-172927-417881.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-173057-005610.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-173128-324158.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-173438-282049.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-183818-910507.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-223636-054309.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-223707-038613.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-223943-902269.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260821-233928-758614.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260822-002706-693794.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260822-003911-381634.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260822-005007-660124.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260822-005510-534572.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/backups/knowledge.before-save.20260822-012350-944748.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/checkins.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/checkins.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/exports/checkin_month_2026-08.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/exports/checkin_month_2026-08.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/exports/checkin_month_2026-08.md" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/exports/checkin_month_2026-08.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/knowledge.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/knowledge.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/memory3.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/memory3.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/memory_deletions.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/memory_deletions.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/memory_graph.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/memory_graph.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/memory_maintenance.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/memory_maintenance.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/memory_settings.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/memory_settings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowledge_base/video_recommendations.json" beforeDir="false" afterPath="$PROJECT_DIR$/knowledge_base/video_recommendations.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saya_app/routers/backups.py" beforeDir="false" afterPath="$PROJECT_DIR$/saya_app/routers/backups.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saya_app/routers/goals.py" beforeDir="false" afterPath="$PROJECT_DIR$/saya_app/routers/goals.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saya_app/routers/integrations.py" beforeDir="false" afterPath="$PROJECT_DIR$/saya_app/routers/integrations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saya_app/routers/memories.py" beforeDir="false" afterPath="$PROJECT_DIR$/saya_app/routers/memories.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saya_app/services/backup_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/saya_app/services/backup_manager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saya_app/services/chat_runtime.py" beforeDir="false" afterPath="$PROJECT_DIR$/saya_app/services/chat_runtime.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/saya_app/services/web_research/citation_validator.py" beforeDir="false" afterPath="$PROJECT_DIR$/saya_app/services/web_research/citation_validator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server5-22B----.py" beforeDir="false" afterPath="$PROJECT_DIR$/server5-22B----.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_saya.bat" beforeDir="false" afterPath="$PROJECT_DIR$/start_saya.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/start_saya1.bat" beforeDir="false" afterPath="$PROJECT_DIR$/start_saya1.bat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/Chat4o5-Modern.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/Chat4o5-Modern.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/mmd_try_showcase.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/mmd_try_showcase.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/mmd_try_showcase.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/mmd_try_showcase.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/mmd_try_showcase.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/mmd_try_showcase.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_chat_prompt_web.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_chat_prompt_web.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_memory3.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_memory3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_memory_graph_ui.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_memory_graph_ui.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_priority_improvements.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_priority_improvements.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -28,6 +103,9 @@
       </map>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 5
 }</component>
@@ -36,23 +114,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.index.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server1-7B - 副本.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/Dear/Hear/whisper-main&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.index.executor": "Run",
+    "Python.server.executor": "Run",
+    "Python.server1-7B - 副本.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "D:/Dear/Hear/whisper-main",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.lookFeel",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Dear\Talk\mistral_models\Code" />
@@ -126,6 +206,7 @@
       <workItem from="1763975078096" duration="1000" />
       <workItem from="1768962285622" duration="69000" />
       <workItem from="1784603097957" duration="1000" />
+      <workItem from="1790630639387" duration="4700000" />
     </task>
     <servers />
   </component>

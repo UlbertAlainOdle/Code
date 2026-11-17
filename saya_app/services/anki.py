@@ -4,6 +4,7 @@ import re
 import sqlite3
 import tempfile
 import threading
+import time
 from datetime import date, datetime, time as datetime_time, timedelta
 from pathlib import Path
 
@@ -12,6 +13,8 @@ from saya_app.config import KNOWLEDGE_BASE_DIR
 
 class AnkiService:
     """Read Anki collection statistics without mutating the live collection."""
+
+    SNAPSHOT_TIMEOUT_SECONDS = 12.0
 
     def __init__(self, base_dir=KNOWLEDGE_BASE_DIR):
         self.base_dir = Path(base_dir)
@@ -194,18 +197,34 @@ class AnkiService:
         )
         os.close(descriptor)
         snapshot = Path(snapshot_name)
+        deadline = time.monotonic() + self.SNAPSHOT_TIMEOUT_SECONDS
+        source_db = destination_db = None
         try:
             source_uri = f"{Path(os.path.abspath(str(source))).as_uri()}?mode=ro"
-            source_db = sqlite3.connect(source_uri, uri=True, timeout=8)
-            destination_db = sqlite3.connect(str(snapshot), timeout=8)
+            source_db = sqlite3.connect(source_uri, uri=True, timeout=min(8, self.SNAPSHOT_TIMEOUT_SECONDS))
+            destination_db = sqlite3.connect(str(snapshot), timeout=min(8, self.SNAPSHOT_TIMEOUT_SECONDS))
             try:
                 source_db.execute("PRAGMA query_only = ON")
-                source_db.backup(destination_db)
+                def progress(status, remaining, total):
+                    if status != sqlite3.SQLITE_DONE and time.monotonic() >= deadline:
+                        raise sqlite3.OperationalError(
+                            'Anki snapshot timed out; the collection may be busy. Retry after Anki finishes its operation.'
+                        )
+                # connect(timeout=...) does not bound backup's BUSY retry loop.
+                source_db.backup(destination_db, pages=256, progress=progress, sleep=0.05)
             finally:
-                destination_db.close()
-                source_db.close()
+                if destination_db is not None:
+                    destination_db.close()
+                    destination_db = None
+                if source_db is not None:
+                    source_db.close()
+                    source_db = None
             return snapshot
         except Exception:
+            if destination_db is not None:
+                destination_db.close()
+            if source_db is not None:
+                source_db.close()
             try:
                 snapshot.unlink()
             except OSError:

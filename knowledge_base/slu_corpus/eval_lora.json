@@ -1,0 +1,506 @@
+[
+  {
+    "text": "跟着我",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "follow Doctor",
+    "goal": null,
+    "seconds": 3.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"follow Doctor\", \"goal\": null, \"text\": "
+  },
+  {
+    "text": "follow Doctor",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "follow Doctor",
+    "goal": null,
+    "seconds": 3.2,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"follow Doctor\", \"goal\": null, \"text\": "
+  },
+  {
+    "text": "停下",
+    "truth": "task",
+    "got": "task",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "stop",
+    "goal": null,
+    "seconds": 3.1,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"task\", \"direct_action\": \"stop\", \"goal\": null, \"text\": \"停下\"}]}"
+  },
+  {
+    "text": "come here",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "come Doctor",
+    "goal": null,
+    "seconds": 3.2,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"come Doctor\", \"goal\": null, \"text\": \"c"
+  },
+  {
+    "text": "status",
+    "truth": "direct_action",
+    "got": "task",
+    "match": false,
+    "payload_match": true,
+    "direct_action": "status",
+    "goal": null,
+    "seconds": 3.1,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"task\", \"direct_action\": \"status\", \"goal\": null, \"text\": \"status\"}]}"
+  },
+  {
+    "text": "inventory",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "inventory",
+    "goal": null,
+    "seconds": 3.1,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"inventory\", \"goal\": null, \"text\": \"inv"
+  },
+  {
+    "text": "jump",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "jump",
+    "goal": null,
+    "seconds": 3.1,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"jump\", \"goal\": null, \"text\": \"jump\"}]}"
+  },
+  {
+    "text": "pickup nearest",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "pickup nearest",
+    "goal": null,
+    "seconds": 3.2,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"pickup nearest\", \"goal\": null, \"text\":"
+  },
+  {
+    "text": "烧炼粗铁",
+    "truth": "direct_action",
+    "got": "goal",
+    "match": false,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "raw_iron",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "帮我烧粗铁",
+    "truth": "direct_action",
+    "got": "goal",
+    "match": false,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "raw_iron",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "炼3个铁锭",
+    "truth": "direct_action",
+    "got": "goal",
+    "match": false,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "craft",
+      "target": "iron_ingot",
+      "count": 3,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.2,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"craft\", \"target\": \"iron_"
+  },
+  {
+    "text": "挖点石头",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "collect cobblestone 8",
+    "goal": null,
+    "seconds": 3.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"collect cobblestone 8\", \"goal\": null, "
+  },
+  {
+    "text": "挖铁矿",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "collect iron_ore 8",
+    "goal": null,
+    "seconds": 3.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"collect iron_ore 8\", \"goal\": null, \"te"
+  },
+  {
+    "text": "砍树",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "mine nearby _log",
+    "goal": null,
+    "seconds": 3.3,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"mine nearby _log\", \"goal\": null, \"text"
+  },
+  {
+    "text": "deposit iron_ingot all",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit iron_ingot all",
+    "goal": null,
+    "seconds": 3.5,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"deposit iron_ingot all\", \"goal\": null,"
+  },
+  {
+    "text": "withdraw bread 3",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "withdraw bread 3",
+    "goal": null,
+    "seconds": 3.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"withdraw bread 3\", \"goal\": null, \"text"
+  },
+  {
+    "text": "chest find",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "chest find",
+    "goal": null,
+    "seconds": 3.2,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"chest find\", \"goal\": null, \"text\": \"ch"
+  },
+  {
+    "text": "把铁锭存进箱子",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit iron_ingot all",
+    "goal": null,
+    "seconds": 3.5,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"deposit iron_ingot all\", \"goal\": null,"
+  },
+  {
+    "text": "存3个铁锭到箱子",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit iron_ingot 3",
+    "goal": null,
+    "seconds": 3.6,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"deposit iron_ingot 3\", \"goal\": null, \""
+  },
+  {
+    "text": "从箱子里取出3个面包",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "withdraw bread 3",
+    "goal": null,
+    "seconds": 3.5,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"direct_action\", \"direct_action\": \"withdraw bread 3\", \"goal\": null, \"text"
+  },
+  {
+    "text": "我需要一瓶治疗药水",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion_of_healing",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.6,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我一瓶治疗药水",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "帮我酿造一瓶治疗药水",
+    "truth": "direct_action",
+    "got": "goal",
+    "match": false,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "请帮我酿造两瓶治疗药水吧",
+    "truth": "direct_action",
+    "got": "goal",
+    "match": false,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion",
+      "count": 2,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.6,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我准备一瓶抗火药水",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "fire_resistance_potion",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.6,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我一把木剑",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "wooden_sword",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "酿造一瓶治疗药水",
+    "truth": "direct_action",
+    "got": "goal",
+    "match": false,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我自己留两瓶治疗药水",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion",
+      "count": 2,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.5,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我猪肉",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "porkchop",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.3,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我熟猪排",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "cooked_porkchop",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.5,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我烤鸡",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "cooked_chicken",
+      "count": 1,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.3,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "给我8个铁锭",
+    "truth": "goal",
+    "got": "goal",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "iron_ingot",
+      "count": 8,
+      "recipient": "Doctor"
+    },
+    "seconds": 4.4,
+    "raw": "{\"segments\": [{\"type\": \"instruction\", \"route\": \"goal\", \"direct_action\": null, \"goal\": {\"type\": \"obtain_and_deliver\", \"ta"
+  },
+  {
+    "text": "我不需要治疗药水了",
+    "truth": "chat",
+    "got": "chat",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null,
+    "seconds": 3.3,
+    "raw": "{\"segments\": [{\"type\": \"chat\", \"route\": \"chat\", \"direct_action\": null, \"goal\": null, \"text\": \"我不需要治疗药水了\"}]}"
+  },
+  {
+    "text": "如果去下界可能需要抗火药水",
+    "truth": "chat",
+    "got": "chat",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null,
+    "seconds": 3.4,
+    "raw": "{\"segments\": [{\"type\": \"chat\", \"route\": \"chat\", \"direct_action\": null, \"goal\": null, \"text\": \"如果去下界可能需要抗火药水\"}]}"
+  },
+  {
+    "text": "你会做治疗药水吗",
+    "truth": "chat",
+    "got": "chat",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null,
+    "seconds": 3.3,
+    "raw": "{\"segments\": [{\"type\": \"chat\", \"route\": \"chat\", \"direct_action\": null, \"goal\": null, \"text\": \"你会做治疗药水吗\"}]}"
+  },
+  {
+    "text": "不要因为我提到石头就去挖",
+    "truth": "chat",
+    "got": "chat",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null,
+    "seconds": 3.3,
+    "raw": "{\"segments\": [{\"type\": \"chat\", \"route\": \"chat\", \"direct_action\": null, \"goal\": null, \"text\": \"不要因为我提到石头就去挖\"}]}"
+  },
+  {
+    "text": "今天天气真不错啊",
+    "truth": "chat",
+    "got": "chat",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null,
+    "seconds": 3.2,
+    "raw": "{\"segments\": [{\"type\": \"chat\", \"route\": \"chat\", \"direct_action\": null, \"goal\": null, \"text\": \"今天天气真不错啊\"}]}"
+  },
+  {
+    "text": "你最喜欢玩什么游戏",
+    "truth": "chat",
+    "got": "chat",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null,
+    "seconds": 3.2,
+    "raw": "{\"segments\": [{\"type\": \"chat\", \"route\": \"chat\", \"direct_action\": null, \"goal\": null, \"text\": \"你最喜欢玩什么游戏\"}]}"
+  },
+  {
+    "text": "刚才砍树挺有趣的",
+    "truth": "chat",
+    "got": "chat",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null,
+    "seconds": 3.2,
+    "raw": "{\"segments\": [{\"type\": \"chat\", \"route\": \"chat\", \"direct_action\": null, \"goal\": null, \"text\": \"刚才砍树挺有趣的\"}]}"
+  }
+]

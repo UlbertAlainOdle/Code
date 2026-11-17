@@ -1,0 +1,118 @@
+{
+  "text": "博士，你终于回来了。我一直在等你。先坐下来，慢慢告诉我今天发生了什么。",
+  "settings": {
+    "enabled": true,
+    "provider": "qwen_local",
+    "auto_read": false,
+    "engine": "vllm_omni",
+    "stream_audio": true,
+    "stream_chat": true,
+    "stream_buffer_seconds": 0.8,
+    "mode": "clone",
+    "language": "Chinese",
+    "description": "年轻成年女性，清亮柔和的二次元声线，活泼亲切，有自然的情绪起伏，咬字清楚，避免夸张尖叫和机械感。",
+    "voice_id": "1fd8568ff260441587cbe97a01c0ca83",
+    "x_vector_only": false,
+    "temperature": 0.9,
+    "top_p": 1.0,
+    "top_k": 50,
+    "repetition_penalty": 1.05,
+    "max_new_tokens": 2048,
+    "seed": 42,
+    "chunk_chars": 100,
+    "volume": 1.0,
+    "playback_rate": 1.0,
+    "mood_prosody": true,
+    "mood_control": "model",
+    "idle_unload_seconds": 0
+  },
+  "results": [
+    {
+      "mood": "happy",
+      "prosody": {
+        "mood": "happy",
+        "tempo": 1.0,
+        "gain": 1.0,
+        "method": "omni_base_direction_v2",
+        "instructions": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。"
+      },
+      "preview": {
+        "duration": 6.88,
+        "rms": 0.06556509663181304,
+        "sha256": "737011bc359d50adc8a5a2208bfa73b7ad47e6113cbfd2827696befa51997439"
+      },
+      "synthesize": {
+        "duration": 6.88,
+        "rms": 0.06556509663181304,
+        "sha256": "737011bc359d50adc8a5a2208bfa73b7ad47e6113cbfd2827696befa51997439"
+      },
+      "stream": {
+        "duration": 6.88,
+        "rms": 0.06556509663181304,
+        "sha256": "737011bc359d50adc8a5a2208bfa73b7ad47e6113cbfd2827696befa51997439"
+      },
+      "first_packet_seconds": 0.15722289999757777,
+      "stream_generated_seconds": 1.2641770999980508
+    },
+    {
+      "mood": "sad",
+      "prosody": {
+        "mood": "sad",
+        "tempo": 1.0,
+        "gain": 1.0,
+        "method": "omni_base_direction_v2",
+        "instructions": "用难过、委屈而克制的语气说。语调低落，在关键处犹豫停顿，句末下沉。不要哭声，不要添加文字。"
+      },
+      "preview": {
+        "duration": 7.92,
+        "rms": 0.07101204919100249,
+        "sha256": "5970ea168f08d7a61b61f812e76da3de0cecb69527256cdfd19169519aab54ca"
+      },
+      "synthesize": {
+        "duration": 7.92,
+        "rms": 0.07101204919100249,
+        "sha256": "5970ea168f08d7a61b61f812e76da3de0cecb69527256cdfd19169519aab54ca"
+      },
+      "stream": {
+        "duration": 7.92,
+        "rms": 0.07101204919100249,
+        "sha256": "5970ea168f08d7a61b61f812e76da3de0cecb69527256cdfd19169519aab54ca"
+      },
+      "first_packet_seconds": 0.12866159999975935,
+      "stream_generated_seconds": 1.4009439000001294
+    },
+    {
+      "mood": "stressed",
+      "prosody": {
+        "mood": "stressed",
+        "tempo": 1.0,
+        "gain": 1.0,
+        "method": "omni_base_direction_v2",
+        "instructions": "用紧张、不安但努力镇定的语气说。重点词略加重，短语间有犹豫和顿挫，句末收住。不要喊叫，不要添加文字。"
+      },
+      "preview": {
+        "duration": 6.64,
+        "rms": 0.06613817782897558,
+        "sha256": "bd0af3a2afa3c9436632335c7ed613ef723392a67d5f814af718664f9ca6bb90"
+      },
+      "synthesize": {
+        "duration": 6.64,
+        "rms": 0.06613817782897558,
+        "sha256": "bd0af3a2afa3c9436632335c7ed613ef723392a67d5f814af718664f9ca6bb90"
+      },
+      "stream": {
+        "duration": 6.64,
+        "rms": 0.06613817782897558,
+        "sha256": "bd0af3a2afa3c9436632335c7ed613ef723392a67d5f814af718664f9ca6bb90"
+      },
+      "first_packet_seconds": 0.13723899999968125,
+      "stream_generated_seconds": 1.241102600000886
+    }
+  ],
+  "state_unchanged": {
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.wav": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\settings.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\emotion_state.json": true
+  }
+}

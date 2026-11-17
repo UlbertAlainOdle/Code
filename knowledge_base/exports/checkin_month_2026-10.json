@@ -1,0 +1,670 @@
+{
+    "scope": "month",
+    "label": "2026-10",
+    "generated_at": "2026-11-01 01:43:48",
+    "generated_by": "auto",
+    "summary": {
+        "days_counted": 31,
+        "completed_days": 0,
+        "partial_days": 3,
+        "missed_days": 28,
+        "pending_days": 0,
+        "completion_rate": 0.0403,
+        "total_done": 5,
+        "total_possible": 124,
+        "one_off_done": 0,
+        "one_off_total": 0,
+        "current_streak": 0,
+        "longest_streak": 0,
+        "task_totals": [
+            {
+                "title": "Efficiency",
+                "done": 1,
+                "possible": 31
+            },
+            {
+                "title": "Study",
+                "done": 1,
+                "possible": 31
+            },
+            {
+                "title": "Gym",
+                "done": 1,
+                "possible": 31
+            },
+            {
+                "title": "Anki",
+                "done": 2,
+                "possible": 31
+            }
+        ]
+    },
+    "days": [
+        {
+            "date": "2026-10-01",
+            "day": 1,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-02",
+            "day": 2,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-03",
+            "day": 3,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-04",
+            "day": 4,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-05",
+            "day": 5,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-06",
+            "day": 6,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-07",
+            "day": 7,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-08",
+            "day": 8,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-09",
+            "day": 9,
+            "status": "partial",
+            "done": 1,
+            "total": 4,
+            "ratio": 0.25,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-10",
+            "day": 10,
+            "status": "partial",
+            "done": 3,
+            "total": 4,
+            "ratio": 0.75,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-11",
+            "day": 11,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-12",
+            "day": 12,
+            "status": "partial",
+            "done": 1,
+            "total": 4,
+            "ratio": 0.25,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-13",
+            "day": 13,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-14",
+            "day": 14,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-15",
+            "day": 15,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-16",
+            "day": 16,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-17",
+            "day": 17,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-18",
+            "day": 18,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-19",
+            "day": 19,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-20",
+            "day": 20,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-21",
+            "day": 21,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-22",
+            "day": 22,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-23",
+            "day": 23,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-24",
+            "day": 24,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-25",
+            "day": 25,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-26",
+            "day": 26,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-27",
+            "day": 27,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-28",
+            "day": 28,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-29",
+            "day": 29,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-30",
+            "day": 30,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        },
+        {
+            "date": "2026-10-31",
+            "day": 31,
+            "status": "missed",
+            "done": 0,
+            "total": 4,
+            "ratio": 0.0,
+            "daily_task_count": 0,
+            "note": ""
+        }
+    ],
+    "tasks": [
+        {
+            "id": "2c396d66-7244-4c2a-964c-3d08e79ba7e7",
+            "title": "Efficiency",
+            "frequency": "daily",
+            "order": 0,
+            "active": true,
+            "created_at": "2026-08-01 04:25:33"
+        },
+        {
+            "id": "021502f2-25b5-4607-bcae-d661133a1474",
+            "title": "Study",
+            "frequency": "daily",
+            "order": 1,
+            "active": true,
+            "created_at": "2026-08-01 04:27:07"
+        },
+        {
+            "id": "87d1a2ce-e372-41a4-8aa0-1b69d3709901",
+            "title": "Gym",
+            "frequency": "daily",
+            "order": 2,
+            "active": true,
+            "created_at": "2026-08-01 04:25:16"
+        },
+        {
+            "id": "e1e5c328-aa60-4863-890d-80022cf6e329",
+            "title": "Anki",
+            "frequency": "daily",
+            "goal_id": null,
+            "order": 3,
+            "active": true,
+            "created_at": "2026-08-19 16:01:05",
+            "preset": "anki",
+            "completion_mode": "automatic",
+            "completion_source": "anki"
+        }
+    ],
+    "records": {
+        "2026-10-16": {
+            "date": "2026-10-16",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-08": {
+            "date": "2026-10-08",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-08 14:11:51",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-08T14:11:51+08:00"
+                }
+            }
+        },
+        "2026-10-09": {
+            "date": "2026-10-09",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": true
+            },
+            "note": "",
+            "updated_at": "2026-10-09 20:04:06",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": true,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [
+                        "托福绿宝书"
+                    ],
+                    "today_reviews": 26,
+                    "today_cards": 26,
+                    "source_modified_at": "2026-10-09T04:00:03+08:00"
+                }
+            }
+        },
+        "2026-10-25": {
+            "date": "2026-10-25",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-31": {
+            "date": "2026-10-31",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-31 19:40:02",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-31T19:40:02-04:00"
+                }
+            }
+        },
+        "2026-10-30": {
+            "date": "2026-10-30",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-26": {
+            "date": "2026-10-26",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-24": {
+            "date": "2026-10-24",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-24 12:49:08",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-23T00:54:26+08:00"
+                }
+            }
+        },
+        "2026-10-27": {
+            "date": "2026-10-27",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-27 12:25:25",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 136,
+                    "today_cards": 136,
+                    "source_modified_at": "2026-10-27T04:00:00+08:00"
+                }
+            }
+        },
+        "2026-10-29": {
+            "date": "2026-10-29",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-23": {
+            "date": "2026-10-23",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-23 00:54:26",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-23T00:54:26+08:00"
+                }
+            }
+        },
+        "2026-10-17": {
+            "date": "2026-10-17",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-18": {
+            "date": "2026-10-18",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-10": {
+            "date": "2026-10-10",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-11 21:12:16",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-10T01:52:50+08:00"
+                }
+            }
+        },
+        "2026-10-11": {
+            "date": "2026-10-11",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": false,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": false,
+                "021502f2-25b5-4607-bcae-d661133a1474": false,
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-11 21:12:14",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-11T21:11:47+08:00"
+                }
+            }
+        },
+        "2026-10-12": {
+            "date": "2026-10-12",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": true
+            },
+            "note": "",
+            "updated_at": "2026-10-12 09:25:01",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": true,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [
+                        "托福绿宝书"
+                    ],
+                    "today_reviews": 103,
+                    "today_cards": 103,
+                    "source_modified_at": "2026-10-12T09:25:01+08:00"
+                }
+            }
+        },
+        "2026-10-28": {
+            "date": "2026-10-28",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-28 15:48:37",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-28T15:48:36+08:00"
+                }
+            }
+        }
+    }
+}

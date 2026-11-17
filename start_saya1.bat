@@ -5,7 +5,7 @@ echo ===================================================
 echo              Starting Saya+ System
 echo ===================================================
 echo.
-echo [1/3] Activating Conda environment 'newenv'...
+echo [1/3] Activating Conda environment 'Saya'...
 set "BILIBILI_COOKIE_FILE=%~dp0knowledge_base\bilibili_cookie.txt"
 if exist "%BILIBILI_COOKIE_FILE%" (
     for /f "usebackq delims=" %%A in ("%BILIBILI_COOKIE_FILE%") do (
@@ -50,7 +50,7 @@ if defined YOUTUBE_API_KEY (
 
 :: Start backend in a separate window so the script can continue and open the browser
 echo [2/3] Starting Backend Server in a new window...
-start "Saya+ Backend Server" cmd /k "conda activate newenv && uvicorn server5-22B----:app --host 127.0.0.1 --port 8000"
+start "Saya+ Backend Server" cmd /k "conda activate Saya && python -m uvicorn server5-22B----:app --host 127.0.0.1 --port 8000"
 
 echo [3/3] Waiting for server to initialize (8 seconds)...
 timeout /t 8 /nobreak > nul

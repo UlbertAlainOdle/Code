@@ -1,0 +1,148 @@
+{
+  "text": "博士，你终于回来了。我一直在等你。先坐下来，慢慢告诉我今天发生了什么。",
+  "settings": {
+    "enabled": true,
+    "provider": "qwen_local",
+    "auto_read": false,
+    "engine": "vllm_omni",
+    "stream_audio": true,
+    "stream_chat": true,
+    "stream_buffer_seconds": 0.8,
+    "mode": "clone",
+    "language": "Chinese",
+    "description": "年轻成年女性，清亮柔和的二次元声线，活泼亲切，有自然的情绪起伏，咬字清楚，避免夸张尖叫和机械感。",
+    "voice_id": "1fd8568ff260441587cbe97a01c0ca83",
+    "x_vector_only": true,
+    "temperature": 0.9,
+    "top_p": 1.0,
+    "top_k": 50,
+    "repetition_penalty": 1.05,
+    "max_new_tokens": 2048,
+    "seed": 42,
+    "chunk_chars": 100,
+    "volume": 1.0,
+    "playback_rate": 1.0,
+    "mood_prosody": true,
+    "mood_control": "model",
+    "idle_unload_seconds": 0
+  },
+  "results": [
+    {
+      "mood": "neutral",
+      "prosody": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 1.0,
+        "method": "omni_base_direction_v3",
+        "instructions": ""
+      },
+      "preview": {
+        "duration": 6.72,
+        "rms": 0.06887024234232371,
+        "sha256": "3d5fb38934ad3e673d7c8abdbf0498b994b664245dce4adcc388dda754a2b919"
+      },
+      "synthesize": {
+        "duration": 6.72,
+        "rms": 0.06887024234232371,
+        "sha256": "3d5fb38934ad3e673d7c8abdbf0498b994b664245dce4adcc388dda754a2b919"
+      },
+      "stream": {
+        "duration": 6.72,
+        "rms": 0.06887024234232371,
+        "sha256": "3d5fb38934ad3e673d7c8abdbf0498b994b664245dce4adcc388dda754a2b919"
+      },
+      "first_packet_seconds": 0.11948900000061258,
+      "stream_generated_seconds": 1.175122200002079,
+      "matches_listened_original": true
+    },
+    {
+      "mood": "happy",
+      "prosody": {
+        "mood": "happy",
+        "tempo": 1.0,
+        "gain": 1.0,
+        "method": "omni_base_direction_v3",
+        "instructions": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。"
+      },
+      "preview": {
+        "duration": 6.24,
+        "rms": 0.05286566774644119,
+        "sha256": "028140178338d1a540fa80b7b32c9a55024f257bd80a24869a1e5395de9c7954"
+      },
+      "synthesize": {
+        "duration": 6.24,
+        "rms": 0.05286566774644119,
+        "sha256": "028140178338d1a540fa80b7b32c9a55024f257bd80a24869a1e5395de9c7954"
+      },
+      "stream": {
+        "duration": 6.24,
+        "rms": 0.05286566774644119,
+        "sha256": "028140178338d1a540fa80b7b32c9a55024f257bd80a24869a1e5395de9c7954"
+      },
+      "first_packet_seconds": 0.09891009999773814,
+      "stream_generated_seconds": 1.0694048999976076
+    },
+    {
+      "mood": "sad",
+      "prosody": {
+        "mood": "sad",
+        "tempo": 1.0,
+        "gain": 1.0,
+        "method": "omni_base_direction_v3",
+        "instructions": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。"
+      },
+      "preview": {
+        "duration": 8.64,
+        "rms": 0.05021390160792272,
+        "sha256": "738b6b4d21aaa842533033ff44cf785fa51f56f14c89bf88d71f934eb91b59c5"
+      },
+      "synthesize": {
+        "duration": 8.64,
+        "rms": 0.05021390160792272,
+        "sha256": "738b6b4d21aaa842533033ff44cf785fa51f56f14c89bf88d71f934eb91b59c5"
+      },
+      "stream": {
+        "duration": 8.64,
+        "rms": 0.05021390160792272,
+        "sha256": "738b6b4d21aaa842533033ff44cf785fa51f56f14c89bf88d71f934eb91b59c5"
+      },
+      "first_packet_seconds": 0.11131419999946957,
+      "stream_generated_seconds": 1.5449133000001893,
+      "matches_listened_original": true
+    },
+    {
+      "mood": "stressed",
+      "prosody": {
+        "mood": "stressed",
+        "tempo": 1.0,
+        "gain": 1.0,
+        "method": "omni_base_direction_v3",
+        "instructions": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。"
+      },
+      "preview": {
+        "duration": 7.44,
+        "rms": 0.053959039326961014,
+        "sha256": "e3c66e4ecd8e2dce3ba9f6d13e7ee559f5419f5d1001e51d304733b6d7b3aaf7"
+      },
+      "synthesize": {
+        "duration": 7.44,
+        "rms": 0.053959039326961014,
+        "sha256": "e3c66e4ecd8e2dce3ba9f6d13e7ee559f5419f5d1001e51d304733b6d7b3aaf7"
+      },
+      "stream": {
+        "duration": 7.44,
+        "rms": 0.053959039326961014,
+        "sha256": "e3c66e4ecd8e2dce3ba9f6d13e7ee559f5419f5d1001e51d304733b6d7b3aaf7"
+      },
+      "first_packet_seconds": 0.10247300000264659,
+      "stream_generated_seconds": 1.2517205000003742,
+      "matches_listened_original": true
+    }
+  ],
+  "state_unchanged": {
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.wav": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\settings.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\emotion_state.json": true
+  }
+}

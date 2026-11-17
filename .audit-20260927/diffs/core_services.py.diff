@@ -1,0 +1,189 @@
+--- 
++++ 
+@@ -32,6 +32,7 @@
+     create_embedding_provider,
+ )
+ from saya_app.services.time_context import TimeContextService
++from saya_app.services.state_storage import atomic_save_json, state_transaction
+ 
+ 
+ def memory_write_locked(method):
+@@ -7717,6 +7718,7 @@
+ 
+ class CheckInManager:
+     def __init__(self, base_dir=str(KNOWLEDGE_BASE_DIR)):
++        self._state_lock = threading.RLock()
+         self.base_dir = base_dir
+         self.file_path = os.path.join(self.base_dir, "checkins.json")
+         if not os.path.exists(self.base_dir):
+@@ -7757,11 +7759,8 @@
+         return defaults
+ 
+     def save_data(self):
+-        try:
+-            with codecs.open(self.file_path, "w", "utf-8") as f:
+-                json.dump(self.data, f, ensure_ascii=False, indent=4)
+-        except Exception as e:
+-            print(f"Error saving check-ins: {e}")
++        with self._state_lock:
++            atomic_save_json(self.file_path, self.data)
+ 
+     def _now(self):
+         return datetime.now()
+@@ -7784,6 +7783,7 @@
+             "last_entry_at": item.get("last_entry_at"),
+         }
+ 
++    @state_transaction("data")
+     def record_app_entry(self, date_str=None):
+         """Record one completed load of the main Saya page."""
+         date_str = self._safe_date(date_str)
+@@ -7960,6 +7960,7 @@
+             })
+         return clean
+ 
++    @state_transaction("data")
+     def add_task(self, title, goal_id=None, preset=None):
+         preset = str(preset or "").strip().lower()
+         if preset:
+@@ -7992,6 +7993,7 @@
+         self.save_data()
+         return task
+ 
++    @state_transaction("data")
+     def update_task(self, task_id, updates):
+         if not isinstance(updates, dict):
+             return False
+@@ -8019,6 +8021,7 @@
+                 return True
+         return False
+ 
++    @state_transaction("data")
+     def sync_preset_completion(self, preset, completed, evidence=None, date_str=None):
+         """Persist a read-only task result supplied by its owning integration."""
+         preset = str(preset or "").strip().lower()
+@@ -8059,6 +8062,7 @@
+             "completed": bool(completed),
+         }
+ 
++    @state_transaction("data")
+     def reorder_tasks(self, ordered_ids):
+         if not isinstance(ordered_ids, list):
+             return False
+@@ -8070,6 +8074,7 @@
+         self.save_data()
+         return True
+ 
++    @state_transaction("data")
+     def delete_task(self, task_id):
+         before = len(self.data.get("tasks", []))
+         self.data["tasks"] = [task for task in self.data.get("tasks", []) if task.get("id") != task_id]
+@@ -8078,6 +8083,7 @@
+             self.save_data()
+         return changed
+ 
++    @state_transaction("data")
+     def save_day(self, date_str=None, completions=None, note=None, daily_tasks=None, mood=None, energy=None, difficulty=None):
+         date_str = self._safe_date(date_str)
+         if not self.is_date_in_edit_window(date_str):
+@@ -8291,6 +8297,7 @@
+             auto_reports["years"] = {}
+         return auto_reports
+ 
++    @state_transaction("data")
+     def maybe_auto_export_reports(self):
+         now = self._now()
+         auto_reports = self._auto_report_store()
+@@ -8452,6 +8459,7 @@
+             "truncated": total > len(visible)
+         }
+ 
++    @state_transaction("data")
+     def get_or_create_chat_session(self, date_str, memory_manager):
+         date_str = self._safe_date(date_str)
+         if not self.is_date_in_edit_window(date_str):
+@@ -10956,6 +10964,7 @@
+ 
+ class GoalManager:
+     def __init__(self, base_dir=str(KNOWLEDGE_BASE_DIR)):
++        self._state_lock = threading.RLock()
+         self.base_dir = base_dir
+         self.file_path = os.path.join(self.base_dir, "life_quests.json")
+         if not os.path.exists(self.base_dir):
+@@ -10992,13 +11001,14 @@
+             self.save_goals()
+ 
+     def save_goals(self):
+-        try:
+-            with codecs.open(self.file_path, "w", "utf-8") as f:
+-                json.dump(self.goals, f, indent=4, ensure_ascii=False)
+-        except Exception as e:
+-            print(f"Error saving goals: {e}")
+-
++        with self._state_lock:
++            atomic_save_json(self.file_path, self.goals)
++
++    @state_transaction("goals")
+     def add_goal(self, title, description=""):
++        title = str(title or "").strip()
++        if not title:
++            raise ValueError("Goal title required")
+         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+         goal = {
+             "id": str(datetime.now().timestamp()),
+@@ -11014,6 +11024,7 @@
+         self.save_goals()
+         return goal
+ 
++    @state_transaction("goals")
+     def update_goal(self, goal_id, updates):
+         if not isinstance(updates, dict):
+             return None
+@@ -11023,23 +11034,44 @@
+         }
+         clean_updates = {key: value for key, value in updates.items() if key in allowed}
+         if clean_updates.get("status") not in {None, "active", "completed", "failed"}:
++            raise ValueError("Invalid goal status")
++        if "title" in clean_updates:
++            clean_updates["title"] = str(clean_updates["title"] or "").strip()
++            if not clean_updates["title"]:
++                raise ValueError("Goal title required")
++        if clean_updates.get("status") is None:
+             clean_updates.pop("status", None)
+         for g in self.goals:
+             if g["id"] == goal_id:
++                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
++                previous_status = g.get("status", "active")
++                next_status = clean_updates.get("status", previous_status)
++                if next_status != previous_status:
++                    g.setdefault("status_history", []).append({
++                        "from": previous_status, "to": next_status, "changed_at": now,
++                        "achieved_at": g.get("achieved_at"),
++                        "failed_at": g.get("failed_at"),
++                        "completed_at": g.get("completed_at"),
++                    })
++                    g.update(achieved_at=None, failed_at=None, completed_at=None)
+                 g.update(clean_updates)
+-                now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                 if g.get("status") == "completed":
+-                    achieved_at = g.get("achieved_at") or g.get("completed_at") or now
++                    achieved_at = clean_updates.get("achieved_at") or clean_updates.get("completed_at") or g.get("achieved_at") or g.get("completed_at") or now
+                     g["achieved_at"] = achieved_at
+                     g["completed_at"] = achieved_at
++                    g["failed_at"] = None
+                 elif g.get("status") == "failed":
+-                    failed_at = g.get("failed_at") or g.get("completed_at") or now
++                    failed_at = clean_updates.get("failed_at") or clean_updates.get("completed_at") or g.get("failed_at") or g.get("completed_at") or now
+                     g["failed_at"] = failed_at
+                     g["completed_at"] = failed_at
++                    g["achieved_at"] = None
++                else:
++                    g.update(achieved_at=None, failed_at=None, completed_at=None)
+                 self.save_goals()
+                 return g
+         return None
+ 
++    @state_transaction("goals")
+     def delete_goal(self, goal_id):
+         self.goals = [g for g in self.goals if g["id"] != goal_id]
+         self.save_goals()

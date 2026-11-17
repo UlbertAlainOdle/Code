@@ -6,6 +6,7 @@ KnowledgeBase; this file is an index and relationship ledger, not a second copy.
 """
 
 import hashlib
+import copy
 import json
 import os
 import re
@@ -500,16 +501,23 @@ class MemoryGraphStore:
         directed = relation not in {"related_to", "conflicts_with"}
         edge = self._edge(source, target, relation, confidence, source_kind="manual", directed=directed)
         with self._lock:
+            previous = copy.deepcopy(self.graph)
             by_id = {item.get("id"): item for item in self.graph.get("edges", [])}
             by_id[edge["id"]] = edge
             self.graph["edges"] = sorted(by_id.values(), key=lambda item: item["id"])
             self.graph["updated_at"] = datetime.now().isoformat(timespec="seconds")
             self._rebuild_indexes()
-            self._save()
+            try:
+                self._save()
+            except BaseException:
+                self.graph = previous
+                self._rebuild_indexes()
+                raise
         return edge
 
     def remove_manual_edge(self, edge_id):
         with self._lock:
+            previous = copy.deepcopy(self.graph)
             before = len(self.graph.get("edges", []))
             self.graph["edges"] = [
                 edge for edge in self.graph.get("edges", [])
@@ -519,5 +527,10 @@ class MemoryGraphStore:
                 return False
             self.graph["updated_at"] = datetime.now().isoformat(timespec="seconds")
             self._rebuild_indexes()
-            self._save()
+            try:
+                self._save()
+            except BaseException:
+                self.graph = previous
+                self._rebuild_indexes()
+                raise
             return True

@@ -1,9 +1,13 @@
 :root {
-    --bg: #000;
-    --panel: rgba(0, 0, 0, 0.72);
-    --border: #333;
-    --text: #fff;
-    --muted: #888;
+    /* Unified ChatGPT-dark / Grok-minimal tokens (2026-09-07 refresh) */
+    --bg: #212121;
+    --panel: #2b2b2b;
+    --border: rgba(255, 255, 255, 0.10);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #ececec;
+    --muted: #a6a6a6;
+    --radius-card: 14px;
+    --radius-btn: 10px;
 }
 
 * {
@@ -18,14 +22,15 @@ body {
     overflow: hidden;
     background: var(--bg);
     color: var(--text);
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Segoe UI Variable Text", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
 .showcase-shell {
     position: relative;
     width: 100vw;
     height: 100vh;
-    background: #000;
+    background: var(--bg);
 }
 
 .canvas-container {
@@ -108,7 +113,8 @@ body {
     padding: 12px 14px;
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-card);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(14px);
 }
 
@@ -145,36 +151,41 @@ body {
 .next-motion {
     min-width: 86px;
     height: 36px;
-    border: 1px solid #fff;
-    border-radius: 4px;
-    background: #fff;
-    color: #000;
-    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--text);
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .motion-list-toggle {
-    background: #111;
-    color: #fff;
-    border-color: #555;
+    background: #ffffff;
+    color: #0d0d0d;
+    border-color: #ffffff;
 }
 
-.export-motions {
-    background: #18251e;
-    color: #b7ffd0;
-    border-color: #3f7650;
+.motion-list-toggle:disabled {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border-strong);
 }
 
-.motion-list-toggle:hover {
-    background: #222;
-}
-
-.export-motions:hover {
-    background: #21362a;
-}
-
+.export-motions:hover,
 .next-motion:hover {
-    background: #dcdcdc;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+}
+
+.motion-list-toggle:not(:disabled):hover {
+    background: #e8e8e8;
+    border-color: #e8e8e8;
 }
 
 .motion-list-toggle:disabled,
@@ -193,9 +204,10 @@ body {
     max-height: min(460px, calc(100vh - 150px));
     display: flex;
     flex-direction: column;
-    background: rgba(0, 0, 0, 0.9);
+    background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-card);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(14px);
     z-index: 10000;
     overflow: hidden;
@@ -212,19 +224,28 @@ body {
     gap: 10px;
     min-height: 42px;
     padding: 10px 12px;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid var(--border);
     font-size: 0.86rem;
-    font-weight: 700;
+    font-weight: 650;
 }
 
 .motion-list-close {
     width: 26px;
     height: 26px;
-    border: 1px solid #444;
-    border-radius: 4px;
-    background: #111;
-    color: #fff;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
     cursor: pointer;
+}
+
+.motion-list-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 .motion-list {
@@ -246,13 +267,13 @@ body {
     gap: 8px;
     min-height: 36px;
     padding: 4px 6px;
-    border-radius: 4px;
+    border-radius: 8px;
     color: var(--text);
 }
 
 .motion-row:hover,
 .motion-row.active {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.07);
 }
 
 .motion-index {
@@ -284,48 +305,48 @@ body {
     width: 100%;
     height: 28px;
     padding: 0 8px;
-    border: 1px solid #333;
-    border-radius: 4px;
-    background: #080808;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #303030;
     color: var(--text);
     font-size: 0.78rem;
     outline: none;
 }
 
 .motion-annotation::placeholder {
-    color: #555;
+    color: #8f8f8f;
 }
 
 .motion-annotation:focus {
-    border-color: #5f8a6c;
-    background: #0f1511;
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
 .motion-mark {
     width: 28px;
     height: 28px;
-    border: 1px solid #444;
-    border-radius: 4px;
-    background: #111;
-    color: #aaa;
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .motion-mark:hover {
-    border-color: #777;
+    border-color: rgba(255, 255, 255, 0.3);
     color: #fff;
 }
 
 .motion-mark.check.active {
-    border-color: #5dbb7b;
-    background: #15301f;
-    color: #85f0a8;
+    border-color: rgba(120, 200, 140, 0.5);
+    background: rgba(120, 200, 140, 0.14);
+    color: #8ee6a6;
 }
 
 .motion-mark.cross.active {
-    border-color: #c45d5d;
-    background: #341717;
-    color: #ff9a9a;
+    border-color: rgba(255, 92, 92, 0.5);
+    background: rgba(255, 92, 92, 0.14);
+    color: #ff8a8a;
 }
 
 .loading-panel {
@@ -336,9 +357,10 @@ body {
     width: min(440px, calc(100vw - 32px));
     padding: 18px;
     text-align: center;
-    background: rgba(0, 0, 0, 0.82);
+    background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: var(--radius-card);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5);
 }
 
 .loading-panel.hidden {
@@ -358,6 +380,72 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Standalone feedback surfaces: match the main app without blocking the
+   canvas or stealing the user's focus with a browser-native dialog. */
+.motion-notice-wrap {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 12000;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(360px, calc(100vw - 36px));
+}
+.motion-notice {
+    padding: 11px 13px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: #181818;
+    color: var(--text);
+    font-size: .8rem;
+    line-height: 1.45;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, .42);
+    animation: motion-notice-in .18s ease-out;
+}
+.motion-notice.error { border-color: rgba(248, 113, 113, .4); color: #fca5a5; }
+@keyframes motion-notice-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.motion-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 13000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, .58);
+    backdrop-filter: blur(2px);
+}
+.motion-confirm {
+    width: min(430px, calc(100vw - 32px));
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: #181818;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .6);
+}
+.motion-confirm strong { display: block; font-size: .96rem; }
+.motion-confirm p { margin: 9px 0 0; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+.motion-confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.motion-confirm-actions button {
+    min-height: 34px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font: inherit;
+}
+.motion-confirm-actions button:hover { background: rgba(255, 255, 255, .08); }
+.motion-confirm-actions [data-confirm] { border-color: rgba(248, 113, 113, .45); color: #fca5a5; }
+.motion-confirm-actions button:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(255, 255, 255, .22); }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.24); }
 
 @media (max-width: 560px) {
     .canvas-container {

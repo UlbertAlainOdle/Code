@@ -1,0 +1,18 @@
+{
+  "name": "saya-minecraft-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mineflayer execution worker for Saya",
+  "scripts": {
+    "check": "node --check worker.mjs && node --test test/*.test.mjs",
+    "export-catalog": "echo run: python -B ../scripts/export_command_catalog.py"
+  },
+  "dependencies": {
+    "mineflayer": "4.33.0",
+    "mineflayer-collectblock": "1.6.0",
+    "mineflayer-pathfinder": "2.4.5",
+    "mineflayer-pvp": "1.3.2",
+    "mineflayer-tool": "1.2.0"
+  }
+}

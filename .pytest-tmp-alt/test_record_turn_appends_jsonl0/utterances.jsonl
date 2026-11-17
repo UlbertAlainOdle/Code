@@ -1,0 +1,2 @@
+{"ts": 1791306107.5668428, "source": "minecraft", "text": "挖点铁矿", "route": "task", "direct_action": null, "goal": null, "commands": ["collect iron_ore 1"], "confidence": null, "layer": ""}
+{"ts": 1791306107.5678458, "source": "minecraft", "text": "今天天气不错", "route": "chat", "direct_action": null, "goal": null, "commands": [], "confidence": null, "layer": ""}

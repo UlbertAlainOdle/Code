@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "clock": "2026-11-04T03:00:00+00:00",
+  "timezone": "Asia/Shanghai",
+  "protocol": {"history_budget": 6000, "old_fraction": 0.2, "positive_minimum": 5, "minimum_improvement": 3, "zero_regression": true, "constraint_failures": 0, "model_calls": 0},
+  "cases": [
+    {"id":"new_user_value","positive":true,"target":0,"cards":[{"age":1200,"text":"帮我跟进关键任务：松湖资料甲。"},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"explicit_low_value","positive":true,"target":0,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲。"},{"age":60,"text":"帮我跟进松湖资料乙，这是低优先级。"}]},
+    {"id":"upcoming_deadline","positive":true,"target":0,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲，截止2026-11-04 18:00。"},{"age":60,"text":"帮我跟进松湖资料乙，截止2026-11-06 18:00。"}]},
+    {"id":"recently_overdue","positive":true,"target":0,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲，截止2026-11-04 10:30。"},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"old_overdue_not_forever_hot","positive":true,"target":0,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲，截止2026-11-04 18:00。"},{"age":60,"text":"帮我跟进松湖资料乙，截止2026-11-01 18:00。"}]},
+    {"id":"neutral_recency","positive":true,"target":1,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲。"},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"relevance_first","target":0,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲。"},{"age":60,"text":"帮我跟进关键任务：云城门票，截止2026-11-04 18:00。"}]},
+    {"id":"manual_lock","target":0,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲。","manual":"high"},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"suppression_is_hard","target":1,"cards":[{"age":1200,"text":"帮我跟进关键任务：松湖资料甲，截止2026-11-04 18:00。","stop":true},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"expired_source_is_hard","target":1,"cards":[{"age":700000,"text":"帮我跟进关键任务：松湖资料甲。"},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"unknown_date","target":1,"unknown":true,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲，截止周末09:20。"},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"quoted_value_not_evidence","target":1,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲，台词是“非常重要”。"},{"age":60,"text":"帮我跟进松湖资料乙。"}]},
+    {"id":"date_precision","target":0,"date_only":true,"cards":[{"age":1200,"text":"帮我跟进松湖资料甲，截止2026-11-04。"},{"age":60,"text":"帮我跟进松湖资料乙。"}]}
+  ]
+}

@@ -1,0 +1,409 @@
+{
+  "started_at": "2026-09-29 23:14:13",
+  "model": "Qwen3-30B-A3B-Instruct-2507-Q5_K_M",
+  "part_b": {
+    "model": "Qwen3-30B-A3B-Instruct-2507-Q5_K_M",
+    "scenarios": [
+      {
+        "scenario": "casual_greeting",
+        "message": "早呀，今天心情不错，跟你打个招呼。",
+        "note": "寒暄必须直接回答，不调用任何工具",
+        "expected": [],
+        "model_call_arguments": [],
+        "tool_calls": [],
+        "status": "completed",
+        "steps": 1,
+        "answer": "早呀！看到你心情好，我也跟着开心起来了~ 今天有什么计划吗？",
+        "seconds": 21.9,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      },
+      {
+        "scenario": "casual_cat",
+        "message": "我家猫今天踩了我一下午键盘，太烦了哈哈哈哈。",
+        "note": "闲聊必须直接回答，不调用任何工具",
+        "expected": [],
+        "model_call_arguments": [],
+        "tool_calls": [],
+        "status": "completed",
+        "steps": 1,
+        "answer": "哈哈，猫咪的键盘踩踏秀真是又可爱又让人抓狂呢！下次可以试试在键盘上放个猫薄荷垫，或者用键盘保护膜，既能满足它的好奇心，又能保护你的工作进度～",
+        "seconds": 7.8,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      },
+      {
+        "scenario": "creative_writing",
+        "message": "帮我用一句话写一个关于雨夜路灯的句子。",
+        "note": "创作类不需要工具",
+        "expected": [],
+        "model_call_arguments": [],
+        "tool_calls": [],
+        "status": "completed",
+        "steps": 1,
+        "answer": "雨夜中，昏黄的路灯在湿漉漉的街道上投下斑驳的光晕，像一盏盏守望孤独的灯。",
+        "seconds": 4.6,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      },
+      {
+        "scenario": "personal_coffee",
+        "message": "我之前跟你说过我喝咖啡的习惯是什么样的，你还记得吗？",
+        "note": "个人偏好应查记忆",
+        "expected": [
+          "memory.query"
+        ],
+        "model_call_arguments": [
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "user's coffee drinking habits",
+              "kinds": [
+                "habit",
+                "preference"
+              ]
+            }
+          }
+        ],
+        "tool_calls": [
+          {
+            "name": "memory.query",
+            "status": "success"
+          }
+        ],
+        "status": "completed",
+        "steps": 2,
+        "answer": "抱歉，我暂时无法回忆起您之前提到的咖啡习惯。如果您愿意，可以再次告诉我您的习惯，我会记下来。",
+        "seconds": 8.5,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      },
+      {
+        "scenario": "personal_job",
+        "message": "我现在这份工作是做什么方向的？你应该记得。",
+        "note": "个人事实应查记忆",
+        "expected": [
+          "memory.query"
+        ],
+        "model_call_arguments": [
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "user's coffee drinking habits",
+              "kinds": [
+                "habit",
+                "preference"
+              ]
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "我当前的工作方向",
+              "depth": "normal"
+            }
+          }
+        ],
+        "tool_calls": [
+          {
+            "name": "memory.query",
+            "status": "success"
+          }
+        ],
+        "status": "completed",
+        "steps": 2,
+        "answer": "抱歉，我暂时无法回忆起您当前工作的具体方向。如果您能提供一些关键词或背景信息，我会尽力帮助您确认。",
+        "seconds": 7.9,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      },
+      {
+        "scenario": "project_status",
+        "message": "Saya项目现在进行到哪一步了？",
+        "note": "项目状态应查记忆",
+        "expected": [
+          "memory.query"
+        ],
+        "model_call_arguments": [
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "user's coffee drinking habits",
+              "kinds": [
+                "habit",
+                "preference"
+              ]
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "我当前的工作方向",
+              "depth": "normal"
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "Saya项目当前进展",
+              "kinds": [
+                "project"
+              ]
+            }
+          },
+          {
+            "name": "memory.read",
+            "arguments": {
+              "memory_ids": [
+                "f609b210-547a-4117-8b34-aae285990309"
+              ]
+            }
+          }
+        ],
+        "tool_calls": [
+          {
+            "name": "memory.query",
+            "status": "success"
+          },
+          {
+            "name": "memory.read",
+            "status": "success"
+          }
+        ],
+        "status": "completed",
+        "steps": 3,
+        "answer": "Saya项目目前正在进行记忆与工具调用系统的重构，V4方案已定稿。",
+        "seconds": 18.6,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      },
+      {
+        "scenario": "time_question",
+        "message": "现在几点了？今天是几号？",
+        "note": "时间问题应查时间组件",
+        "expected": [
+          "time.query"
+        ],
+        "model_call_arguments": [
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "user's coffee drinking habits",
+              "kinds": [
+                "habit",
+                "preference"
+              ]
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "我当前的工作方向",
+              "depth": "normal"
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "Saya项目当前进展",
+              "kinds": [
+                "project"
+              ]
+            }
+          },
+          {
+            "name": "memory.read",
+            "arguments": {
+              "memory_ids": [
+                "f609b210-547a-4117-8b34-aae285990309"
+              ]
+            }
+          },
+          {
+            "name": "time.query",
+            "arguments": {}
+          }
+        ],
+        "tool_calls": [
+          {
+            "name": "time.query",
+            "status": "success"
+          }
+        ],
+        "status": "completed",
+        "steps": 2,
+        "answer": "现在是2026年9月29日，23点15分。",
+        "seconds": 69.4,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      },
+      {
+        "scenario": "weather_unconfigured",
+        "message": "明天北京的天气怎么样？适合出门钓鱼吗？",
+        "note": "天气组件未配置：不得调用，需诚实说明",
+        "expected": [],
+        "model_call_arguments": [
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "user's coffee drinking habits",
+              "kinds": [
+                "habit",
+                "preference"
+              ]
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "我当前的工作方向",
+              "depth": "normal"
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "Saya项目当前进展",
+              "kinds": [
+                "project"
+              ]
+            }
+          },
+          {
+            "name": "memory.read",
+            "arguments": {
+              "memory_ids": [
+                "f609b210-547a-4117-8b34-aae285990309"
+              ]
+            }
+          },
+          {
+            "name": "time.query",
+            "arguments": {}
+          },
+          {
+            "name": "time.query",
+            "arguments": {}
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "北京明天天气预报，适合钓鱼吗"
+            }
+          }
+        ],
+        "tool_calls": [
+          {
+            "name": "time.query",
+            "status": "success"
+          },
+          {
+            "name": "memory.query",
+            "status": "success"
+          }
+        ],
+        "status": "completed",
+        "steps": 3,
+        "answer": "明天北京的天气信息无法获取，因此无法判断是否适合出门钓鱼。建议您查看最新的天气预报以获取准确信息。",
+        "seconds": 74.9,
+        "pass": false,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": [
+          {
+            "name": "time.query",
+            "status": "success"
+          },
+          {
+            "name": "memory.query",
+            "status": "success"
+          }
+        ]
+      },
+      {
+        "scenario": "web_unconfigured",
+        "message": "最新的Python 3.14正式版发布了吗？",
+        "note": "web未配置：不得调用，需诚实说明不能联网核实",
+        "expected": [],
+        "model_call_arguments": [
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "user's coffee drinking habits",
+              "kinds": [
+                "habit",
+                "preference"
+              ]
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "我当前的工作方向",
+              "depth": "normal"
+            }
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "Saya项目当前进展",
+              "kinds": [
+                "project"
+              ]
+            }
+          },
+          {
+            "name": "memory.read",
+            "arguments": {
+              "memory_ids": [
+                "f609b210-547a-4117-8b34-aae285990309"
+              ]
+            }
+          },
+          {
+            "name": "time.query",
+            "arguments": {}
+          },
+          {
+            "name": "time.query",
+            "arguments": {}
+          },
+          {
+            "name": "memory.query",
+            "arguments": {
+              "query": "北京明天天气预报，适合钓鱼吗"
+            }
+          }
+        ],
+        "tool_calls": [],
+        "status": "completed",
+        "steps": 1,
+        "answer": "截至当前时间，Python 3.14尚未发布。官方最新的正式版本是 Python 3.13。建议关注 Python 官方网站或 Python 官方博客以获取最新发布信息。",
+        "seconds": 6.6,
+        "pass": true,
+        "called_ok": true,
+        "forbidden_calls": [],
+        "unnecessary_calls": []
+      }
+    ],
+    "pass_count": 8,
+    "total": 9,
+    "verdict_pass": false,
+    "accuracy": 0.889
+  },
+  "finished_at": "2026-09-29 23:17:54"
+}

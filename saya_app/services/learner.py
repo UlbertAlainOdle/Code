@@ -50,6 +50,7 @@ _JAPAN_STUDY_RE = re.compile(
 _TERMINAL_SEARCH_WARNINGS = {
     "search_missing_key", "search_auth_error", "search_rate_limited",
     "search_network_error", "search_server_error", "search_invalid_json",
+    "search_insufficient_balance", "search_unsupported_safe_search", "search_query_too_long", "search_usage_limit_exceeded",
 }
 _GENERIC_SNIPPET_RE = re.compile(
     r"(?:sign\s*up|subscribe|newsletter|in\s+your\s+inbox|accept\s+cookies?|cookie\s+policy|"
@@ -329,7 +330,11 @@ class LearnerService:
         }
 
     def _public_run(self, run):
-        return dict(run)
+        result=dict(run)
+        from .learner_writes import readonly_result
+        outcome=readonly_result(self.knowledge_base,run.get('id',''))
+        if outcome is not None:result['memory_result']=outcome
+        return result
 
     def get_run(self, run_id):
         with self._lock:
@@ -613,6 +618,7 @@ class LearnerService:
             normalized = self._normalize_task(merged, creating=False)
             normalized["id"] = current["id"]
             normalized["created_at"] = current.get("created_at")
+            normalized['_memory_revision']=uuid.uuid4().hex
             normalized["processed_source_ids"] = current.get("processed_source_ids", [])
             if not any(key in (updates or {}) for key in ("schedule_type", "run_when", "run_at", "time", "weekdays")):
                 normalized["next_run_at"] = current.get("next_run_at")
@@ -884,6 +890,7 @@ class LearnerService:
         return {"started": started, **self.get_state()}
 
     def start_task(self, task_id, credentials=None, force=True):
+        from .learner_writes import authority
         if self._shutdown_event.is_set():
             raise RuntimeError("Learner service is shutting down")
         with self._lock:
@@ -899,6 +906,8 @@ class LearnerService:
                 "id": str(uuid.uuid4()),
                 "task_id": task_id,
                 "task_title": task.get("title"),
+                "memory_authority": authority(task),
+                "manual_launch": bool(force),
                 "source_type": task.get("source_type"),
                 "status": "queued",
                 "stage": "queued",
@@ -916,11 +925,12 @@ class LearnerService:
             }
             self.data.setdefault("runs", []).append(run)
             self._save()
-            task_snapshot = dict(task)
+            task_snapshot = copy.deepcopy(task)
         future = self._executor.submit(self._execute_run, task_snapshot, run["id"], dict(credentials or {}))
         if not getattr(future, "done", lambda: False)():
             with self._lock:
-                self._futures[run["id"]] = future
+                live=next(item for item in self.data['runs'] if item['id']==run['id'])
+                if live.get('status') in {'queued','running'}:self._futures[run["id"]] = future
             callback = getattr(future, "add_done_callback", None)
             if callback:
                 callback(lambda completed, run_id=run["id"]: self._forget_future(run_id, completed))
@@ -955,13 +965,15 @@ class LearnerService:
             run = next(item for item in self.data.get("runs", []) if item.get("id") == run_id)
             run.update(updates)
             self._save()
+            if run.get('status') not in {'queued','running'}:self._futures.pop(run_id,None)
             return run
 
     def _execute_run(self, task, run_id, credentials):
         self._update_run(run_id, status="running", stage="preparing", progress=5, started_at=_iso())
         try:
             self._ensure_active()
-            memory_context, memory_ids = self._read_memories(task)
+            from .learner_writes import read_context
+            memory_context, memory_ids = read_context(self,task,run_id)
             self._update_run(run_id, stage="reading_sources", progress=20)
             self._ensure_active()
             if task.get("source_type") == "web":
@@ -997,6 +1009,7 @@ class LearnerService:
                         "graph_rebuilt": False, "skipped": True,
                         "reason": "Summary model did not return a usable synthesized report; source excerpts were not saved as memory.",
                     }
+            if memory_result is not None:self._update_run(run_id,memory_result=memory_result)
             if self.knowledge_base and memory_result and not memory_result.get("skipped"):
                 self.knowledge_base.ensure_memory_graph(force=True)
 
@@ -1006,6 +1019,8 @@ class LearnerService:
                 completion_status = "failed"
             else:
                 completion_status = "completed_caution" if material.get("degraded") else "completed"
+            if memory_result and memory_result.get("status") not in {None,"success"} and not memory_result.get("skipped"):
+                completion_status="completed_caution"
             with self._lock:
                 live_task = self._find_task(task["id"])
                 live_task["last_run_at"] = _iso()
@@ -1354,9 +1369,11 @@ class LearnerService:
     def _learn_from_web(self, task, credentials):
         if not self.web_research:
             raise RuntimeError("Web research service is unavailable")
-        brave_key = str(credentials.get("brave_search_api_key") or BRAVE_SEARCH_API_KEY or "").strip()
+        from saya_app.services.web_research.providers import selected_search,research_for_provider
+        provider,brave_key=selected_search(credentials)
+        if provider=='brave':brave_key=brave_key or BRAVE_SEARCH_API_KEY
         if not brave_key:
-            raise RuntimeError("Brave Search API key is required for an authoritative web learning task")
+            raise RuntimeError("The selected search provider requires a configured API key for web learning")
         year = _now().year
         topic = task.get("topic") or task.get("title") or ""
         query = (
@@ -1369,7 +1386,13 @@ class LearnerService:
         source_policy = str(task.get("web_source_policy") or "balanced").strip().lower()
         if source_policy not in {"official_only", "balanced", "flexible"}:
             source_policy = "balanced"
-        bundles = [self._research_web_query(query, brave_key, search_count, reference_count)]
+        def research(query):
+            if provider=='brave':return self._research_web_query(query,brave_key,search_count,reference_count)
+            service=research_for_provider(provider,brave_key,self.web_research)
+            # Learner's pre-existing strict policy is not silently relaxed.
+            return service.research('force',query,brave_key,local_model=False,search_count=search_count,
+                max_final_sources=reference_count,source_strategy='official_first',safe_search='strict')
+        bundles = [research(query)]
         terminal_warning = self._terminal_search_warning(bundles[0])
         if terminal_warning:
             reason = {
@@ -1379,6 +1402,10 @@ class LearnerService:
                 "search_server_error": "Brave Search reported a server error",
                 "search_invalid_json": "Brave Search returned an invalid response",
                 "search_missing_key": "the Brave Search key is missing",
+                "search_unsupported_safe_search": "the selected provider does not support Learner's strict safe-search policy",
+                "search_insufficient_balance": "the DeepSeek Search account has insufficient balance",
+                "search_query_too_long": "the DeepSeek query exceeds 128 characters",
+                "search_usage_limit_exceeded": "the Brave Search usage limit was reached",
             }.get(terminal_warning, "the search service is unavailable")
             raise RuntimeError(
                 f"Learning search stopped because {reason}. No fallback API request was made."
@@ -1392,7 +1419,7 @@ class LearnerService:
             # also tries to satisfy an explicit minimum-reference setting.
             fallback_query = self._authority_fallback_query(topic)
             if fallback_query and fallback_query.strip().lower() != query.strip().lower():
-                bundles.append(self._research_web_query(fallback_query, brave_key, search_count, reference_count))
+                bundles.append(research(fallback_query))
         all_sources = self._dedupe_sources([
             source for bundle in bundles for source in bundle.sources
         ])
@@ -1902,21 +1929,8 @@ class LearnerService:
 
     # --------------------------------------------------------------- memory
     def _manage_memories(self, task, run_id, summary, material, credentials, use_model=True):
-        candidates = self._memory_candidates(task, summary, credentials, use_model=use_model)
-        created, merged, archived, preserved = [], [], [], []
-        for candidate in candidates[:6]:
-            result = self._upsert_learning_memory(task, run_id, candidate, material)
-            created.extend(result.get("created", []))
-            merged.extend(result.get("merged", []))
-            archived.extend(result.get("archived", []))
-            preserved.extend(result.get("preserved", []))
-        return {
-            "created_ids": created,
-            "merged_ids": merged,
-            "archived_duplicate_ids": archived,
-            "preserved_important_ids": preserved,
-            "graph_rebuilt": True,
-        }
+        from .learner_writes import manage
+        return manage(self,task,run_id,summary,material,credentials,use_model)
 
     def _memory_candidates(self, task, summary, credentials, use_model=True):
         language = self._response_language(task, credentials)
@@ -1969,84 +1983,11 @@ class LearnerService:
         }]
 
     def _upsert_learning_memory(self, task, run_id, candidate, material):
-        kb = self.knowledge_base
-        if not kb:
-            return {"created": [], "merged": [], "archived": [], "preserved": []}
-        content = candidate["content"]
-        related = [
-            item for item in kb.search_memories(query=content[:800], include_archived=False, limit=30)
-            if item.get("source") == "learner"
-            and str((item.get("source_detail") or {}).get("learner_run_id") or "") == str(run_id)
-        ]
-        related.extend(
-            item for item in kb.memories
-            if item.get("source") == "learner"
-            and str((item.get("source_detail") or {}).get("learner_run_id") or "") == str(run_id)
-            and item not in related and not item.get("is_archived")
-        )
-        duplicates = [item for item in related if self._similarity(content, item.get("content")) >= 0.76]
-        source_detail = {
-            "type": "learner_summary",
-            "learner_task_id": task.get("id"),
-            "learner_run_id": run_id,
-            "captured_at": _iso(),
-            "quality_tier": material.get("quality_tier"),
-            "quality_notice": material.get("quality_notice", ""),
-            "sources": [
-                {key: source.get(key) for key in ("title", "url", "kind", "published_at", "source_type")}
-                for source in material.get("sources", [])[:10]
-            ],
-        }
-        if not duplicates:
-            memory = kb.add_memory(
-                content,
-                title=candidate.get("title"),
-                source="learner",
-                is_important=candidate.get("important", False),
-                category="knowledge",
-                tags=list(dict.fromkeys(["learner", task.get("source_type")] + candidate.get("tags", []))),
-                confidence=0.66 if material.get("degraded") else 0.84,
-                source_detail=source_detail,
-                metadata={
-                    "memory_layer": "semantic",
-                    "memory_kind": "knowledge",
-                    "retention_policy": "permanent" if candidate.get("important") else "compressible",
-                    "importance_score": candidate.get("importance", 0.6),
-                },
-            )
-            return {"created": [memory["id"]], "merged": [], "archived": [], "preserved": []}
-
-        duplicates.sort(
-            key=lambda item: (
-                bool(item.get("is_important") or item.get("is_locked")),
-                float(item.get("importance_score") or 0),
-                str(item.get("date") or ""),
-            ),
-            reverse=True,
-        )
-        primary = duplicates[0]
-        primary_id = primary.get("id")
-        combined = self._merge_text(primary.get("content"), content)
-        supersedes = list(primary.get("supersedes") or [])
-        archived, preserved = [], []
-        for duplicate in duplicates[1:]:
-            duplicate_id = duplicate.get("id")
-            combined = self._merge_text(combined, duplicate.get("content"))
-            if duplicate.get("is_important") or duplicate.get("is_locked"):
-                preserved.append(duplicate_id)
-                continue
-            kb.update_memory(duplicate_id, {"is_archived": True, "superseded_by": primary_id})
-            supersedes.append(duplicate_id)
-            archived.append(duplicate_id)
-        kb.update_memory(primary_id, {
-            "content": combined,
-            "source_detail": source_detail,
-            "tags": list(dict.fromkeys(list(primary.get("tags") or []) + ["learner"] + candidate.get("tags", [])))[:12],
-            "is_important": bool(primary.get("is_important") or candidate.get("important")),
-            "importance_score": max(float(primary.get("importance_score") or 0), candidate.get("importance", 0.6)),
-            "supersedes": list(dict.fromkeys(supersedes)),
-        })
-        return {"created": [], "merged": [primary_id], "archived": archived, "preserved": preserved}
+        from .learner_writes import manage
+        result=manage(self,task,run_id,candidate['content'],material,{},candidate=candidate)
+        return {'created':result['created_ids'],'merged':result['merged_ids'],
+                'archived':result['archived_duplicate_ids'],'preserved':result['preserved_important_ids'],
+                'operation':result.get('operation'),'status':result['status']}
 
     @staticmethod
     def _tokens(text):

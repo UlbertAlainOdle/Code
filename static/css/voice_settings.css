@@ -1,0 +1,12 @@
+#voice-settings-form { display: grid; gap: 18px; }
+#voice-settings-form .voice-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+#voice-settings-form label { display: flex; flex-direction: column; gap: 7px; font-size: 13px; }
+#voice-settings-form .voice-check { flex-direction: row; align-items: center; gap: 9px; }
+#voice-settings-form input[type="checkbox"] { accent-color: var(--accent-color, #77a7e8); width: 17px; height: 17px; }
+#voice-settings-form textarea { width: 100%; min-height: 82px; resize: vertical; box-sizing: border-box; }
+#voice-settings-form .voice-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#voice-settings-form .voice-error { color: #e77d7d; }
+#voice-preview-audio { width: 100%; }
+#voice-message { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 20px; }
+#voice-settings-form [hidden] { display: none !important; }
+@media (max-width: 600px) { #voice-settings-form .voice-grid { grid-template-columns: 1fr; } }

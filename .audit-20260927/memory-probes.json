@@ -1,0 +1,11 @@
+{
+  "Doctor prefers concise answers": [
+    "fixture"
+  ],
+  "brief responses": [],
+  "回答简短一些": [],
+  "synthesis": {
+    "status": "unconfigured",
+    "reason": "memory_v4_synthesis_producer is not configured"
+  }
+}

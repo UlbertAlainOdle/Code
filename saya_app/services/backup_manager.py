@@ -37,12 +37,19 @@ class BackupManager:
                 "knowledge.json", "memory_deletions.json", "memory_settings.json",
                 "memory_candidates.json", "memory_graph.json", "memory_maintenance.json",
                 "memory_cold_archive.jsonl", "long_term_memory.json", "rag_memory.json",
+                # memory4.sqlite3 is a source-of-truth store, unlike the
+                # legacy SQLite search index which remains intentionally
+                # excluded from ordinary backups.
+                "memory4.sqlite3", "memory4.sqlite3-wal", "memory4.sqlite3-shm",
+                "memory_v4_flag_audit.jsonl",
             ),
             "checkins": ("checkins.json", "life_quests.json"),
             "projects": ("projects.json",),
             "preferences": (
-                "user_profile.json", "saya_style_settings.json", "emotion_state.json",
+                "user_profile.json", "saya_style_settings.json", "chat_agents.json", "emotion_state.json",
                 "assistant_role.json", "video_recommendations.json", "learner_tasks.json",
+                "games.json", "journal.json",
+                "browser_settings.json",
             ),
         }
         entries = []
@@ -80,35 +87,44 @@ class BackupManager:
         backup_id = f"saya-backup-{stamp}"
         final_path = self.backup_dir / f"{backup_id}.zip"
         temp_path = final_path.with_suffix(".tmp")
-        files = []
-        seen = set()
-        for scope in scopes:
-            for source, archive_name in self._scope_paths(scope):
-                if archive_name in seen:
-                    continue
-                seen.add(archive_name)
-                files.append({
-                    "scope": scope,
-                    "path": archive_name,
-                    "size": source.stat().st_size,
-                    "sha256": self._sha256(source),
-                    "source": source,
-                })
-        if sum(item["size"] for item in files) > self.MAX_ARCHIVE_BYTES:
-            raise ValueError("Selected data is too large for one safe backup")
-        manifest = {
-            "schema_version": 1,
-            "backup_id": backup_id,
-            "created_at": datetime.now().isoformat(timespec="seconds"),
-            "reason": str(reason or "manual")[:80],
-            "scopes": scopes,
-            "files": [{key: value for key, value in item.items() if key != "source"} for item in files],
-            "excluded_sensitive_data": [
-                "API keys", "browser cookies", "environment variables", "generated SQLite search index",
-            ],
-        }
-        with self._lock:
+        with self._lock, tempfile.TemporaryDirectory(dir=self.backup_dir, prefix="snapshot-") as staging:
             try:
+                files = []
+                seen = set()
+                total = 0
+                for scope in scopes:
+                    for source, archive_name in self._scope_paths(scope):
+                        if archive_name in seen:
+                            continue
+                        seen.add(archive_name)
+                        snapshot = Path(staging) / str(len(files))
+                        # Hash and archive the same immutable bytes, never two
+                        # separate reads of a live source file.
+                        with source.open("rb") as src, snapshot.open("wb") as dst:
+                            while chunk := src.read(1024 * 1024):
+                                total += len(chunk)
+                                if total > self.MAX_ARCHIVE_BYTES:
+                                    raise ValueError("Selected data is too large for one safe backup")
+                                dst.write(chunk)
+                        # Recovery must remain possible even when the live
+                        # file is corrupt. Preserve its raw bytes in the
+                        # safety backup rather than blocking a valid restore.
+                        if not str(reason).startswith("pre_restore:") and source.suffix.lower() in {".json", ".jsonl"}:
+                            self._validate_content(source, snapshot.read_bytes())
+                        files.append({
+                            "scope": scope, "path": archive_name,
+                            "size": snapshot.stat().st_size,
+                            "sha256": self._sha256(snapshot), "source": snapshot,
+                        })
+                manifest = {
+                    "schema_version": 1, "backup_id": backup_id,
+                    "created_at": datetime.now().isoformat(timespec="seconds"),
+                    "reason": str(reason or "manual")[:80], "scopes": scopes,
+                    "files": [{key: value for key, value in item.items() if key != "source"} for item in files],
+                    "excluded_sensitive_data": [
+                        "API keys", "browser cookies", "environment variables", "generated SQLite search index",
+                    ],
+                }
                 with zipfile.ZipFile(temp_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
                     archive.writestr("manifest.json", json.dumps(manifest, ensure_ascii=False, indent=2))
                     for item in files:
@@ -225,15 +241,18 @@ class BackupManager:
     def _validate_content(path, data):
         suffix = path.suffix.lower()
         if suffix == ".json":
-            json.loads(data.decode("utf-8"))
+            value=json.loads(data.decode("utf-8"))
+            if path.name=='browser_settings.json':
+                from .browser_settings_archive import BrowserSettingsArchive
+                BrowserSettingsArchive(path).validate_document(value)
         elif suffix == ".jsonl":
             for line in data.decode("utf-8").splitlines():
                 if line.strip():
                     json.loads(line)
 
     def restore(self, backup_id, scopes, confirmation_token):
-        scopes = self._normalize_scopes(scopes)
         approval = self._tokens.pop(str(confirmation_token or ""), None)
+        scopes = self._normalize_scopes(scopes or (approval or {}).get("scopes"))
         if (
             not approval
             or approval["backup_id"] != backup_id
@@ -281,6 +300,7 @@ class BackupManager:
             "status": "success",
             "backup_id": backup_id,
             "restored_files": restored,
+            "selected_scopes": scopes,
             "safety_backup_id": safety["backup_id"],
             "restart_recommended": True,
         }

@@ -13,7 +13,7 @@
     <script src="/static/libs/three-r106/MMDPhysics.js"></script>
     <script src="/static/libs/three-r106/MMDAnimationHelper.js"></script>
     <script src="/static/libs/three-r106/ammo.js"></script>
-    <link rel="stylesheet" href="/static/css/mmd_try_showcase.css?v=20260729-notes1">
+    <link rel="stylesheet" href="/static/css/mmd_try_showcase.css?v=20260907-ui2">
 </head>
 <body>
     <main class="showcase-shell">
@@ -32,16 +32,16 @@
                 <div class="motion-detail" id="motion-detail">Preparing MMD runtime</div>
             </div>
             <div class="motion-actions">
-                <button class="motion-list-toggle" id="motion-list-toggle" type="button" disabled>Motions</button>
-                <button class="export-motions" id="export-checked-motions" type="button" disabled>Export</button>
-                <button class="next-motion" id="next-motion" type="button" disabled>Next</button>
+                <button class="motion-list-toggle" id="motion-list-toggle" type="button" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>Motions</button>
+                <button class="export-motions" id="export-checked-motions" type="button" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>Export</button>
+                <button class="next-motion" id="next-motion" type="button" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>Next</button>
             </div>
         </section>
 
         <section class="motion-list-panel hidden" id="motion-list-panel" aria-label="Motion list">
             <div class="motion-list-header">
                 <span id="motion-list-title">Motions</span>
-                <button class="motion-list-close" id="motion-list-close" type="button" aria-label="Close">x</button>
+                <button class="motion-list-close" id="motion-list-close" type="button" aria-label="Close"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
             <div class="motion-list" id="motion-list"></div>
         </section>
@@ -52,6 +52,8 @@
         </div>
     </main>
 
-    <script src="/static/js/mmd_try_showcase.js?v=20260729-notes1"></script>
+    <link rel="stylesheet" href="/static/css/qq_settings.css?v=20261028-runtime-final">
+    <script src="/static/js/local_settings.js?v=20261028-runtime-final"></script>
+    <script src="/static/js/settings_tool_boot.js?v=20261028-runtime-final"></script>
 </body>
 </html>

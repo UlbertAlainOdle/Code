@@ -97,19 +97,47 @@
         },
         "2026-10-08": {
             "date": "2026-10-08",
-            "completions": {},
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
             "note": "",
-            "updated_at": null,
+            "updated_at": "2026-10-08 14:11:51",
             "daily_tasks": [],
-            "automatic_completions": {}
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-08T14:11:51+08:00"
+                }
+            }
         },
         "2026-10-09": {
             "date": "2026-10-09",
-            "completions": {},
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": true
+            },
             "note": "",
-            "updated_at": null,
+            "updated_at": "2026-10-09 20:04:06",
             "daily_tasks": [],
-            "automatic_completions": {}
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": true,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [
+                        "托福绿宝书"
+                    ],
+                    "today_reviews": 26,
+                    "today_cards": 26,
+                    "source_modified_at": "2026-10-09T04:00:03+08:00"
+                }
+            }
         },
         "2026-10-25": {
             "date": "2026-10-25",
@@ -121,11 +149,24 @@
         },
         "2026-10-31": {
             "date": "2026-10-31",
-            "completions": {},
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
             "note": "",
-            "updated_at": null,
+            "updated_at": "2026-10-31 19:40:02",
             "daily_tasks": [],
-            "automatic_completions": {}
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-31T19:40:02-04:00"
+                }
+            }
         },
         "2026-10-30": {
             "date": "2026-10-30",
@@ -145,19 +186,45 @@
         },
         "2026-10-24": {
             "date": "2026-10-24",
-            "completions": {},
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
             "note": "",
-            "updated_at": null,
+            "updated_at": "2026-10-24 12:49:08",
             "daily_tasks": [],
-            "automatic_completions": {}
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-23T00:54:26+08:00"
+                }
+            }
         },
         "2026-10-27": {
             "date": "2026-10-27",
-            "completions": {},
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
             "note": "",
-            "updated_at": null,
+            "updated_at": "2026-10-27 12:25:25",
             "daily_tasks": [],
-            "automatic_completions": {}
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 136,
+                    "today_cards": 136,
+                    "source_modified_at": "2026-10-27T04:00:00+08:00"
+                }
+            }
         },
         "2026-10-29": {
             "date": "2026-10-29",
@@ -169,11 +236,24 @@
         },
         "2026-10-23": {
             "date": "2026-10-23",
-            "completions": {},
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
             "note": "",
-            "updated_at": null,
+            "updated_at": "2026-10-23 00:54:26",
             "daily_tasks": [],
-            "automatic_completions": {}
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-23T00:54:26+08:00"
+                }
+            }
         },
         "2026-10-17": {
             "date": "2026-10-17",
@@ -538,6 +618,437 @@
                     "source_modified_at": "2026-08-20T13:07:45+08:00"
                 }
             }
+        },
+        "2026-09-01": {
+            "date": "2026-09-01",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-01 13:30:15",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-01T13:30:15+08:00"
+                }
+            }
+        },
+        "2026-09-02": {
+            "date": "2026-09-02",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-02 02:06:54",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-01T13:30:15+08:00"
+                }
+            }
+        },
+        "2026-09-03": {
+            "date": "2026-09-03",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-03 02:18:42",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-01T13:30:15+08:00"
+                }
+            }
+        },
+        "2026-09-04": {
+            "date": "2026-09-04",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-04 03:06:06",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-01T13:30:15+08:00"
+                }
+            }
+        },
+        "2026-09-05": {
+            "date": "2026-09-05",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-05 20:56:16",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-01T13:30:15+08:00"
+                }
+            }
+        },
+        "2026-09-06": {
+            "date": "2026-09-06",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-06 13:58:55",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-01T13:30:15+08:00"
+                }
+            }
+        },
+        "2026-09-07": {
+            "date": "2026-09-07",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-07 21:48:20",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-07T21:48:20+08:00"
+                }
+            }
+        },
+        "2026-09-08": {
+            "date": "2026-09-08",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-08 16:25:08",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-07T21:48:20+08:00"
+                }
+            }
+        },
+        "2026-09-10": {
+            "date": "2026-09-10",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-10 05:20:29",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-10T05:20:29+08:00"
+                }
+            }
+        },
+        "2026-09-11": {
+            "date": "2026-09-11",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-11 15:02:00",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 17,
+                    "today_cards": 16,
+                    "source_modified_at": "2026-09-11T15:02:00+08:00"
+                }
+            }
+        },
+        "2026-09-14": {
+            "date": "2026-09-14",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-14 21:15:41",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-14T21:15:41+08:00"
+                }
+            }
+        },
+        "2026-09-15": {
+            "date": "2026-09-15",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-09-15 03:21:39",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-09-14T21:15:41+08:00"
+                }
+            }
+        },
+        "2026-09-28": {
+            "date": "2026-09-28",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-09-29": {
+            "date": "2026-09-29",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-09-30": {
+            "date": "2026-09-30",
+            "completions": {},
+            "note": "",
+            "updated_at": null,
+            "daily_tasks": [],
+            "automatic_completions": {}
+        },
+        "2026-10-10": {
+            "date": "2026-10-10",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": true,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": true,
+                "021502f2-25b5-4607-bcae-d661133a1474": true,
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-11 21:12:16",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-10T01:52:50+08:00"
+                }
+            }
+        },
+        "2026-10-11": {
+            "date": "2026-10-11",
+            "completions": {
+                "87d1a2ce-e372-41a4-8aa0-1b69d3709901": false,
+                "2c396d66-7244-4c2a-964c-3d08e79ba7e7": false,
+                "021502f2-25b5-4607-bcae-d661133a1474": false,
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-11 21:12:14",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-11T21:11:47+08:00"
+                }
+            }
+        },
+        "2026-10-12": {
+            "date": "2026-10-12",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": true
+            },
+            "note": "",
+            "updated_at": "2026-10-12 09:25:01",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": true,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [
+                        "托福绿宝书"
+                    ],
+                    "today_reviews": 103,
+                    "today_cards": 103,
+                    "source_modified_at": "2026-10-12T09:25:01+08:00"
+                }
+            }
+        },
+        "2026-10-28": {
+            "date": "2026-10-28",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-10-28 15:48:37",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-28T15:48:36+08:00"
+                }
+            }
+        },
+        "2026-11-01": {
+            "date": "2026-11-01",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-11-01 01:43:49",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-10-31T19:40:02-04:00"
+                }
+            }
+        },
+        "2026-11-05": {
+            "date": "2026-11-05",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-11-05 12:25:20",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 0,
+                    "today_cards": 0,
+                    "source_modified_at": "2026-11-05T12:25:20-05:00"
+                }
+            }
+        },
+        "2026-11-06": {
+            "date": "2026-11-06",
+            "completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": false
+            },
+            "note": "",
+            "updated_at": "2026-11-06 17:31:46",
+            "daily_tasks": [],
+            "automatic_completions": {
+                "e1e5c328-aa60-4863-890d-80022cf6e329": {
+                    "preset": "anki",
+                    "completed": false,
+                    "source": "anki",
+                    "rule": "studied_today_and_no_due_review_or_learning_cards",
+                    "completed_decks": [],
+                    "today_reviews": 120,
+                    "today_cards": 120,
+                    "source_modified_at": "2026-11-06T17:31:46-05:00"
+                }
+            }
         }
     },
     "activity": {
@@ -598,12 +1109,181 @@
         },
         "2026-08-22": {
             "date": "2026-08-22",
+            "entry_count": 9,
+            "last_entry_at": "2026-08-22 22:45:51"
+        },
+        "2026-09-01": {
+            "date": "2026-09-01",
+            "entry_count": 2,
+            "last_entry_at": "2026-09-01 17:46:44"
+        },
+        "2026-09-02": {
+            "date": "2026-09-02",
+            "entry_count": 32,
+            "last_entry_at": "2026-09-02 20:50:00"
+        },
+        "2026-09-03": {
+            "date": "2026-09-03",
+            "entry_count": 21,
+            "last_entry_at": "2026-09-03 09:45:54"
+        },
+        "2026-09-04": {
+            "date": "2026-09-04",
+            "entry_count": 15,
+            "last_entry_at": "2026-09-04 08:20:49"
+        },
+        "2026-09-05": {
+            "date": "2026-09-05",
+            "entry_count": 3,
+            "last_entry_at": "2026-09-05 20:56:37"
+        },
+        "2026-09-06": {
+            "date": "2026-09-06",
+            "entry_count": 2,
+            "last_entry_at": "2026-09-06 13:59:06"
+        },
+        "2026-09-07": {
+            "date": "2026-09-07",
+            "entry_count": 6,
+            "last_entry_at": "2026-09-07 16:27:07"
+        },
+        "2026-09-08": {
+            "date": "2026-09-08",
+            "entry_count": 6,
+            "last_entry_at": "2026-09-08 18:26:49"
+        },
+        "2026-09-10": {
+            "date": "2026-09-10",
+            "entry_count": 23,
+            "last_entry_at": "2026-09-10 18:12:36"
+        },
+        "2026-09-11": {
+            "date": "2026-09-11",
+            "entry_count": 6,
+            "last_entry_at": "2026-09-11 14:52:11"
+        },
+        "2026-09-13": {
+            "date": "2026-09-13",
+            "entry_count": 2,
+            "last_entry_at": "2026-09-13 18:20:49"
+        },
+        "2026-09-14": {
+            "date": "2026-09-14",
+            "entry_count": 19,
+            "last_entry_at": "2026-09-14 22:48:38"
+        },
+        "2026-09-15": {
+            "date": "2026-09-15",
+            "entry_count": 10,
+            "last_entry_at": "2026-09-15 09:31:06"
+        },
+        "2026-09-28": {
+            "date": "2026-09-28",
+            "entry_count": 2,
+            "last_entry_at": "2026-09-28 02:02:34"
+        },
+        "2026-09-29": {
+            "date": "2026-09-29",
+            "entry_count": 15,
+            "last_entry_at": "2026-09-29 23:54:27"
+        },
+        "2026-09-30": {
+            "date": "2026-09-30",
+            "entry_count": 10,
+            "last_entry_at": "2026-09-30 03:29:42"
+        },
+        "2026-10-08": {
+            "date": "2026-10-08",
             "entry_count": 5,
-            "last_entry_at": "2026-08-22 00:59:23"
+            "last_entry_at": "2026-10-08 23:39:43"
+        },
+        "2026-10-09": {
+            "date": "2026-10-09",
+            "entry_count": 8,
+            "last_entry_at": "2026-10-09 22:49:02"
+        },
+        "2026-10-10": {
+            "date": "2026-10-10",
+            "entry_count": 20,
+            "last_entry_at": "2026-10-10 23:58:26"
+        },
+        "2026-10-11": {
+            "date": "2026-10-11",
+            "entry_count": 1,
+            "last_entry_at": "2026-10-11 21:11:45"
+        },
+        "2026-10-12": {
+            "date": "2026-10-12",
+            "entry_count": 3,
+            "last_entry_at": "2026-10-12 09:41:35"
+        },
+        "2026-10-23": {
+            "date": "2026-10-23",
+            "entry_count": 2,
+            "last_entry_at": "2026-10-23 01:23:30"
+        },
+        "2026-10-24": {
+            "date": "2026-10-24",
+            "entry_count": 6,
+            "last_entry_at": "2026-10-24 14:25:06"
+        },
+        "2026-10-27": {
+            "date": "2026-10-27",
+            "entry_count": 14,
+            "last_entry_at": "2026-10-27 14:32:20"
+        },
+        "2026-10-28": {
+            "date": "2026-10-28",
+            "entry_count": 25,
+            "last_entry_at": "2026-10-28 18:30:12"
+        },
+        "2026-10-29": {
+            "date": "2026-10-29",
+            "entry_count": 2,
+            "last_entry_at": "2026-10-29 01:56:36"
+        },
+        "2026-10-31": {
+            "date": "2026-10-31",
+            "entry_count": 1,
+            "last_entry_at": "2026-10-31 19:40:00"
+        },
+        "2026-11-01": {
+            "date": "2026-11-01",
+            "entry_count": 2,
+            "last_entry_at": "2026-11-01 01:44:08"
+        },
+        "2026-11-05": {
+            "date": "2026-11-05",
+            "entry_count": 4,
+            "last_entry_at": "2026-11-05 15:56:43"
+        },
+        "2026-11-06": {
+            "date": "2026-11-06",
+            "entry_count": 1,
+            "last_entry_at": "2026-11-06 15:39:58"
         }
     },
     "auto_reports": {
-        "months": {},
+        "months": {
+            "2026-08": {
+                "generated_at": "2026-09-01 13:30:14",
+                "json_path": "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\exports\\checkin_month_2026-08.json",
+                "markdown_path": "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\exports\\checkin_month_2026-08.md",
+                "days_counted": 31
+            },
+            "2026-09": {
+                "generated_at": "2026-10-08 14:11:51",
+                "json_path": "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\exports\\checkin_month_2026-09.json",
+                "markdown_path": "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\exports\\checkin_month_2026-09.md",
+                "days_counted": 30
+            },
+            "2026-10": {
+                "generated_at": "2026-11-01 01:43:48",
+                "json_path": "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\exports\\checkin_month_2026-10.json",
+                "markdown_path": "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\exports\\checkin_month_2026-10.md",
+                "days_counted": 31
+            }
+        },
         "years": {}
     }
 }

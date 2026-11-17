@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>指定QQ收藏表情与官方表情包</title>
+<style>body{max-width:1000px;margin:32px auto;padding:0 20px;font:16px/1.6 system-ui;background:#faf9f6;color:#292b30}button,input,textarea{font:inherit}button{margin:4px;padding:6px 12px}article{background:white;border:1px solid #ddd;border-radius:12px;padding:18px;margin:16px 0;display:grid;grid-template-columns:140px 1fr;gap:16px}img{max-width:130px;max-height:150px}textarea{width:95%;height:110px}.hint{color:#646970}#status{white-space:pre-wrap}</style>
+<a href="/static/qq.html">返回QQ接入</a><h1>指定表情来源</h1>
+<nav><button id="source-favorites" aria-pressed="true">收藏表情</button><button id="source-official" aria-pressed="false">官方表情包</button></nav>
+<p id="source-help">收藏表情：机器人账号已收藏的单张图片。</p>
+<p>收藏表情与官方表情包使用独立清单。勾选指定项、保存后，可逐张分析含义和适用场景；说明可手动修正。不新增、删除或修改QQ收藏或已添加表情包。</p>
+<p class="hint">自动模式结合本轮语义与会话心情选择，可只发文字，没有固定优先级或默认笑脸。颜文字自然嵌入正文，可与语音共存；大表情与语音互斥，每次最多一类视觉表达。语音只读正文，忽略表情。图片分析只看首帧；发送GIF保留动画。</p>
+<label>主人QQ账号（单主人可留空） <input id="owner" inputmode="numeric"></label>
+<p><label>表达模式 <select id="expression-mode"><option value="auto">自动择一</option><option value="random">按语境随机择一</option><option value="off">关闭（只发文字）</option><option value="voice">文字后附加语音</option><option value="sticker">附加指定收藏表情</option><option value="kaomoji">附加颜文字</option></select></label><button id="expression-read">读取模式</button><button id="expression-save">保存模式</button><span id="expression-status">尚未读取</span></p>
+<button id="read">读取已保存清单（不联网）</button><button id="refresh">同步机器人QQ收藏</button><button id="save">保存指定与说明</button>
+<p class="hint">QQ收藏新增或删除后，请点“同步机器人QQ收藏”。“读取已保存清单”只显示上次保存的快照。两类来源独立；官方页仍只扫描近期样本，不读取整包。</p>
+<p id="status" role="status">尚未加载；不会自动读取全部图片或调用模型。</p><main id="items"></main>
+<script src="/static/js/qq_favorites.js?v=20261101-session67"></script></html>

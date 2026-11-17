@@ -1,0 +1,104 @@
+{
+  "method": "Qwen Base speaker encoder cosine; librosa.pyin median F0; no human listening",
+  "results": [
+    {
+      "file": "neutral.wav",
+      "duration": 5.36,
+      "rms": 0.06594554334878922,
+      "peak": 0.578125,
+      "clipped_samples": 0,
+      "f0_median_hz": 314.5984631970161,
+      "speaker_cosine_to_neutral": 1.0000001192092896,
+      "speaker_cosine_to_reference": 0.9912928342819214,
+      "f0_ratio_to_neutral": 1.0
+    },
+    {
+      "file": "happy.wav",
+      "duration": 4.976708333333334,
+      "rms": 0.06531114876270294,
+      "peak": 0.57769775390625,
+      "clipped_samples": 0,
+      "f0_median_hz": 310.9901796410289,
+      "speaker_cosine_to_neutral": 0.9988730549812317,
+      "speaker_cosine_to_reference": 0.9903040528297424,
+      "f0_ratio_to_neutral": 0.9885305111813991
+    },
+    {
+      "file": "excited.wav",
+      "duration": 4.713166666666667,
+      "rms": 0.06522414088249207,
+      "peak": 0.577972412109375,
+      "clipped_samples": 0,
+      "f0_median_hz": 312.7865093813503,
+      "speaker_cosine_to_neutral": 0.9985907077789307,
+      "speaker_cosine_to_reference": 0.9899247884750366,
+      "f0_ratio_to_neutral": 0.9942404238175472
+    },
+    {
+      "file": "sad.wav",
+      "duration": 6.0754166666666665,
+      "rms": 0.05222976952791214,
+      "peak": 0.4508056640625,
+      "clipped_samples": 0,
+      "f0_median_hz": 314.5984631970161,
+      "speaker_cosine_to_neutral": 0.9984171390533447,
+      "speaker_cosine_to_reference": 0.9896572828292847,
+      "f0_ratio_to_neutral": 1.0
+    },
+    {
+      "file": "stressed.wav",
+      "duration": 5.166541666666666,
+      "rms": 0.05768198519945145,
+      "peak": 0.5084228515625,
+      "clipped_samples": 0,
+      "f0_median_hz": 314.5984631970161,
+      "speaker_cosine_to_neutral": 0.999015748500824,
+      "speaker_cosine_to_reference": 0.9901198744773865,
+      "f0_ratio_to_neutral": 1.0
+    },
+    {
+      "file": "omni-instruct-baseline-repeat.wav",
+      "duration": 5.36,
+      "rms": 0.06594554334878922,
+      "peak": 0.578125,
+      "clipped_samples": 0,
+      "f0_median_hz": 314.5984631970161,
+      "speaker_cosine_to_neutral": 1.0000001192092896,
+      "speaker_cosine_to_reference": 0.9912928342819214,
+      "f0_ratio_to_neutral": 1.0
+    },
+    {
+      "file": "omni-instruct-baseline.wav",
+      "duration": 5.36,
+      "rms": 0.06594554334878922,
+      "peak": 0.578125,
+      "clipped_samples": 0,
+      "f0_median_hz": 314.5984631970161,
+      "speaker_cosine_to_neutral": 1.0000001192092896,
+      "speaker_cosine_to_reference": 0.9912928342819214,
+      "f0_ratio_to_neutral": 1.0
+    },
+    {
+      "file": "omni-instruct-happy.wav",
+      "duration": 4.88,
+      "rms": 0.07042591273784637,
+      "peak": 0.458984375,
+      "clipped_samples": 0,
+      "f0_median_hz": 321.02470058390634,
+      "speaker_cosine_to_neutral": 0.9965519905090332,
+      "speaker_cosine_to_reference": 0.9912666082382202,
+      "f0_ratio_to_neutral": 1.0204267920497305
+    },
+    {
+      "file": "omni-instruct-sad.wav",
+      "duration": 5.6,
+      "rms": 0.06116940453648567,
+      "peak": 0.400390625,
+      "clipped_samples": 0,
+      "f0_median_hz": 290.9996948221475,
+      "speaker_cosine_to_neutral": 0.9954566359519958,
+      "speaker_cosine_to_reference": 0.989640474319458,
+      "f0_ratio_to_neutral": 0.9249876552636243
+    }
+  ]
+}

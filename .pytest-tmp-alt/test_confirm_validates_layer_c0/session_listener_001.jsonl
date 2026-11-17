@@ -1,0 +1,2 @@
+{"role": "user", "content": "记一下", "listener": "input"}
+{"role": "ai", "content": "记忆提案：内容", "listener": "proposal", "listener_proposal": {"title": "x", "content": "内容", "category": "general", "layer": "semantic"}}

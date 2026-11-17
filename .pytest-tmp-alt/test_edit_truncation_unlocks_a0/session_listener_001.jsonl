@@ -1,0 +1,4 @@
+{"role": "user", "content": "我喜欢爬山", "listener": "input"}
+{"role": "user", "content": "我说的是高海拔徒步，这是我的核心爱好", "listener": "input"}
+{"role": "ai", "content": "记忆提案：Doctor 非常喜欢高海拔徒步", "listener": "proposal", "listener_proposal": {"title": "偏好", "content": "Doctor 非常喜欢高海拔徒步", "category": "preference", "layer": "core"}}
+{"role": "ai", "content": "记忆已保存（Doctor 非常喜欢高海拔徒步，是核心，分级 core）。此对话已锁定；开启新的 Listener 对话可记录下一条。", "listener": "confirm", "listener_memory_id": "m-1", "listener_proposal": {"title": "Doctor 非常喜欢高海拔徒步，是核心", "content": "Doctor 非常喜欢高海拔徒步，是核心爱好", "category": "preference", "layer": "core"}}

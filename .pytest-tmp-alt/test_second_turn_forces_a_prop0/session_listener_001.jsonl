@@ -1,0 +1,4 @@
+{"role": "user", "content": "上次那件事我想记下来", "listener": "input"}
+{"role": "ai", "content": "什么时候的事？", "listener": "question"}
+{"role": "user", "content": "上周六下午和小明一起", "listener": "input"}
+{"role": "ai", "content": "记忆提案：Doctor：上次那件事我想记下来\nSaya：什么时候的事？\nDoctor：上周六下午和小明一起\n（Doctor 最新补充：上周六下午和小明一起）", "listener": "proposal", "listener_proposal": {"title": "上周六下午和小明一起", "content": "Doctor：上次那件事我想记下来\nSaya：什么时候的事？\nDoctor：上周六下午和小明一起\n（Doctor 最新补充：上周六下午和小明一起）", "category": "general", "layer": "semantic"}}

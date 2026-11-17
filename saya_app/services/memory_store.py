@@ -351,7 +351,9 @@ class SQLiteMemoryStore:
         if not self.available:
             return []
         expression = self._fts_expression(query)
-        if not expression:
+        short_cjk=str(query or '').strip()
+        short_cjk=short_cjk if re.fullmatch(r'[\u3400-\u9fff]{2}',short_cjk) else ''
+        if not expression and not short_cjk:
             return []
         try:
             limit = max(1, min(2000, int(limit)))
@@ -375,6 +377,15 @@ class SQLiteMemoryStore:
             ORDER BY rank ASC, m.memory_date DESC
             LIMIT ?
         """
+        if short_cjk:
+            # Trigram FTS cannot index a two-character topic. Keep exact
+            # title/content/tag matches in the hybrid pool instead of allowing
+            # unrelated vector hits to suppress the only lexical evidence.
+            pattern='%'+short_cjk+'%'
+            params=[pattern,pattern,pattern]+([active_project_id] if active_project_id else [])+[limit]
+            sql=f'''SELECT m.id FROM memories m WHERE (m.title LIKE ? OR m.content LIKE ? OR m.tags LIKE ?)
+                AND m.is_deleted=0 AND m.is_archived=0 {scope_sql}
+                ORDER BY m.memory_date DESC LIMIT ?'''
         try:
             with self._lock, self._connection() as connection:
                 rows = connection.execute(sql, params).fetchall()

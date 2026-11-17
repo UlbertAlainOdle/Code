@@ -1,5 +1,13 @@
 import json
 import os
+import math
+import threading
+import importlib.util
+import subprocess
+import queue
+import sys
+import atexit
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -30,16 +38,73 @@ class BaseEmbeddingProvider:
 class SentenceTransformerEmbeddingProvider(BaseEmbeddingProvider):
     provider_type = "sentence_transformers"
 
-    def __init__(self, model_name, device="cpu", batch_size=16):
+    def __init__(self, model_name, device="cpu", batch_size=16, worker_python=None):
         self.model_name = str(model_name or "BAAI/bge-m3").strip()
         self.device = str(device or "cpu").strip()
         self.batch_size = max(1, min(256, int(batch_size or 16)))
         self._model = None
         self.last_error = ""
+        self._lock = threading.RLock()
+        self.worker_python = worker_python
+        self._process = None
+        self._worker_loaded = False
+        atexit.register(self.close)
+
+    def close(self):
+        process = self._process
+        self._process = None
+        if process is not None:
+            if process.poll() is None:
+                process.terminate()
+            for stream in (process.stdin, process.stdout):
+                if stream:
+                    stream.close()
+        handle = getattr(self, '_worker_log', None)
+        if handle:
+            handle.close()
+
+    def _embed_worker(self, texts):
+        if self._process is None or self._process.poll() is not None:
+            self.close()
+            root = Path(__file__).resolve().parents[2]
+            (root / '.runtime').mkdir(exist_ok=True)
+            self._worker_log = open(root / '.runtime' / 'embedding-worker.log', 'a', encoding='utf-8')
+            self._process = subprocess.Popen(
+                [self.worker_python, '-u', str(root / 'scripts' / 'embedding_worker.py'), self.model_name, self.device, str(self.batch_size)],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self._worker_log,
+                text=True, encoding='utf-8', cwd=root,
+                creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0,
+            )
+            messages = queue.Queue()
+            self._messages = messages
+            process = self._process
+            def read():
+                try:
+                    for line in process.stdout:
+                        messages.put(json.loads(line))
+                except (ValueError, OSError):
+                    pass
+                finally:
+                    messages.put({'error':'Local embedding worker exited'})
+            threading.Thread(target=read, name='embedding-reader', daemon=True).start()
+        self._process.stdin.write(json.dumps({'texts':texts}, ensure_ascii=False) + '\n')
+        self._process.stdin.flush()
+        try:
+            result = self._messages.get(timeout=120)
+        except queue.Empty as exc:
+            self.close()
+            raise EmbeddingProviderError('Local embedding worker timed out') from exc
+        if result.get('error'):
+            self.last_error = str(result['error'])
+            self.close()
+            raise EmbeddingProviderError(self.last_error)
+        self.last_error = ''
+        self._worker_loaded = True
+        return result['vectors']
 
     @property
     def key(self):
-        return f"sentence_transformers:{self.model_name}"
+        return f"sentence_transformers:{self.model_name}:chunks-v1"
 
     def _load(self):
         if self._model is not None:
@@ -51,7 +116,8 @@ class SentenceTransformerEmbeddingProvider(BaseEmbeddingProvider):
                 "sentence-transformers is not installed. Install the optional embedding dependency first."
             ) from exc
         try:
-            self._model = SentenceTransformer(self.model_name, device=self.device)
+            self._model = SentenceTransformer(self.model_name, device=self.device, trust_remote_code=False,
+                                              local_files_only=Path(self.model_name).is_absolute())
             self.last_error = ""
             return self._model
         except Exception as exc:
@@ -62,35 +128,58 @@ class SentenceTransformerEmbeddingProvider(BaseEmbeddingProvider):
         texts = [str(text or "") for text in texts]
         if not texts:
             return []
+        with self._lock:
+            if self.worker_python:
+                return self._embed_worker(texts)
+            return self._embed_locked(texts)
+
+    def _embed_locked(self, texts):
         model = self._load()
         try:
+            # Token windows include the tail of long memories. A single encode
+            # would silently truncate everything beyond model.max_seq_length.
+            limit = max(16, int(model.max_seq_length) - 4)
+            chunks, groups = [], []
+            for text in texts:
+                tokens = model.tokenizer.encode(text, add_special_tokens=False)
+                start = len(chunks)
+                for offset in range(0, len(tokens), limit):
+                    chunks.append(model.tokenizer.decode(tokens[offset:offset+limit], skip_special_tokens=True))
+                if len(chunks) == start:
+                    chunks.append("")
+                groups.append((start, len(chunks)))
             vectors = model.encode(
-                texts,
+                chunks,
                 batch_size=self.batch_size,
                 normalize_embeddings=True,
                 show_progress_bar=False,
                 convert_to_numpy=True,
             )
-            return [[float(value) for value in vector] for vector in vectors]
+            result = []
+            for start, end in groups:
+                pooled = [sum(float(vectors[i][j]) for i in range(start, end)) / (end-start)
+                          for j in range(len(vectors[start]))]
+                norm = math.sqrt(sum(value * value for value in pooled)) or 1.0
+                result.append([value/norm for value in pooled])
+            return result
         except Exception as exc:
             self.last_error = str(exc)
             raise EmbeddingProviderError(f"Embedding inference failed: {exc}") from exc
 
     def status(self):
-        try:
-            import sentence_transformers  # noqa: F401
-            dependency_available = True
-        except ImportError:
-            dependency_available = False
+        dependency_available = importlib.util.find_spec("sentence_transformers") is not None
+        model_available = not Path(self.model_name).is_absolute() or (Path(self.model_name) / "modules.json").is_file()
         return {
-            "ready": dependency_available,
+            "ready": dependency_available and model_available,
             "provider": self.provider_type,
             "provider_key": self.key,
             "model": self.model_name,
             "device": self.device,
             "dependency_available": dependency_available,
-            "model_loaded": self._model is not None,
+            "model_loaded": self._model is not None or self._worker_loaded,
+            "model_available": model_available,
             "last_error": self.last_error,
+            "isolated_worker": bool(self.worker_python),
         }
 
 
@@ -189,10 +278,13 @@ def create_embedding_provider(settings):
     provider_type = str(settings.get("embedding_provider") or "sentence_transformers").strip().lower()
     batch_size = settings.get("embedding_batch_size", 16)
     if provider_type == "sentence_transformers":
+        root = Path(__file__).resolve().parents[2]
+        worker = root / '.runtime' / 'memory-python' / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
         return SentenceTransformerEmbeddingProvider(
             model_name=settings.get("embedding_model", "BAAI/bge-m3"),
             device=settings.get("embedding_device", "cpu"),
             batch_size=batch_size,
+            worker_python=str(worker) if worker.is_file() else None,
         )
     if provider_type == "openai_compatible":
         return OpenAICompatibleEmbeddingProvider(

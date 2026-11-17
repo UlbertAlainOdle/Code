@@ -1,0 +1,37 @@
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: {"segments":[{"type":"instruction","text":"挖点石头","route":"direct_action","direct_action":"collect cobblestone 8","goal":
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+[slu] contract rejected: 
+backend=model  route agreement: 39/39 (100.0%)  payload agreement: 39/39 (100.0%)
+report written to knowledge_base/slu_corpus/eval_qwen4b.json

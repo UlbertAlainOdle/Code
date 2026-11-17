@@ -1,0 +1,482 @@
+[
+  {
+    "text": "跟着我",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "follow Doctor",
+    "goal": null
+  },
+  {
+    "text": "follow Doctor",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "follow Doctor",
+    "goal": null
+  },
+  {
+    "text": "停下",
+    "truth": "task",
+    "got": "direct_action",
+    "backend": "model",
+    "match": false,
+    "payload_match": true,
+    "direct_action": "stop",
+    "goal": null
+  },
+  {
+    "text": "come here",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "come",
+    "goal": null
+  },
+  {
+    "text": "status",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "legacy",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "status",
+    "goal": null
+  },
+  {
+    "text": "inventory",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "inventory",
+    "goal": null
+  },
+  {
+    "text": "jump",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "jump",
+    "goal": null
+  },
+  {
+    "text": "pickup nearest",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "pickup nearest",
+    "goal": null
+  },
+  {
+    "text": "烧炼粗铁",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "smelt raw_iron iron_ingot 3",
+    "goal": null
+  },
+  {
+    "text": "帮我烧粗铁",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "smelt raw_iron iron_ingot 3",
+    "goal": null
+  },
+  {
+    "text": "炼3个铁锭",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "smelt raw_iron iron_ingot 3",
+    "goal": null
+  },
+  {
+    "text": "挖点石头",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "collect cobblestone 8",
+    "goal": null
+  },
+  {
+    "text": "挖铁矿",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "collect iron_ore 8",
+    "goal": null
+  },
+  {
+    "text": "砍树",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "axe _log",
+    "goal": null
+  },
+  {
+    "text": "deposit iron_ingot all",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit iron_ingot all",
+    "goal": null
+  },
+  {
+    "text": "withdraw bread 3",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "withdraw bread 3",
+    "goal": null
+  },
+  {
+    "text": "chest find",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "find chest",
+    "goal": null
+  },
+  {
+    "text": "把铁锭存进箱子",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit iron_ingot all",
+    "goal": null
+  },
+  {
+    "text": "存3个铁锭到箱子",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit iron_ingot 3",
+    "goal": null
+  },
+  {
+    "text": "从箱子里取出3个面包",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "collect bread 3",
+    "goal": null
+  },
+  {
+    "text": "把背包里的泥土存到箱子里去",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit dirt all",
+    "goal": null
+  },
+  {
+    "text": "帮我把圆石存进附近的箱子",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": "deposit cobblestone all",
+    "goal": null
+  },
+  {
+    "text": "从箱子里拿出2个铁锭",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "collect iron_ingot 2",
+    "goal": null
+  },
+  {
+    "text": "从木桶里取出面包",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "collect bread 1",
+    "goal": null
+  },
+  {
+    "text": "我需要一瓶治疗药水",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion/healing",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "给我一瓶治疗药水",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion/healing",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "帮我酿造一瓶治疗药水",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "brew healing_potion",
+    "goal": null
+  },
+  {
+    "text": "请帮我酿造两瓶治疗药水吧",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "brew healing_potion 2",
+    "goal": null
+  },
+  {
+    "text": "给我准备一瓶抗火药水",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion/fire_resistance",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "给我一把木剑",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "wooden_sword",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "酿造一瓶治疗药水",
+    "truth": "direct_action",
+    "got": "direct_action",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": "brew healing_potion",
+    "goal": null
+  },
+  {
+    "text": "给我自己留两瓶治疗药水",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion/healing",
+      "count": 2,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "给我猪肉",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "porkchop",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "给我熟猪排",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "cooked_porkchop",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "给我烤鸡",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "cooked_chicken",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "给我8个铁锭",
+    "truth": "goal",
+    "got": "goal",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "iron_ingot",
+      "count": 8,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "我不需要治疗药水了",
+    "truth": "chat",
+    "got": "chat",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null
+  },
+  {
+    "text": "如果去下界可能需要抗火药水",
+    "truth": "chat",
+    "got": "goal",
+    "backend": "model",
+    "match": false,
+    "payload_match": false,
+    "direct_action": null,
+    "goal": {
+      "type": "obtain_and_deliver",
+      "target": "potion/anti_fire",
+      "count": 1,
+      "recipient": "Doctor"
+    }
+  },
+  {
+    "text": "你会做治疗药水吗",
+    "truth": "chat",
+    "got": "chat",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null
+  },
+  {
+    "text": "不要因为我提到石头就去挖",
+    "truth": "chat",
+    "got": "chat",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null
+  },
+  {
+    "text": "今天天气真不错啊",
+    "truth": "chat",
+    "got": "chat",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null
+  },
+  {
+    "text": "你最喜欢玩什么游戏",
+    "truth": "chat",
+    "got": "chat",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null
+  },
+  {
+    "text": "刚才砍树挺有趣的",
+    "truth": "chat",
+    "got": "chat",
+    "backend": "model",
+    "match": true,
+    "payload_match": true,
+    "direct_action": null,
+    "goal": null
+  }
+]

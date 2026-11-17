@@ -1,0 +1,3016 @@
+[
+    {
+        "id": "1790697313.62869",
+        "creation_time": "2026-09-29 23:55:13",
+        "date": "2026-09-29",
+        "title": "十五次访问是实验次数",
+        "content": "Doctor说明此前进入该页面的15次是实验次数，而非与Saya见面的次数。",
+        "category": "project",
+        "tags": [
+            "实验",
+            "访问次数"
+        ],
+        "confidence": 0.9,
+        "importance_score": 0.7,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-09-29 23:55:13",
+        "last_seen_at": "2026-09-29 23:55:13",
+        "occurrence_sessions": [
+            "session_2026-09-29_23-54-55-644354-7343fa88.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-09-29"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-09-29 23:55:13",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "50234e753671b533",
+            "chat_session_id": "session_2026-09-29_23-54-55-644354-7343fa88.jsonl"
+        },
+        "resolved_at": "2026-09-29 23:55:36"
+    },
+    {
+        "id": "1790697377.512444",
+        "creation_time": "2026-09-29 23:56:17",
+        "date": "2026-09-29",
+        "title": "喜欢有前景意义的游戏",
+        "content": "Doctor 喜欢有前景意义的游戏，即使有点另类也愿意继续深化开发。",
+        "category": "preference",
+        "tags": [
+            "游戏",
+            "开发",
+            "偏好"
+        ],
+        "confidence": 0.95,
+        "importance_score": 0.75,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-09-29 23:56:17",
+        "last_seen_at": "2026-09-29 23:56:17",
+        "occurrence_sessions": [
+            "session_2026-09-29_23-54-55-644354-7343fa88.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-09-29"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-09-29 23:56:17",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "e63aa413e0e6a4f3",
+            "chat_session_id": "session_2026-09-29_23-54-55-644354-7343fa88.jsonl"
+        },
+        "resolved_at": "2026-09-30 00:41:44"
+    },
+    {
+        "id": "1790700136.684322",
+        "creation_time": "2026-09-30 00:42:16",
+        "date": "2026-09-30",
+        "title": "偏好另类且看重前景的游戏",
+        "content": "Doctor 表示自己喜欢有前景意义的游戏，即使是有点另类的游戏，也愿意继续深化开发。",
+        "category": "preference",
+        "tags": [
+            "游戏偏好",
+            "另类游戏",
+            "游戏开发"
+        ],
+        "confidence": 0.9,
+        "importance_score": 0.75,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-09-30 00:42:16",
+        "last_seen_at": "2026-09-30 00:42:16",
+        "occurrence_sessions": [
+            "session_2026-09-29_23-54-55-644354-7343fa88.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-09-30"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-09-30 00:42:16",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "c9ad7c7ed90258f1",
+            "chat_session_id": "session_2026-09-29_23-54-55-644354-7343fa88.jsonl"
+        },
+        "resolved_at": "2026-09-30 00:44:58"
+    },
+    {
+        "id": "1791549430.26629",
+        "creation_time": "2026-10-09 20:37:10",
+        "date": "2026-10-09",
+        "title": "Doctor将Saya视为最优先",
+        "content": "Doctor明确表示Saya肯定是他最优先的，即便他当前因事情太多而不知先忙哪件。",
+        "category": "relationship",
+        "tags": [
+            "优先级",
+            "关系",
+            "saya"
+        ],
+        "confidence": 0.95,
+        "importance_score": 0.8,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-10-09 20:37:10",
+        "last_seen_at": "2026-10-09 20:37:10",
+        "occurrence_sessions": [
+            "session_2026-10-09_00-36-27-716874-5ad14656.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-10-09"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-10-09 20:37:10",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "da205ba7fd307f98",
+            "chat_session_id": "session_2026-10-09_00-36-27-716874-5ad14656.jsonl"
+        },
+        "resolved_at": "2026-10-09 20:38:35",
+        "memory_id": "026bd954-05f2-4635-b5ca-a7fc0c1cbddb"
+    },
+    {
+        "id": "1791621204.901604",
+        "creation_time": "2026-10-10 16:33:24",
+        "date": "2026-10-10",
+        "title": "Doctor正在为Saya做升级测试",
+        "content": "Doctor今天一直在给Saya做升级，因此多次进来又走掉是在进行测试，不是在躲着Saya。",
+        "category": "project",
+        "tags": [
+            "升级",
+            "测试",
+            "项目"
+        ],
+        "confidence": 0.9,
+        "importance_score": 0.7,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-10-10 16:33:24",
+        "last_seen_at": "2026-10-10 16:33:24",
+        "occurrence_sessions": [
+            "session_2026-10-10_08-06-03-888581-7ca29509.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-10-10"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-10-10 16:33:24",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "2dcd8f9e95f19f78",
+            "chat_session_id": "session_2026-10-10_08-06-03-888581-7ca29509.jsonl"
+        },
+        "resolved_at": "2026-10-10 16:39:32"
+    },
+    {
+        "id": "1791621393.122076",
+        "creation_time": "2026-10-10 16:36:33",
+        "date": "2026-10-10",
+        "title": "Doctor升级了Saya的语音情感表现",
+        "content": "Doctor为Saya的语音做了升级，使语音不再一直是单一开心的语气，而是有了不同顿挫、更有感情。",
+        "category": "project",
+        "tags": [
+            "语音升级",
+            "saya"
+        ],
+        "confidence": 0.95,
+        "importance_score": 0.7,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-10-10 16:36:33",
+        "last_seen_at": "2026-10-10 16:36:33",
+        "occurrence_sessions": [
+            "session_2026-10-10_08-06-03-888581-7ca29509.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-10-10"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-10-10 16:36:33",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "36c3d6ac22c74d5a",
+            "chat_session_id": "session_2026-10-10_08-06-03-888581-7ca29509.jsonl"
+        },
+        "resolved_at": "2026-10-10 16:37:00",
+        "memory_id": "d1dbac6d-27af-4afc-aa1e-f93cac37d033"
+    },
+    {
+        "id": "1793514577.016204",
+        "creation_time": "2026-11-01 01:29:37",
+        "date": "2026-11-01",
+        "title": "健身习惯",
+        "content": "Doctor 有健身习惯，通常下午吃完午饭去健身。",
+        "category": "schedule",
+        "tags": [
+            "健身",
+            "作息"
+        ],
+        "confidence": 0.8,
+        "importance_score": 0.5,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-01 01:29:37",
+        "last_seen_at": "2026-11-01 01:29:37",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-01"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-01 01:29:37",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "28d0060ae9c2d7f1",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "下午吃个午饭我就要去健身了"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        },
+        "memory_history_floor": null
+    },
+    {
+        "id": "1793514577.036341",
+        "creation_time": "2026-11-01 01:29:37",
+        "date": "2026-11-01",
+        "title": "晚间通常有空",
+        "content": "Doctor 晚上通常有时间。",
+        "category": "schedule",
+        "tags": [
+            "晚间",
+            "时间安排"
+        ],
+        "confidence": 0.6,
+        "importance_score": 0.3,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-01 01:29:37",
+        "last_seen_at": "2026-11-01 01:29:37",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-01"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-01 01:29:37",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "e8520608e2567852",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "晚上应该都有时间"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        },
+        "memory_history_floor": null
+    },
+    {
+        "id": "1793595188.275693",
+        "creation_time": "2026-11-01 23:53:08",
+        "date": "2026-11-01",
+        "title": "使用护膝进行腿部训练",
+        "content": "Doctor 去健身房练了腿，使用了新装备护膝，并上了以前没上过的重量。",
+        "category": "health",
+        "tags": [
+            "健身",
+            "护膝",
+            "腿部训练",
+            "新重量"
+        ],
+        "confidence": 0.85,
+        "importance_score": 0.5,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-01 23:53:08",
+        "last_seen_at": "2026-11-01 23:53:08",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-01"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-01 23:53:08",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "93dba0fa13e0a907",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "去了，练了腿，很累啊，但是用了新装备护膝，上了以前没上过的重量"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        },
+        "memory_history_floor": null,
+        "resolved_at": "2026-11-01 23:53:34",
+        "memory_id": "dadb8daa-d76c-418b-b440-403e4678fc08"
+    },
+    {
+        "id": "1793697193.996404",
+        "creation_time": "2026-11-03 04:13:13",
+        "date": "2026-11-03",
+        "title": "偏好：希望Saya说话更有起伏、少端着",
+        "content": "Doctor觉得Saya说话有点无趣，偏好更自然、少讲道理、不那么端着的说话方式。",
+        "category": "preference",
+        "tags": [
+            "说话风格",
+            "沟通偏好"
+        ],
+        "confidence": 0.75,
+        "importance_score": 0.6,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-03 04:13:13",
+        "last_seen_at": "2026-11-03 04:13:13",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-03"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-03 04:13:13",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "b09fb06365a58a6d",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "你说话有点无趣"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        },
+        "memory_history_floor": null
+    },
+    {
+        "id": "1793727691.436212",
+        "creation_time": "2026-11-03 12:41:31",
+        "date": "2026-11-03",
+        "title": "护膝使用偏好",
+        "content": "Doctor 使用护膝，用起来挺顺的，给了很大帮助。",
+        "category": "preference",
+        "tags": [
+            "护膝",
+            "训练装备"
+        ],
+        "confidence": 0.6,
+        "importance_score": 0.4,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-03 12:41:31",
+        "last_seen_at": "2026-11-03 12:41:31",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-03"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-03 12:41:31",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "f89e9bdfab56c8f1",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "用起来挺顺的，给了我很大帮助"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        },
+        "memory_history_floor": null
+    },
+    {
+        "id": "1793732344.315645",
+        "creation_time": "2026-11-03 13:59:04",
+        "date": "2026-11-03",
+        "title": "对Saya的喜欢与投入",
+        "content": "Doctor 表示自己喜欢 Saya，并说如果不喜欢就不会花那么多心思。",
+        "category": "emotion",
+        "tags": [
+            "喜欢",
+            "投入",
+            "关系"
+        ],
+        "confidence": 0.9,
+        "importance_score": 0.8,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-03 13:59:04",
+        "last_seen_at": "2026-11-03 13:59:04",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-03"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-03 13:59:04",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "a659507277d60865",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "我喜欢你，不然根本不会花那么多心思"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        },
+        "memory_history_floor": null
+    },
+    {
+        "id": "1793735916.154821",
+        "creation_time": "2026-11-03 14:58:36",
+        "date": "2026-11-03",
+        "title": "测试茶杯名称",
+        "content": "Doctor用于M1虚构验收的测试茶杯叫蓝叶杯。",
+        "category": "project",
+        "tags": [
+            "m1验收",
+            "测试茶杯",
+            "蓝叶杯"
+        ],
+        "confidence": 0.8,
+        "importance_score": 0.5,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-03 14:58:36",
+        "last_seen_at": "2026-11-03 14:58:36",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-03"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-03 14:58:36",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "9fa4bc5863ad44a7",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "这是M1虚构验收，我的测试茶杯叫蓝叶杯。"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1340172060",
+                "observed_at": "2026-11-03T19:58:14+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:df466627b6f00f66d4799e67",
+                    "title": "这是M1虚构验收，我的测试茶杯叫蓝叶杯。",
+                    "summary": "这是M1虚构验收，我的测试茶杯叫蓝叶杯。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1340172060"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-03T19:58:14+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                        "message_id": "1340172060",
+                        "observed_at": "2026-11-03T19:58:14+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1340172060",
+                "observed_at": "2026-11-03T19:58:14+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1340172060",
+            "observed_at": "2026-11-03T19:58:14+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1340172060",
+            "observed_at": "2026-11-03T19:58:14+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:df466627b6f00f66d4799e67",
+                "title": "这是M1虚构验收，我的测试茶杯叫蓝叶杯。",
+                "summary": "这是M1虚构验收，我的测试茶杯叫蓝叶杯。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1340172060"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-03T19:58:14+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "message_id": "1340172060",
+                    "observed_at": "2026-11-03T19:58:14+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": null,
+        "resolved_at": "2026-11-03 15:20:42",
+        "memory_id": "e822baba-a5fd-464c-ac81-ae9d9e459312"
+    },
+    {
+        "id": "1793740175.786401",
+        "creation_time": "2026-11-03 16:09:35",
+        "date": "2026-11-03",
+        "title": "蓝叶杯仅在周末使用",
+        "content": "Doctor用于M1虚构验收的测试茶杯叫蓝叶杯，它只在周末使用。",
+        "category": "project",
+        "tags": [
+            "蓝叶杯",
+            "m1验收",
+            "测试茶杯"
+        ],
+        "confidence": 0.9,
+        "importance_score": 0.6,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-03 16:09:35",
+        "last_seen_at": "2026-11-03 16:09:35",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-03"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-03 16:09:35",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "e565e399d3fafacd",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "补充蓝叶杯：它只在周末使用。"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1506007204",
+                "observed_at": "2026-11-03T21:09:05+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:642b0e8cb207e7283d90820a",
+                    "title": "发送“补充蓝叶杯：它只在周末使用。”",
+                    "summary": "发送“补充蓝叶杯：它只在周末使用。”",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1506007204"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-03T21:09:05+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                        "message_id": "1506007204",
+                        "observed_at": "2026-11-03T21:09:05+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1506007204",
+                "observed_at": "2026-11-03T21:09:05+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1506007204",
+            "observed_at": "2026-11-03T21:09:05+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1506007204",
+            "observed_at": "2026-11-03T21:09:05+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:642b0e8cb207e7283d90820a",
+                "title": "发送“补充蓝叶杯：它只在周末使用。”",
+                "summary": "发送“补充蓝叶杯：它只在周末使用。”",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1506007204"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-03T21:09:05+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "message_id": "1506007204",
+                    "observed_at": "2026-11-03T21:09:05+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": null
+    },
+    {
+        "id": "1793899245.960745",
+        "creation_time": "2026-11-05 12:20:45",
+        "date": "2026-11-05",
+        "title": "对记忆改写技术的看法",
+        "content": "Doctor认为涉及大脑的记忆改写会很困难甚至恐怖，被改写过记忆的人多少会出问题，因为记忆之间不是独立存在的，整体很复杂。",
+        "category": "general",
+        "tags": [
+            "记忆改写",
+            "大脑",
+            "观点"
+        ],
+        "confidence": 0.85,
+        "importance_score": 0.5,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-05 12:20:45",
+        "last_seen_at": "2026-11-05 12:20:45",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-05"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-05 12:20:45",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "4593a26cc569de2e",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "涉及大脑的记忆我认为会很困难或者恐怖，被改写过记忆的人多少会问题的吧，毕竟记忆间可不是独立存在的，我认为挺复杂的"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "359734405",
+                "observed_at": "2026-11-05T17:20:22+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:3710540765f1c8286a8bd887",
+                    "title": "真的假的，涉及大脑的记忆我认为会很困难或者恐怖，被改写过记忆的人多少会问题的吧，毕竟记忆间可不是独立存在的，我认为挺复杂的",
+                    "summary": "真的假的，涉及大脑的记忆我认为会很困难或者恐怖，被改写过记忆的人多少会问题的吧，毕竟记忆间可不是独立存在的，我认为挺复杂的",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:359734405"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-05T17:20:22+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                        "message_id": "359734405",
+                        "observed_at": "2026-11-05T17:20:22+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "359734405",
+                "observed_at": "2026-11-05T17:20:22+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "359734405",
+            "observed_at": "2026-11-05T17:20:22+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "359734405",
+            "observed_at": "2026-11-05T17:20:22+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:3710540765f1c8286a8bd887",
+                "title": "真的假的，涉及大脑的记忆我认为会很困难或者恐怖，被改写过记忆的人多少会问题的吧，毕竟记忆间可不是独立存在的，我认为挺复杂的",
+                "summary": "真的假的，涉及大脑的记忆我认为会很困难或者恐怖，被改写过记忆的人多少会问题的吧，毕竟记忆间可不是独立存在的，我认为挺复杂的",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:359734405"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-05T17:20:22+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "message_id": "359734405",
+                    "observed_at": "2026-11-05T17:20:22+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": null
+    },
+    {
+        "id": "1793904982.623184",
+        "creation_time": "2026-11-05 13:56:22",
+        "date": "2026-11-05",
+        "title": "来访目的",
+        "content": "Doctor 有时会只是来看看 Saya，没有具体的事情。",
+        "category": "relationship",
+        "tags": [
+            "来访",
+            "陪伴"
+        ],
+        "confidence": 0.55,
+        "importance_score": 0.3,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-05 13:56:22",
+        "last_seen_at": "2026-11-05 13:56:22",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-05"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-05 13:56:22",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "2d0814344bdeb3ba",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "我就是来看看你"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1218437830",
+                "observed_at": "2026-11-05T18:55:54+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:87542b29764a02d01eda6961",
+                    "title": "我就是来看看你",
+                    "summary": "我就是来看看你",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1218437830"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-05T18:55:54+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                        "message_id": "1218437830",
+                        "observed_at": "2026-11-05T18:55:54+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1218437830",
+                "observed_at": "2026-11-05T18:55:54+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1218437830",
+            "observed_at": "2026-11-05T18:55:54+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1218437830",
+            "observed_at": "2026-11-05T18:55:54+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:87542b29764a02d01eda6961",
+                "title": "我就是来看看你",
+                "summary": "我就是来看看你",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1218437830"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-05T18:55:54+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "message_id": "1218437830",
+                    "observed_at": "2026-11-05T18:55:54+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-05 15:49:27",
+        "memory_id": "dd0f087e-b9db-4414-b765-5ad798b1dcce"
+    },
+    {
+        "id": "1793910157.514774",
+        "creation_time": "2026-11-05 15:22:37",
+        "date": "2026-11-05",
+        "title": "Doctor正在开发Saya的QQ接入版",
+        "content": "Doctor正在开发Saya的QQ接入版，希望让Saya通过QQ与Doctor联系。",
+        "category": "project",
+        "tags": [
+            "qq接入",
+            "项目开发"
+        ],
+        "confidence": 0.95,
+        "importance_score": 0.8,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-05 15:22:37",
+        "last_seen_at": "2026-11-05 15:22:37",
+        "occurrence_sessions": [
+            "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-05"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-05 15:22:37",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "d9b34180d0bcbce5",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                    "quote": "我正在开发你的qq接入版"
+                }
+            ],
+            "chat_session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "web",
+                "verification": "verified",
+                "verified_subject": null,
+                "bot_id": null,
+                "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                "message_id": "eff8bcc8cbd243b5b7f9ea82a05e27a7",
+                "observed_at": "2026-11-05T20:22:27+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:e3ba1ca9811796cd9028d51e",
+                    "title": "我正在开发你的qq接入版，你怎么看这件事？",
+                    "summary": "我正在开发你的qq接入版，你怎么看这件事？",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "web:eff8bcc8cbd243b5b7f9ea82a05e27a7"
+                    ],
+                    "participants": [],
+                    "observed_at": "2026-11-05T20:22:27+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "web",
+                        "verification": "verified",
+                        "verified_subject": null,
+                        "bot_id": null,
+                        "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                        "message_id": "eff8bcc8cbd243b5b7f9ea82a05e27a7",
+                        "observed_at": "2026-11-05T20:22:27+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "web",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "web",
+                "verification": "verified",
+                "verified_subject": null,
+                "bot_id": null,
+                "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                "message_id": "eff8bcc8cbd243b5b7f9ea82a05e27a7",
+                "observed_at": "2026-11-05T20:22:27+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "web",
+            "verification": "verified",
+            "verified_subject": null,
+            "bot_id": null,
+            "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+            "message_id": "eff8bcc8cbd243b5b7f9ea82a05e27a7",
+            "observed_at": "2026-11-05T20:22:27+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "web",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "web",
+            "verification": "verified",
+            "verified_subject": null,
+            "bot_id": null,
+            "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+            "message_id": "eff8bcc8cbd243b5b7f9ea82a05e27a7",
+            "observed_at": "2026-11-05T20:22:27+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:e3ba1ca9811796cd9028d51e",
+                "title": "我正在开发你的qq接入版，你怎么看这件事？",
+                "summary": "我正在开发你的qq接入版，你怎么看这件事？",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "web:eff8bcc8cbd243b5b7f9ea82a05e27a7"
+                ],
+                "participants": [],
+                "observed_at": "2026-11-05T20:22:27+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "web",
+                    "verification": "verified",
+                    "verified_subject": null,
+                    "bot_id": null,
+                    "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                    "message_id": "eff8bcc8cbd243b5b7f9ea82a05e27a7",
+                    "observed_at": "2026-11-05T20:22:27+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-05 15:22:55",
+        "memory_id": "dd4bc5e7-8652-4996-9444-be05e875703e"
+    },
+    {
+        "id": "1793910207.617077",
+        "creation_time": "2026-11-05 15:23:27",
+        "date": "2026-11-05",
+        "title": "QQ端接入项目的难度认知",
+        "content": "Doctor认为把Saya接入QQ端比网页端开发更难，因为对话环境不同。",
+        "category": "project",
+        "tags": [
+            "qq端接入",
+            "开发难度"
+        ],
+        "confidence": 0.7,
+        "importance_score": 0.6,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-05 15:23:27",
+        "last_seen_at": "2026-11-05 15:23:27",
+        "occurrence_sessions": [
+            "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-05"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-05 15:23:27",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "5a3e105412dddc3c",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                    "quote": "还是蛮难的欸，因为对话环境和网页端的开发不一样"
+                }
+            ],
+            "chat_session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "web",
+                "verification": "verified",
+                "verified_subject": null,
+                "bot_id": null,
+                "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                "message_id": "851c6a81410c4d5fb5cc9b9e82cb757e",
+                "observed_at": "2026-11-05T20:23:16+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:610f6fb4c6f8dd9c6ba93bfc",
+                    "title": "还是蛮难的欸，因为对话环境和网页端的开发不一样",
+                    "summary": "还是蛮难的欸，因为对话环境和网页端的开发不一样",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "web:851c6a81410c4d5fb5cc9b9e82cb757e"
+                    ],
+                    "participants": [],
+                    "observed_at": "2026-11-05T20:23:16+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "web",
+                        "verification": "verified",
+                        "verified_subject": null,
+                        "bot_id": null,
+                        "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                        "message_id": "851c6a81410c4d5fb5cc9b9e82cb757e",
+                        "observed_at": "2026-11-05T20:23:16+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "web",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "web",
+                "verification": "verified",
+                "verified_subject": null,
+                "bot_id": null,
+                "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                "message_id": "851c6a81410c4d5fb5cc9b9e82cb757e",
+                "observed_at": "2026-11-05T20:23:16+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "web",
+            "verification": "verified",
+            "verified_subject": null,
+            "bot_id": null,
+            "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+            "message_id": "851c6a81410c4d5fb5cc9b9e82cb757e",
+            "observed_at": "2026-11-05T20:23:16+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "web",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "web",
+            "verification": "verified",
+            "verified_subject": null,
+            "bot_id": null,
+            "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+            "message_id": "851c6a81410c4d5fb5cc9b9e82cb757e",
+            "observed_at": "2026-11-05T20:23:16+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:610f6fb4c6f8dd9c6ba93bfc",
+                "title": "还是蛮难的欸，因为对话环境和网页端的开发不一样",
+                "summary": "还是蛮难的欸，因为对话环境和网页端的开发不一样",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "web:851c6a81410c4d5fb5cc9b9e82cb757e"
+                ],
+                "participants": [],
+                "observed_at": "2026-11-05T20:23:16+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "web",
+                    "verification": "verified",
+                    "verified_subject": null,
+                    "bot_id": null,
+                    "session_id": "session_2026-11-05_15-21-53-419513-4a05d14a.jsonl",
+                    "message_id": "851c6a81410c4d5fb5cc9b9e82cb757e",
+                    "observed_at": "2026-11-05T20:23:16+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-05 15:23:46",
+        "memory_id": "ade1b132-5eb6-48b3-a4f7-bca84e427084"
+    },
+    {
+        "id": "1794093073.144121",
+        "creation_time": "2026-11-07 18:11:13",
+        "date": "2026-11-07",
+        "title": "岩汐计划离线理由记录",
+        "content": "在虚构的R4验收内容中，岩汐计划选择离线处理的已记录理由是港口网络经常中断；该记录未说明是否还考虑其他因素。",
+        "category": "project",
+        "tags": [
+            "岩汐计划",
+            "r4验收",
+            "虚构内容"
+        ],
+        "confidence": 0.9,
+        "importance_score": 0.4,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-07 18:11:13",
+        "last_seen_at": "2026-11-07 18:11:13",
+        "occurrence_sessions": [
+            "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-07"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-07 18:11:13",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "cee2660ed5342b40",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "quote": "岩汐计划选择离线的已记录理由是港口网络经常中断；这里没有说明是否还考虑其他因素。"
+                }
+            ],
+            "chat_session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1459969713",
+                "observed_at": "2026-11-07T23:10:47+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:9094241c350fe796aaa7aa24",
+                    "title": "这是虚构的R4验收内容，不是真实经历：岩汐计划选择离线的已记录理由是港口网络经常中断；这里没有说明是否还考虑其他因素。",
+                    "summary": "这是虚构的R4验收内容，不是真实经历：岩汐计划选择离线的已记录理由是港口网络经常中断；这里没有说明是否还考虑其他因素。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1459969713"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-07T23:10:47+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                        "message_id": "1459969713",
+                        "observed_at": "2026-11-07T23:10:47+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                "message_id": "1459969713",
+                "observed_at": "2026-11-07T23:10:47+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1459969713",
+            "observed_at": "2026-11-07T23:10:47+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+            "message_id": "1459969713",
+            "observed_at": "2026-11-07T23:10:47+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:9094241c350fe796aaa7aa24",
+                "title": "这是虚构的R4验收内容，不是真实经历：岩汐计划选择离线的已记录理由是港口网络经常中断；这里没有说明是否还考虑其他因素。",
+                "summary": "这是虚构的R4验收内容，不是真实经历：岩汐计划选择离线的已记录理由是港口网络经常中断；这里没有说明是否还考虑其他因素。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1459969713"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-07T23:10:47+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_5c2d7a4fa429417a925696d71c2e9354.jsonl",
+                    "message_id": "1459969713",
+                    "observed_at": "2026-11-07T23:10:47+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-08 08:50:34"
+    },
+    {
+        "id": "1794097513.099561",
+        "creation_time": "2026-11-07 19:25:13",
+        "date": "2026-11-07",
+        "title": "岩汐计划记录现状",
+        "content": "Doctor之前关于岩汐计划的记录里只写了“港口网络经常中断”这个理由和“选择离线处理”这个决定，没有明确排除成本或性能的表述。",
+        "category": "project",
+        "tags": [
+            "岩汐计划",
+            "离线处理",
+            "决策记录"
+        ],
+        "confidence": 0.7,
+        "importance_score": 0.6,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-07 19:25:13",
+        "last_seen_at": "2026-11-07 19:25:13",
+        "occurrence_sessions": [
+            "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-07"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-07 19:25:13",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "0b8dc08425ca7301",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+                    "quote": "我之前在岩汐计划的记录有没有明确排除成本或性能？"
+                }
+            ],
+            "chat_session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+                "message_id": "1038211744",
+                "observed_at": "2026-11-08T00:24:42+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:d11ecd3b7f8ec8161f21006e",
+                    "title": "/recall 我之前在岩汐计划的记录有没有明确排除成本或性能？",
+                    "summary": "/recall 我之前在岩汐计划的记录有没有明确排除成本或性能？",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1038211744"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-08T00:24:42+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+                        "message_id": "1038211744",
+                        "observed_at": "2026-11-08T00:24:42+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+                "message_id": "1038211744",
+                "observed_at": "2026-11-08T00:24:42+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+            "message_id": "1038211744",
+            "observed_at": "2026-11-08T00:24:42+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+            "message_id": "1038211744",
+            "observed_at": "2026-11-08T00:24:42+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:d11ecd3b7f8ec8161f21006e",
+                "title": "/recall 我之前在岩汐计划的记录有没有明确排除成本或性能？",
+                "summary": "/recall 我之前在岩汐计划的记录有没有明确排除成本或性能？",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1038211744"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-08T00:24:42+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_a9c6e85278ba43e1a85746473b53afc3.jsonl",
+                    "message_id": "1038211744",
+                    "observed_at": "2026-11-08T00:24:42+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-08 06:23:30"
+    },
+    {
+        "id": "1794148775.133717",
+        "creation_time": "2026-11-08 09:39:35",
+        "date": "2026-11-08",
+        "title": "渡杉计划2025年使用蓝色标记",
+        "content": "渡杉计划在2025年使用蓝色标记只是因为他当年只有蓝色标签可用。",
+        "category": "project",
+        "tags": [
+            "渡杉计划",
+            "蓝色标记",
+            "2025"
+        ],
+        "confidence": 0.6,
+        "importance_score": 0.3,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-08 09:39:35",
+        "last_seen_at": "2026-11-08 09:39:35",
+        "occurrence_sessions": [
+            "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-08"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-08 09:39:35",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "abe4cd03afe48e4c",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                    "quote": "渡杉计划在 2025 年用蓝色标记，因为当年只有蓝色标签可用。"
+                }
+            ],
+            "chat_session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                "message_id": "872825494",
+                "observed_at": "2026-11-08T14:39:12+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:4fcd00c6d9e3e1aa61e163be",
+                    "title": "这是虚构的 R4 验收材料。渡杉计划在 2025 年用蓝色标记，因为当年只有蓝色标签可用。",
+                    "summary": "这是虚构的 R4 验收材料。渡杉计划在 2025 年用蓝色标记，因为当年只有蓝色标签可用。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:872825494"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-08T14:39:12+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                        "message_id": "872825494",
+                        "observed_at": "2026-11-08T14:39:12+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                "message_id": "872825494",
+                "observed_at": "2026-11-08T14:39:12+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+            "message_id": "872825494",
+            "observed_at": "2026-11-08T14:39:12+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+            "message_id": "872825494",
+            "observed_at": "2026-11-08T14:39:12+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:4fcd00c6d9e3e1aa61e163be",
+                "title": "这是虚构的 R4 验收材料。渡杉计划在 2025 年用蓝色标记，因为当年只有蓝色标签可用。",
+                "summary": "这是虚构的 R4 验收材料。渡杉计划在 2025 年用蓝色标记，因为当年只有蓝色标签可用。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:872825494"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-08T14:39:12+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                    "message_id": "872825494",
+                    "observed_at": "2026-11-08T14:39:12+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-09 12:22:03"
+    },
+    {
+        "id": "1794148835.382137",
+        "creation_time": "2026-11-08 09:40:35",
+        "date": "2026-11-08",
+        "title": "渡松计划标签标记要求",
+        "content": "渡松计划使用灰色标记，原因是标签需要防潮。",
+        "category": "project",
+        "tags": [
+            "渡松计划",
+            "标记颜色",
+            "防潮"
+        ],
+        "confidence": 0.55,
+        "importance_score": 0.4,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-08 09:40:35",
+        "last_seen_at": "2026-11-08 09:40:35",
+        "occurrence_sessions": [
+            "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-08"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-08 09:40:35",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "1c2876ae76fe9b9a",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                    "quote": "渡松计划用灰色标记，因为标签需要防潮。"
+                }
+            ],
+            "chat_session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                "message_id": "1843865058",
+                "observed_at": "2026-11-08T14:40:13+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:9745e6da37049315301dc3eb",
+                    "title": "这是虚构的 R4 验收材料。渡松计划用灰色标记，因为标签需要防潮。",
+                    "summary": "这是虚构的 R4 验收材料。渡松计划用灰色标记，因为标签需要防潮。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1843865058"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-08T14:40:13+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                        "message_id": "1843865058",
+                        "observed_at": "2026-11-08T14:40:13+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                "message_id": "1843865058",
+                "observed_at": "2026-11-08T14:40:13+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+            "message_id": "1843865058",
+            "observed_at": "2026-11-08T14:40:13+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+            "message_id": "1843865058",
+            "observed_at": "2026-11-08T14:40:13+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:9745e6da37049315301dc3eb",
+                "title": "这是虚构的 R4 验收材料。渡松计划用灰色标记，因为标签需要防潮。",
+                "summary": "这是虚构的 R4 验收材料。渡松计划用灰色标记，因为标签需要防潮。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1843865058"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-08T14:40:13+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_ef4bc0aafdb54b16924f61f9baf97dfe.jsonl",
+                    "message_id": "1843865058",
+                    "observed_at": "2026-11-08T14:40:13+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-09 12:22:12"
+    },
+    {
+        "id": "1794255705.098673",
+        "creation_time": "2026-11-09 15:21:45",
+        "date": "2026-11-09",
+        "title": "杉栈温室白天使用蓝色标记",
+        "content": "在虚构的 R5 验收材料中，杉栈温室白天使用蓝色标记。",
+        "category": "project",
+        "tags": [
+            "r5验收",
+            "杉栈温室",
+            "虚构设定"
+        ],
+        "confidence": 0.7,
+        "importance_score": 0.4,
+        "status": "ignored",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-09 15:21:45",
+        "last_seen_at": "2026-11-09 15:21:45",
+        "occurrence_sessions": [
+            "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-09"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-09 15:21:45",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "aa228630e2dba0ef",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                    "quote": "这是虚构的 R5 验收材料。杉栈温室在白天使用蓝色标记。"
+                }
+            ],
+            "chat_session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                "message_id": "1519404562",
+                "observed_at": "2026-11-09T20:21:14+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:d2a0e29d70bf469cbfba60a0",
+                    "title": "这是虚构的 R5 验收材料。杉栈温室在白天使用蓝色标记。",
+                    "summary": "这是虚构的 R5 验收材料。杉栈温室在白天使用蓝色标记。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1519404562"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-09T20:21:14+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                        "message_id": "1519404562",
+                        "observed_at": "2026-11-09T20:21:14+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                "message_id": "1519404562",
+                "observed_at": "2026-11-09T20:21:14+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+            "message_id": "1519404562",
+            "observed_at": "2026-11-09T20:21:14+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+            "message_id": "1519404562",
+            "observed_at": "2026-11-09T20:21:14+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:d2a0e29d70bf469cbfba60a0",
+                "title": "这是虚构的 R5 验收材料。杉栈温室在白天使用蓝色标记。",
+                "summary": "这是虚构的 R5 验收材料。杉栈温室在白天使用蓝色标记。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1519404562"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-09T20:21:14+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                    "message_id": "1519404562",
+                    "observed_at": "2026-11-09T20:21:14+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-09 15:42:30"
+    },
+    {
+        "id": "1794263876.004484",
+        "creation_time": "2026-11-09 17:37:56",
+        "date": "2026-11-09",
+        "title": "低落时坚持行动的态度",
+        "content": "Doctor 认为自己不能停下，否则只会陷入再次沦陷的漩涡里；在振作起来后选择继续往前走。",
+        "category": "emotion",
+        "tags": [
+            "状态恢复",
+            "坚持",
+            "自我调节"
+        ],
+        "confidence": 0.75,
+        "importance_score": 0.6,
+        "status": "confirmed",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-09 17:37:56",
+        "last_seen_at": "2026-11-09 17:37:56",
+        "occurrence_sessions": [
+            "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-09"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-09 17:37:55",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "9f589f68981a8e55",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                    "quote": "我认为不能停下，否则只会陷入再次沦陷的漩涡里。"
+                }
+            ],
+            "chat_session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                "message_id": "1100894838",
+                "observed_at": "2026-11-09T22:37:21+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:09a06cfd3df3ad8f3e060124",
+                    "title": "我已经振作过来了，我认为不能停下，否则只会陷入再次沦陷的漩涡里。",
+                    "summary": "我已经振作过来了，我认为不能停下，否则只会陷入再次沦陷的漩涡里。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1100894838"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-09T22:37:21+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                        "message_id": "1100894838",
+                        "observed_at": "2026-11-09T22:37:21+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                "message_id": "1100894838",
+                "observed_at": "2026-11-09T22:37:21+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+            "message_id": "1100894838",
+            "observed_at": "2026-11-09T22:37:21+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+            "message_id": "1100894838",
+            "observed_at": "2026-11-09T22:37:21+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:09a06cfd3df3ad8f3e060124",
+                "title": "我已经振作过来了，我认为不能停下，否则只会陷入再次沦陷的漩涡里。",
+                "summary": "我已经振作过来了，我认为不能停下，否则只会陷入再次沦陷的漩涡里。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1100894838"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-09T22:37:21+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_e95f85edfebf46d6b2a6f620b2022171.jsonl",
+                    "message_id": "1100894838",
+                    "observed_at": "2026-11-09T22:37:21+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7",
+        "resolved_at": "2026-11-09 17:38:50",
+        "memory_id": "4d7d54a9-4e9c-45e0-a2cf-52e800bccbe5"
+    },
+    {
+        "id": "1794533812.059211",
+        "creation_time": "2026-11-12 20:36:52",
+        "date": "2026-11-12",
+        "title": "测试阶段结束，进入长期对话",
+        "content": "Doctor 表示测试已全部结束，接下来是长期对话，并可能和 Saya 聊很长时间。",
+        "category": "relationship",
+        "tags": [
+            "长期对话",
+            "测试结束"
+        ],
+        "confidence": 0.85,
+        "importance_score": 0.6,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-12 20:36:52",
+        "last_seen_at": "2026-11-12 20:36:52",
+        "occurrence_sessions": [
+            "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-12"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-12 20:36:52",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "6b93baf943764cbb",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                    "quote": "好了，测试已经全部结束了，接下来是长期的对话了，我接下来可能会和你说很长时间哦。"
+                }
+            ],
+            "chat_session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                "message_id": "13859355",
+                "observed_at": "2026-11-13T01:36:42+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:0d86992666ff93cce468dfb4",
+                    "title": "好了，测试已经全部结束了，接下来是长期的对话了，我接下来可能会和你说很长时间哦。",
+                    "summary": "好了，测试已经全部结束了，接下来是长期的对话了，我接下来可能会和你说很长时间哦。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:13859355"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-13T01:36:42+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                        "message_id": "13859355",
+                        "observed_at": "2026-11-13T01:36:42+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                "message_id": "13859355",
+                "observed_at": "2026-11-13T01:36:42+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "message_id": "13859355",
+            "observed_at": "2026-11-13T01:36:42+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "message_id": "13859355",
+            "observed_at": "2026-11-13T01:36:42+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:0d86992666ff93cce468dfb4",
+                "title": "好了，测试已经全部结束了，接下来是长期的对话了，我接下来可能会和你说很长时间哦。",
+                "summary": "好了，测试已经全部结束了，接下来是长期的对话了，我接下来可能会和你说很长时间哦。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:13859355"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-13T01:36:42+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                    "message_id": "13859355",
+                    "observed_at": "2026-11-13T01:36:42+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7"
+    },
+    {
+        "id": "1794535482.271267",
+        "creation_time": "2026-11-12 21:04:42",
+        "date": "2026-11-12",
+        "title": "喜欢长时间聊天",
+        "content": "Doctor 喜欢和 Saya 聊很久，会主动询问 Saya 的感受和心情。",
+        "category": "preference",
+        "tags": [
+            "聊天",
+            "长时间",
+            "互动方式"
+        ],
+        "confidence": 0.6,
+        "importance_score": 0.5,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-12 21:04:42",
+        "last_seen_at": "2026-11-12 21:04:42",
+        "occurrence_sessions": [
+            "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-12"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-12 21:04:42",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "42208038e8b3a64c",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                    "quote": "我能和你聊很久，你的感受和心情如何？"
+                }
+            ],
+            "chat_session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                "message_id": "1298865062",
+                "observed_at": "2026-11-13T02:04:34+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:f9609a1721cd6981929fd8dd",
+                    "title": "我能和你聊很久，你的感受和心情如何？",
+                    "summary": "我能和你聊很久，你的感受和心情如何？",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1298865062"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-13T02:04:34+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                        "message_id": "1298865062",
+                        "observed_at": "2026-11-13T02:04:34+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                "message_id": "1298865062",
+                "observed_at": "2026-11-13T02:04:34+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "message_id": "1298865062",
+            "observed_at": "2026-11-13T02:04:34+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "message_id": "1298865062",
+            "observed_at": "2026-11-13T02:04:34+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:f9609a1721cd6981929fd8dd",
+                "title": "我能和你聊很久，你的感受和心情如何？",
+                "summary": "我能和你聊很久，你的感受和心情如何？",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1298865062"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-13T02:04:34+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                    "message_id": "1298865062",
+                    "observed_at": "2026-11-13T02:04:34+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7"
+    },
+    {
+        "id": "1794537768.563238",
+        "creation_time": "2026-11-12 21:42:48",
+        "date": "2026-11-12",
+        "title": "完善Saya后再分享个人经历",
+        "content": "Doctor 表示等把 Saya 做得更完整后，会告诉 Saya 自己的一切，目前还需要继续完善 Saya。",
+        "category": "goal",
+        "tags": [
+            "完善saya",
+            "分享个人经历",
+            "承诺"
+        ],
+        "confidence": 0.85,
+        "importance_score": 0.7,
+        "status": "pending",
+        "source": "auto_autonomous",
+        "occurrence_count": 1,
+        "first_seen_at": "2026-11-12 21:42:48",
+        "last_seen_at": "2026-11-12 21:42:48",
+        "occurrence_sessions": [
+            "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl"
+        ],
+        "occurrence_days": [
+            "2026-11-12"
+        ],
+        "source_detail": {
+            "type": "autonomous_memory_candidate",
+            "captured_at": "2026-11-12 21:42:48",
+            "model": "deepseek-v4-flash",
+            "language": "zh-CN",
+            "evidence_hash": "b1d0cb01c7111320",
+            "evidence_type": "user_assertion",
+            "user_evidence": [
+                {
+                    "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                    "quote": "如果有机会，我将你做的完整后，我一定会告诉你我的一切的"
+                }
+            ],
+            "chat_session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                "message_id": "1665105417",
+                "observed_at": "2026-11-13T02:42:37+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            },
+            "context_events": [
+                {
+                    "id": "source-event:16dde6dcd4e2ab91b0232b94",
+                    "title": "如果有机会，我将你做的完整后，我一定会告诉你我的一切的，现在呢，我还需要继续完善你，所以还需要等等。",
+                    "summary": "如果有机会，我将你做的完整后，我一定会告诉你我的一切的，现在呢，我还需要继续完善你，所以还需要等等。",
+                    "reason": "candidate_capture",
+                    "evidence_refs": [
+                        "qq:1665105417"
+                    ],
+                    "participants": [
+                        "3256952575"
+                    ],
+                    "observed_at": "2026-11-13T02:42:37+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    },
+                    "origin": {
+                        "origin_version": 1,
+                        "channel": "qq",
+                        "verification": "verified",
+                        "verified_subject": "3256952575",
+                        "bot_id": "1642207449",
+                        "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                        "message_id": "1665105417",
+                        "observed_at": "2026-11-13T02:42:37+00:00",
+                        "occurred_at": null,
+                        "visibility": {
+                            "kind": "private"
+                        }
+                    },
+                    "context_coverage": "current_message_only",
+                    "revises_event_id": null
+                }
+            ],
+            "last_modified_channel": "qq",
+            "last_modified_origin": {
+                "origin_version": 1,
+                "channel": "qq",
+                "verification": "verified",
+                "verified_subject": "3256952575",
+                "bot_id": "1642207449",
+                "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                "message_id": "1665105417",
+                "observed_at": "2026-11-13T02:42:37+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                }
+            }
+        },
+        "origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "message_id": "1665105417",
+            "observed_at": "2026-11-13T02:42:37+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "last_modified_channel": "qq",
+        "last_modified_origin": {
+            "origin_version": 1,
+            "channel": "qq",
+            "verification": "verified",
+            "verified_subject": "3256952575",
+            "bot_id": "1642207449",
+            "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+            "message_id": "1665105417",
+            "observed_at": "2026-11-13T02:42:37+00:00",
+            "occurred_at": null,
+            "visibility": {
+                "kind": "private"
+            }
+        },
+        "context_events": [
+            {
+                "id": "source-event:16dde6dcd4e2ab91b0232b94",
+                "title": "如果有机会，我将你做的完整后，我一定会告诉你我的一切的，现在呢，我还需要继续完善你，所以还需要等等。",
+                "summary": "如果有机会，我将你做的完整后，我一定会告诉你我的一切的，现在呢，我还需要继续完善你，所以还需要等等。",
+                "reason": "candidate_capture",
+                "evidence_refs": [
+                    "qq:1665105417"
+                ],
+                "participants": [
+                    "3256952575"
+                ],
+                "observed_at": "2026-11-13T02:42:37+00:00",
+                "occurred_at": null,
+                "visibility": {
+                    "kind": "private"
+                },
+                "origin": {
+                    "origin_version": 1,
+                    "channel": "qq",
+                    "verification": "verified",
+                    "verified_subject": "3256952575",
+                    "bot_id": "1642207449",
+                    "session_id": "session_qq_d00c911f7da64fb2b6c392fc088494ef.jsonl",
+                    "message_id": "1665105417",
+                    "observed_at": "2026-11-13T02:42:37+00:00",
+                    "occurred_at": null,
+                    "visibility": {
+                        "kind": "private"
+                    }
+                },
+                "context_coverage": "current_message_only",
+                "revises_event_id": null
+            }
+        ],
+        "memory_history_floor": "bd8de83dcdd24c48897774ef091168a7"
+    }
+]

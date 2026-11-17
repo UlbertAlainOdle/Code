@@ -1,0 +1,3 @@
+{"role": "user", "content": "我喜欢爬山", "listener": "input"}
+{"role": "ai", "content": "记忆提案：Doctor 喜欢爬山", "listener": "proposal", "listener_proposal": {"title": "爬山", "content": "Doctor 喜欢爬山", "category": "preference", "layer": "semantic"}}
+{"role": "ai", "content": "记忆已保存（爬山偏好，分级 semantic）。此对话已锁定；开启新的 Listener 对话可记录下一条。", "listener": "confirm", "listener_memory_id": "m-1", "listener_proposal": {"title": "爬山偏好", "content": "Doctor 喜欢周末爬山放松", "category": "preference", "layer": "semantic"}}

@@ -348,6 +348,430 @@
         "1786574706.296011": {
             "deleted_at": "2026-08-14 17:10:31",
             "reason": "learner_orphan_cleanup"
+        },
+        "40078e6c-beb5-4eac-871c-c28b2990b3d2": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "7a93ab4a-9410-44b8-a3d3-4d49c71ec9eb": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "ff50c2c2-ed01-4fa3-a388-c2b774064858": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "f880e6b8-c07f-4db6-b94a-b082fbcadf24": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "8684ad35-9175-4e23-9e3c-fbf9fd7a4d80": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "9a3e8050-4dc9-44bb-a591-3e1d24ae3643": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "284a95bd-9cbd-459f-8139-f95d94955bc3": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "5e93abce-1e6d-48da-bedb-d9f8404fd09e": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "c8aae0ce-5dc3-4d91-90fc-403bf04234f4": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "4b600b90-83ff-42f1-845c-49f428bf305f": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "a4496fd7-65c7-4dd0-b3a7-6570d57ed31a": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "7d3bd89f-429f-495a-b93d-c3515d29d717": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "f0f91562-bd94-4dde-b303-b0d94eb28348": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "ab3f1807-94c0-4e93-acdc-139e62262a5d": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "8bc614bb-da18-47a1-bae0-4714100fc927": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "f61b856a-a8b9-4a33-a894-827fa9276900": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "402533e3-93e8-4cb7-9a6c-511c43bb24df": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "6cd2206a-5465-4240-98f2-c12a9504fb0a": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "de47ae84-03d4-47b3-8ac9-98f7062892fa": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "01a2cf98-70ff-4474-83c7-f53afdd3ac93": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "48d37b50-0a01-4404-8140-b477dd713438": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "7b524d89-8a88-43af-99d4-da92f0763311": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "aac7a430-f5e5-4cca-8ca4-ccae3edfe8bf": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "f43f1555-8144-4b4a-9234-c9edc958802d": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "c59a7089-f774-4986-ad6f-8eb01c370676": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "14d5b096-af1e-4978-a18d-a72ad63c03ee": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "87286fc1-5c84-45d6-9004-b6ba47f1c0e7": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "bd7a368d-6cf0-45f9-9599-0cae98f0d97d": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "3e9bcec0-b561-4621-8112-16e02f9f1e53": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "24915f77-9000-45c2-b5d1-9d3b281d16f5": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "865da67c-a7f8-45fd-a340-1da22b30d17e": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "7c122423-c879-4e44-9e56-c6f1ca23e37e": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "0174f2c3-759d-4e21-b332-19566c9152cf": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "e3cd86d3-b03a-487e-bddc-c4d2e0c02879": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "3c0529c3-431c-4cd0-a736-d284b43ebafe": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "793aa213-8052-4afa-b7bb-63697a845065": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "d3c74254-02b8-40fa-9508-00b33b759bbb": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "c1c6a712-7508-4e7e-b906-c5d41a437cba": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "433234ba-0005-46a1-8e11-d58fbd8dc362": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "e61c277b-a966-497e-bf98-92ce5dd372f3": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "ecf44ce4-124e-47e3-add6-3d51bb575254": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "484db0a6-1752-4d65-ad47-aafdc9f876da": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "8a09923f-42e4-4122-b9d4-e24d8d2972c6": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "f67a6a8e-fbf5-411e-b874-0efe4445bf4e": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "f4bfc1ef-378c-4791-bd41-fd99cea5f0e9": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "011bf673-e510-4869-95cb-4e3be86b75e6": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "4165d6d3-c87c-4318-9a58-31db514a7e9b": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "ed037660-a56d-48f5-b900-56f759a9f0cd": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "fd72c3d7-4562-4378-9548-3aa3d3d2b45e": {
+            "deleted_at": "2026-09-07 01:13:15",
+            "reason": "sqlite_migration"
+        },
+        "b1b77e49-5695-45a7-bf28-acc7dbc04732": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "a402b815-f0f7-44b4-bf06-d166cb6185b2": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "5105c737-f4c6-482b-9b1c-9b865f4b4e10": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "a04fe0c2-3b17-4585-ba3c-b8ca062a68f5": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "9121b42b-e4ae-426c-9af6-19f507610585": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "fbff65e9-5b7b-4bfc-8abd-ad819a135e3c": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "6d1f09f6-d3f0-49f7-8c70-f6913dcd05be": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "bf28b7dd-0bc6-401f-8fda-e8cc3174268f": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "e6ac55dc-617c-4070-b24d-6c9bfa0d3eba": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "ba392b58-5226-4b52-b2be-dce50af57c0e": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "128b8642-b79b-4d54-895f-480e21ababa9": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "57ecdebc-5d7d-4d42-92b5-fc8939eedca1": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "fc707e73-c733-49e4-a31b-2b54b1ab0992": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "af781837-c973-4e32-8a26-83d09a52578d": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "186d3abd-4efb-4101-8113-a51426fccc2e": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "915f28b5-a9b6-447d-9b10-e139e465b782": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "1a1efa10-a314-411f-a96d-8c28d9d51e1a": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "ace245e7-0480-4550-b2c5-87fcd134614e": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "5c15bd24-c37c-4c4d-ab44-7db5da677bbe": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "dc9783fa-6b88-404d-aaf6-fdac25dfd573": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "63280533-15af-4245-97db-aa4d4daa1df4": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "283a8ce5-bbae-4268-95a7-2186559f2793": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "c6a8b53b-eb07-48aa-81f1-456070a4bb23": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "f2f5b05b-7d80-4292-8d79-e907dedbb051": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "3b74d18f-06db-4220-b770-a1de7685177d": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "c52bff5a-81f2-4596-8464-04e142e2129c": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "33a312ae-e315-4b43-a138-5bf59e33caf3": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "0d734c93-1932-4d0a-9f65-144009e15e04": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "51a0fbf1-4a2b-4057-9f22-1e33e189fbb9": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "178c6f99-09c7-44d7-9994-3729ddcc0916": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "24cb76b8-ad6e-4f41-a006-a18f65292eed": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "9ff6b8f2-d727-43bb-9fa9-f189dde9d13c": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "d4dd0cc6-e33d-49dd-aa6e-f6603659adcb": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "57bd0e17-2c21-492b-a84e-a93fcb79eadb": {
+            "deleted_at": "2026-09-07 01:44:17",
+            "reason": "sqlite_migration"
+        },
+        "aecd3bb4-1372-4070-81b0-1467b0f8e1f3": {
+            "deleted_at": "2026-09-11 06:27:21",
+            "reason": "user_delete"
+        },
+        "5a391aba-2d44-48fc-9004-e5a5d3154c2a": {
+            "deleted_at": "2026-09-11 06:28:09",
+            "reason": "user_bulk_delete"
+        },
+        "6466f4cb-008a-47e4-a6b3-431c2e7783ae": {
+            "deleted_at": "2026-09-30 00:45:31",
+            "reason": "session_delete"
+        },
+        "a4b14724-c26e-4b84-83b2-61d7cf5b1dc2": {
+            "deleted_at": "2026-09-30 01:02:05",
+            "reason": "user_delete"
+        },
+        "6fb1bb80-1a69-486b-8ded-a0f7e6b39842": {
+            "deleted_at": "2026-09-30 01:02:29",
+            "reason": "user_delete"
+        },
+        "3fb6b64a-e207-405e-b922-fb92fb5fb72a": {
+            "deleted_at": "2026-09-30 02:34:00",
+            "reason": "user_delete"
+        },
+        "memory:f6d6a5974c92e179f3ccc388": {
+            "deleted_at": "2026-11-05 12:26:13",
+            "reason": "explicit_forget"
+        },
+        "e822baba-a5fd-464c-ac81-ae9d9e459312": {
+            "deleted_at": "2026-11-05 12:28:38",
+            "reason": "explicit_forget"
+        },
+        "memory:26f2b492bb34641b88965738": {
+            "deleted_at": "2026-11-05 12:28:48",
+            "reason": "explicit_forget"
+        },
+        "60965a3d-1af0-4d64-8a23-e853e6a3e339": {
+            "deleted_at": "2026-11-05 12:28:57",
+            "reason": "explicit_forget"
+        },
+        "dd6fb50f-a6b6-42b5-b8de-8cf22265fd78": {
+            "deleted_at": "2026-11-05 12:29:04",
+            "reason": "explicit_forget"
+        },
+        "memory:0a602af4329c1e8ec1899332": {
+            "deleted_at": "2026-11-06 15:43:05",
+            "reason": "user_delete"
+        },
+        "memory:42a6756833e981021a39d843": {
+            "deleted_at": "2026-11-06 15:43:29",
+            "reason": "user_delete"
+        },
+        "memory:58c03dd46cb8a5f782bb4afa": {
+            "deleted_at": "2026-11-08 08:17:09",
+            "reason": "user_delete"
+        },
+        "memory:a15c970cb59cf3ae76775276": {
+            "deleted_at": "2026-11-08 08:17:37",
+            "reason": "user_delete"
+        },
+        "memory:1136d5d14c625c97f235d6c6": {
+            "deleted_at": "2026-11-08 08:17:47",
+            "reason": "user_delete"
+        },
+        "memory:4109470a34e08512fdd2b9e2": {
+            "deleted_at": "2026-11-09 12:20:43",
+            "reason": "user_delete"
+        },
+        "memory:e2ef510ce192948179484fbe": {
+            "deleted_at": "2026-11-09 12:21:24",
+            "reason": "user_delete"
+        },
+        "memory:05cb81da89fdc9f132ae2cec": {
+            "deleted_at": "2026-11-09 12:21:58",
+            "reason": "user_delete"
+        },
+        "memory:4427919e91df4972a7cd1848": {
+            "deleted_at": "2026-11-09 15:41:53",
+            "reason": "user_delete"
+        },
+        "memory:8e7bc89a031aea38f5fd7e1c": {
+            "deleted_at": "2026-11-09 15:42:24",
+            "reason": "user_delete"
+        },
+        "memory:5b75a5d129653604f801cff5": {
+            "deleted_at": "2026-11-12 14:04:33",
+            "reason": "user_delete"
+        },
+        "memory:e2182070d0a5f5a9ca81bdc0": {
+            "deleted_at": "2026-11-12 14:51:11",
+            "reason": "user_delete"
         }
     }
 }

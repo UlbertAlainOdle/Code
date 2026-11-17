@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Saya · 主动互动</title><link rel="stylesheet" href="/static/css/qq.css"><script src="/static/js/qq_proactive.js?v=73" defer></script></head><body><main>
+<a href="/static/qq.html">← QQ接入</a><header><h1>让 Saya 主动开口</h1><p>仅配置主人好友私聊；结合当前人物、心情和真实话题，可以选择沉默。开启后无需逐条批准。没有新回复时不连续追发。</p></header>
+<section><div class="row"><button id="read">读取当前设置</button><button id="save" disabled>保存我的选择</button></div><p id="status" role="status">新能力默认关闭，读取不会开启或发送消息。</p></section>
+<section><form id="policy"><label>接收主人账号<select id="owner" required></select></label><label>QQ主动互动<select id="enabled"><option value="false">关闭</option><option value="true">开启</option></select></label>
+<label><input type="checkbox" id="source_context"> 最近私聊话题</label><label><input type="checkbox" id="source_projects"> 项目后续</label><label><input type="checkbox" id="source_dates"> 日期与纪念日</label><label><input type="checkbox" id="source_dream"> 昨夜日记话题</label><p>项目、记忆和日记来源还需要原主人私聊共享权限；不会自动开启共享，不会自动保存记忆或创建提醒。</p>
+<label>每日最多发送<input id="daily_limit" type="number" min="0" max="10"></label><label>考虑开口的最短间隔（分钟）<input id="min_gap_minutes" type="number" min="0" max="1440"></label><label>私聊空闲至少（分钟）<input id="min_idle_minutes" type="number" min="1" max="1440"></label>
+<label>免打扰开始小时<input id="quiet_start" type="number" min="0" max="23"></label><label>免打扰结束小时<input id="quiet_end" type="number" min="0" max="23"></label><label>时区<input id="timezone" placeholder="America/New_York"></label><p>开始与结束相同表示不设安静时段；次数都是上限，不会凑满。网页和QQ协调同一话题，网页正在使用时优先网页（仍需网页回声开关）。</p></form></section>
+<section><h2>运行状态</h2><p id="runtime">尚未读取</p><p>在QQ主人私聊也可用 /proactive 查询、/proactive on 开启、/proactive off 关闭。后台关闭后不会继续发送，也不会另起隐藏进程。</p></section>
+</main></body></html>

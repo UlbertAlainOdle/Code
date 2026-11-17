@@ -1,0 +1,30 @@
+--- 
++++ 
+@@ -19,6 +19,7 @@
+     project_id: str = ""
+     project_name: str = ""
+     role_mode: str = ""
++    temporary: bool = False
+     memory_recall: Dict[str, Any] = field(default_factory=dict)
+     created_at: str = field(default_factory=lambda: datetime.now().isoformat(timespec="seconds"))
+ 
+@@ -28,6 +29,7 @@
+             "session_id": self.session_id,
+             "project_id": self.project_id,
+             "role_mode": self.role_mode,
++            "temporary": self.temporary,
+             "created_at": self.created_at,
+         }
+ 
+@@ -45,7 +47,10 @@
+                 self._locks[session_id] = lock
+             return lock
+ 
+-    def create(self, memory_manager, requested_session_id="", project_id="", project_name="", role_mode=""):
++    def create(self, memory_manager, requested_session_id="", project_id="", project_name="", role_mode="", temporary=False):
++        if temporary:
++            # No session lookup, history read, or empty file creation.
++            return ChatRuntime(uuid4().hex, "temporary_" + uuid4().hex, [], temporary=True)
+         requested_session_id = str(requested_session_id or "").strip()
+         path = memory_manager._safe_session_path(requested_session_id)
+         if not path:

@@ -1,0 +1,92 @@
+{
+  "model": "paraphrase-multilingual-MiniLM-L12-v2",
+  "queries": 16,
+  "index": "success",
+  "index_seconds": 6.37,
+  "recall_at_3": 0.875,
+  "mrr_at_3": 0.875,
+  "unknown_returned_count": 0,
+  "results": [
+    {
+      "query": "我最喜欢哪种鸟？",
+      "rank": 1,
+      "latency_ms": 36.3
+    },
+    {
+      "query": "What is my favorite animal?",
+      "rank": 1,
+      "latency_ms": 36.8
+    },
+    {
+      "query": "我写代码用哪个编辑工具？",
+      "rank": 1,
+      "latency_ms": 40.1
+    },
+    {
+      "query": "Which editor do I use to write code?",
+      "rank": null,
+      "latency_ms": 35.5
+    },
+    {
+      "query": "工作环境嘈杂适合我吗？",
+      "rank": 1,
+      "latency_ms": 36.6
+    },
+    {
+      "query": "Do I prefer a quiet workspace?",
+      "rank": 1,
+      "latency_ms": 38.6
+    },
+    {
+      "query": "我喝咖啡会加糖吗？",
+      "rank": 1,
+      "latency_ms": 34.9
+    },
+    {
+      "query": "Which drink do I take without sweetener?",
+      "rank": 1,
+      "latency_ms": 38.1
+    },
+    {
+      "query": "Lantern 服务怎样部署？",
+      "rank": 1,
+      "latency_ms": 36.4
+    },
+    {
+      "query": "How is the Lantern project deployed?",
+      "rank": 1,
+      "latency_ms": 41.6
+    },
+    {
+      "query": "我的出生地是哪里？",
+      "rank": 1,
+      "latency_ms": 33.9
+    },
+    {
+      "query": "Where was I born?",
+      "rank": null,
+      "latency_ms": 32.9
+    },
+    {
+      "query": "星期三我通常做什么锻炼？",
+      "rank": 1,
+      "latency_ms": 36.8
+    },
+    {
+      "query": "What exercise do I do on Wednesdays?",
+      "rank": 1,
+      "latency_ms": 36.0
+    },
+    {
+      "query": "我希望回复采用什么风格？",
+      "rank": 1,
+      "latency_ms": 34.8
+    },
+    {
+      "query": "How much detail should your replies contain?",
+      "rank": 1,
+      "latency_ms": 37.3
+    }
+  ],
+  "limitation": "Synthetic smoke corpus; no paid answer model or long-horizon benchmark."
+}

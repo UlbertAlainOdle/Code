@@ -1,0 +1,3 @@
+{"role": "user", "content": "记一下", "listener": "input"}
+{"role": "ai", "content": "记忆提案：初版", "listener": "proposal", "listener_proposal": {"title": "x", "content": "初版", "category": "general", "layer": "semantic"}}
+{"role": "ai", "content": "记忆已保存（初版，分级 semantic）。此对话已锁定；开启新的 Listener 对话可记录下一条。", "listener": "confirm", "listener_memory_id": "m-1", "listener_proposal": {"title": "初版", "content": "初版", "category": "general", "layer": "semantic"}}

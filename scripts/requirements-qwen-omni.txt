@@ -1,0 +1,12 @@
+vllm==0.30.0
+vllm-omni==0.30.0
+torch==2.13.0
+transformers==5.14.1
+tokenizers==0.22.2
+triton==3.7.1
+flashinfer-python==0.6.18.post1
+nvidia-cuda-runtime==13.0.96
+nvidia-cuda-nvrtc==13.0.88
+nvidia-cuda-nvcc==13.0.88
+nvidia-cuda-crt==13.0.88
+nvidia-nvvm==13.0.88

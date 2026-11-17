@@ -2,6 +2,7 @@ import json
 import tempfile
 import time
 import unittest
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
@@ -95,12 +96,24 @@ class SelectionVideoService:
 class FakeKnowledgeBase:
     def __init__(self, memories):
         self.memories = memories
+        self._store=tempfile.TemporaryDirectory()
+        self.base_dir=self._store.name
+        self._memory_write_lock=threading.RLock()
+        from saya_app.services.memory_use import MemoryUseState
+        self.memory_use=MemoryUseState(self.base_dir)
+
+    def _find_memory(self,mid):
+        return next((m for m in self.memories if m['id']==mid),None)
+
+    def memory_allowed_for_use(self,memory):return bool(memory)
 
     def search_memories(self, **kwargs):
         return list(self.memories)
 
-    def update_memory(self, memory_id, updates):
+    def update_memory(self, memory_id, updates, *, expected_version=None):
         memory = next(item for item in self.memories if item["id"] == memory_id)
+        from saya_app.services.memory_versions import check_version
+        check_version(memory,expected_version)
         memory.update(updates)
         return memory
 
@@ -161,6 +174,13 @@ class LifecycleKnowledgeBase(FakeKnowledgeBase):
 
 
 class LearnerServiceTests(unittest.TestCase):
+    def authorize_memory_run(self,service,task,run_id):
+        from saya_app.services.learner_writes import read_context,authority
+        task.update(manage_memory=True,read_memory=False)
+        service.data['tasks']=[task]
+        service.data.setdefault('runs',[]).append({'id':run_id,'task_id':task['id'],'status':'running','memory_authority':authority(task)})
+        read_context(service,task,run_id)
+        return task
     def make_service(self):
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
@@ -790,8 +810,9 @@ class LearnerServiceTests(unittest.TestCase):
             {"id": "ordinary", "source": "learner", "source_detail": source_detail, "content": "Alpha model release adds tool calling.", "importance_score": 0.4},
         ]
         service.configure(knowledge_base=FakeKnowledgeBase(memories))
+        task=self.authorize_memory_run(service,{"id":"task-1","source_type":"web"},"run-1")
         result = service._upsert_learning_memory(
-            {"id": "task-1", "source_type": "web"},
+            task,
             "run-1",
             {"title": "Alpha", "content": "Alpha model release adds tool calling.", "tags": [], "importance": 0.7, "important": False},
             {"sources": []},
@@ -810,7 +831,9 @@ class LearnerServiceTests(unittest.TestCase):
             "tags": [], "importance": 0.7, "important": False,
         }
         task = {"id": "task-1", "source_type": "web"}
+        self.authorize_memory_run(service,task,"run-1")
         first = service._upsert_learning_memory(task, "run-1", candidate, {"sources": []})
+        self.authorize_memory_run(service,task,"run-2")
         second = service._upsert_learning_memory(task, "run-2", candidate, {"sources": []})
         self.assertEqual(len(first["created"]), 1)
         self.assertEqual(len(second["created"]), 1)

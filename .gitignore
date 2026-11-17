@@ -1,0 +1,7 @@
+/.runtime/
+/knowledge_base/browser_settings.json
+/models/qwen3-tts/
+/knowledge_base/tts/
+/static/_tts_diagnostic.html
+/knowledge_base/qq/
+/.env.qq

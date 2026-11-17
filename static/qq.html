@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saya · QQ 接入</title>
+  <link rel="stylesheet" href="/static/css/qq.css?v=20261024-2">
+  <script src="/static/js/qq.js?v=20261024-3" defer></script>
+</head>
+<body>
+<main>
+  <a href="/static/Chat4o5-Modern.html">← 返回 Saya</a>
+  <a href="/static/qq-favorites.html">指定已有收藏表情与语义说明</a>
+  <a href="/static/qq-proactive.html">主人私聊主动互动设置</a>
+  <a href="/static/qq-context.html">对话分日与话题时效</a>
+  <a href="/static/qq-experience.html">对话篇幅与短语音体验</a>
+  <a href="/static/qq-memory-console.html">每日记忆与待批操作台</a>
+  <header><p class="eyebrow">SAYA / CHANNELS</p><h1>把对话带到 QQ</h1>
+    <p>通过 NapCat / OneBot 11 接收消息，使用 Saya 当前的本地或 API 模型回复。</p></header>
+  <section aria-labelledby="status-title">
+    <div class="row"><h2 id="status-title">接入状态</h2><button id="refresh" type="button">刷新</button></div>
+    <p id="state" role="status" aria-live="polite">正在读取状态…</p>
+    <dl id="metrics"></dl>
+    <p class="muted">服务运行、收到事件和发出消息分别展示；运行中不等于 QQ 已登录。状态每 10 秒刷新。</p>
+  </section>
+  <section aria-labelledby="connect-title">
+    <h2 id="connect-title">连接检查</h2>
+    <form id="diagnostics"><label for="token">管理 Token（SAYA_QQ_ADMIN_TOKEN）</label>
+      <div class="row"><input id="token" name="token" type="password" autocomplete="off" spellcheck="false" placeholder="仅用于本次检查" required><button type="submit">检查 OneBot</button></div>
+    </form><p id="diagnostic-result" role="status" aria-live="polite">检查只读取登录信息。验证通过后可管理群；Token 仅保留在当前页面内存，刷新或锁定即清除。</p>
+  </section>
+  <section aria-labelledby="groups-title">
+    <div class="row"><h2 id="groups-title">主人与群接入</h2><button id="lock-management" type="button" hidden>锁定</button></div>
+    <p id="management-summary">在上方输入管理 Token 并检查连接，即可查看主人身份、群列表和入群邀请。</p>
+    <div id="management" hidden>
+      <button id="reload-management" type="button">刷新群与邀请</button>
+      <h3>群列表</h3><div id="group-list"></div>
+      <h3>待审核邀请</h3><div id="invite-list"></div>
+    </div>
+    <p>主人身份直接按已配置 QQ 号验证，与共享记忆开关独立。主人在 QQ 私聊发送 <code>/whoami</code> 可确认身份，<code>/groups</code> 查看群，<code>/requests</code> 查看邀请。</p>
+    <p>开启主人邀请自动处理后，主人邀请机器人入群会自动同意并开启该群 @回复；其他人的邀请需审核。也可开启“主人首次 @授权新群”，兼容 QQ 直接入群的情况。手动关闭的群不会被自动重新开启。关闭回复不退群，群聊不读取个人记忆。</p>
+  </section>
+  <section aria-labelledby="setup-title">
+    <h2 id="setup-title">首次配置</h2>
+    <ol>
+      <li>安装并启动 NapCat，登录用于自动回复的 QQ 账号。</li>
+      <li>启用 HTTP 服务端：<code>127.0.0.1:3000</code>，配置独立的访问 Token。</li>
+      <li>启用 HTTP 客户端，上报地址设为 <code>http://127.0.0.1:8000/api/qq/events</code>，消息格式选择 <code>array</code>，上报 Token 对应 <code>SAYA_QQ_WEBHOOK_SECRET</code>（HMAC 签名密钥），关闭自身消息上报。</li>
+      <li>按项目 <code>docs/qq-bridge.md</code> 配置启动环境中的 <code>SAYA_QQ_*</code> 变量。至少需要账号、双向 Token 和白名单，然后重启 Saya；使用单个应用进程。</li>
+      <li>先检查连接，再由白名单好友发送文字；白名单群内请 @机器人。</li>
+    </ol>
+    <p><a href="https://napneko.github.io/config/basic" target="_blank" rel="noopener noreferrer">NapCat 配置文档 ↗</a></p>
+  </section>
+  <section aria-labelledby="memory-title">
+    <h2 id="memory-title">记忆与能力边界</h2>
+    <p>默认只保留每位 QQ 发言人在当前会话中的近期上下文。不同好友、不同群、同群不同发言人分别隔离，不读取或写入个人长期记忆、日记或项目上下文。</p>
+    <p>仅显式配置的主人好友私聊，可在开启 <code>SAYA_QQ_SHARED_MEMORY</code> 后共用 Saya 长期记忆。网页与 QQ 的聊天历史独立；角色设定和模型资源共用，角色设定中请勿存放私密资料。</p>
+    <p>当前支持文字对话、长回复分段、身份查询、群邀请审核、群回复启停，以及 <code>/help</code>、<code>/status</code>、<code>/memory</code>、<code>/reset</code>。图片、语音、文件、自动加好友和 QQ 内游戏控制暂不支持。</p>
+    <p class="muted">消息发送结果不明确时不会自动重发，避免重复回复。详细功能、故障排查和数据保留规则见项目接入文档。</p>
+  </section>
+</main>
+</body>
+</html>

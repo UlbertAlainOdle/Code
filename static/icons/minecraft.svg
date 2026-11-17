@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">Minecraft</title>
+  <path fill="#62B03A" d="M2 2h20v20H2z"/>
+  <path fill="#7A5233" d="M2 9h20v13H2z"/>
+  <path fill="#8B5A35" d="M5 12h3v3H5zm7 5h3v3h-3zm5-2h2v2h-2zM8 18h2v2H8z"/>
+  <path fill="#4D8E2D" d="M2 2h20v7H2zM2 8h4v2H2zm8 0h4v2h-4zm8 0h2v2h-2z"/>
+  <path fill="#78C64A" d="M6 9h2v2H6zm8 0h2v2h-2z"/>
+</svg>

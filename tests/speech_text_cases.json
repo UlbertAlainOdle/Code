@@ -1,0 +1,12 @@
+[
+  {"raw":"你好😊，世界❤️！👩🏽‍💻🇨🇳", "clean":"你好，世界！", "language":"Chinese"},
+  {"raw":"😊❤️👨‍👩‍👧‍👦🇺🇸1️⃣#️⃣*️⃣", "clean":"", "language":"Chinese"},
+  {"raw":"谢谢你 (*^▽^*) [微笑] :smile:，我们继续。", "clean":"谢谢你，我们继续。", "language":"Chinese"},
+  {"raw":"保持 (a + b) 和 (x^2)，不要改动版本 3.14。", "clean":"保持 (a + b) 和 (x^2)，不要改动版本 3.14。", "language":"Auto"},
+  {"raw":"[文档](https://example.com) ![表情包](https://example.com/emoji.png) **在这里**。", "clean":"文档 在这里。", "language":"Chinese"},
+  {"raw":"中文中有 OpenAI 和 hello world。", "clean":"中文中有 OpenAI 和 hello world。", "language":"Auto"},
+  {"raw":"Hello world! Keep snake_case intact.", "clean":"Hello world! Keep snake_case intact.", "language":"English"},
+  {"raw":"博士&#x1F60A;，<strong>你好</strong>。[MOOD_USER:happy]", "clean":"博士，你好。", "language":"Chinese"},
+  {"raw":"今天 (T_T) 但明天 (^_^) [抱抱]。", "clean":"今天 但明天。", "language":"Chinese"},
+  {"raw":"第 1 步用 2 个苹果，编号 123；#标题 保留数字。", "clean":"第 1 步用 2 个苹果，编号 123；标题 保留数字。", "language":"Chinese"}
+]

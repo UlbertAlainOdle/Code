@@ -1,0 +1,861 @@
+{
+  "method": "librosa.pyin + MFCC DTW; centered local changes; Qwen speaker encoder; no ASR/no listening",
+  "results": [
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "neutral",
+      "file": "arrival-42-neutral.wav",
+      "speaker_cosine_to_neutral": 1.0,
+      "speaker_cosine_to_reference": 0.9903484582901001,
+      "duration": 6.8,
+      "f0_median_hz": 303.0069686174811,
+      "f0_spread_semitones": 12.200000000000003,
+      "internal_pauses": [
+        {
+          "start": 1.46,
+          "seconds": 0.17,
+          "fraction": 0.215
+        },
+        {
+          "start": 2.54,
+          "seconds": 0.39,
+          "fraction": 0.374
+        },
+        {
+          "start": 3.81,
+          "seconds": 0.32,
+          "fraction": 0.56
+        },
+        {
+          "start": 4.79,
+          "seconds": 0.39,
+          "fraction": 0.704
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 0.0,
+      "centered_energy_median_abs_db": 0.0,
+      "aligned_voiced_pairs": 384
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "neutral-xvec",
+      "file": "arrival-42-neutral-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9938477277755737,
+      "speaker_cosine_to_reference": 0.9872071743011475,
+      "duration": 6.72,
+      "f0_median_hz": 273.87386934825736,
+      "f0_spread_semitones": 9.37023285884824,
+      "internal_pauses": [
+        {
+          "start": 0.76,
+          "seconds": 0.34,
+          "fraction": 0.113
+        },
+        {
+          "start": 1.92,
+          "seconds": 0.56,
+          "fraction": 0.286
+        },
+        {
+          "start": 3.4,
+          "seconds": 0.42,
+          "fraction": 0.506
+        },
+        {
+          "start": 4.51,
+          "seconds": 0.28,
+          "fraction": 0.671
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 89.99999999999964,
+      "centered_energy_median_abs_db": 1.5309722423553467,
+      "aligned_voiced_pairs": 386
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "sad",
+      "file": "arrival-42-sad.wav",
+      "speaker_cosine_to_neutral": 0.9956415891647339,
+      "speaker_cosine_to_reference": 0.989300549030304,
+      "duration": 7.68,
+      "f0_median_hz": 276.25826747841137,
+      "f0_spread_semitones": 10.630060697045046,
+      "internal_pauses": [
+        {
+          "start": 1.42,
+          "seconds": 0.12,
+          "fraction": 0.185
+        },
+        {
+          "start": 2.38,
+          "seconds": 0.46,
+          "fraction": 0.31
+        },
+        {
+          "start": 3.78,
+          "seconds": 0.6,
+          "fraction": 0.492
+        },
+        {
+          "start": 5.12,
+          "seconds": 0.42,
+          "fraction": 0.667
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 100.00000000000037,
+      "centered_energy_median_abs_db": 1.3434193134307861,
+      "aligned_voiced_pairs": 409
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "sad-xvec",
+      "file": "arrival-42-sad-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9825443625450134,
+      "speaker_cosine_to_reference": 0.97383052110672,
+      "duration": 8.64,
+      "f0_median_hz": 261.5061646776419,
+      "f0_spread_semitones": 6.3000000000000025,
+      "internal_pauses": [
+        {
+          "start": 0.91,
+          "seconds": 0.67,
+          "fraction": 0.105
+        },
+        {
+          "start": 2.65,
+          "seconds": 0.6,
+          "fraction": 0.307
+        },
+        {
+          "start": 4.35,
+          "seconds": 0.51,
+          "fraction": 0.503
+        },
+        {
+          "start": 5.7,
+          "seconds": 0.5,
+          "fraction": 0.66
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 160.00000000000017,
+      "centered_energy_median_abs_db": 3.912684917449951,
+      "aligned_voiced_pairs": 447
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "stressed",
+      "file": "arrival-42-stressed.wav",
+      "speaker_cosine_to_neutral": 0.996570885181427,
+      "speaker_cosine_to_reference": 0.9911397099494934,
+      "duration": 6.8,
+      "f0_median_hz": 329.4771215546362,
+      "f0_spread_semitones": 12.499999999999998,
+      "internal_pauses": [
+        {
+          "start": 1.26,
+          "seconds": 0.2,
+          "fraction": 0.185
+        },
+        {
+          "start": 2.3,
+          "seconds": 0.55,
+          "fraction": 0.338
+        },
+        {
+          "start": 3.72,
+          "seconds": 0.48,
+          "fraction": 0.547
+        },
+        {
+          "start": 4.9,
+          "seconds": 0.19,
+          "fraction": 0.721
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 150.00000000000006,
+      "centered_energy_median_abs_db": 1.3885600566864014,
+      "aligned_voiced_pairs": 385
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "stressed-xvec",
+      "file": "arrival-42-stressed-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9920186400413513,
+      "speaker_cosine_to_reference": 0.983488142490387,
+      "duration": 7.44,
+      "f0_median_hz": 257.75807774215764,
+      "f0_spread_semitones": 10.4,
+      "internal_pauses": [
+        {
+          "start": 0.83,
+          "seconds": 0.46,
+          "fraction": 0.112
+        },
+        {
+          "start": 2.28,
+          "seconds": 0.49,
+          "fraction": 0.306
+        },
+        {
+          "start": 3.68,
+          "seconds": 0.62,
+          "fraction": 0.495
+        },
+        {
+          "start": 5.07,
+          "seconds": 0.35,
+          "fraction": 0.681
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 114.99999999999987,
+      "centered_energy_median_abs_db": 2.2290613651275635,
+      "aligned_voiced_pairs": 398
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "neutral",
+      "file": "arrival-77-neutral.wav",
+      "speaker_cosine_to_neutral": 0.9999998807907104,
+      "speaker_cosine_to_reference": 0.992783784866333,
+      "duration": 6.96,
+      "f0_median_hz": 353.1248353951036,
+      "f0_spread_semitones": 10.929939396376133,
+      "internal_pauses": [
+        {
+          "start": 1.19,
+          "seconds": 0.3,
+          "fraction": 0.171
+        },
+        {
+          "start": 2.33,
+          "seconds": 0.52,
+          "fraction": 0.335
+        },
+        {
+          "start": 3.81,
+          "seconds": 0.53,
+          "fraction": 0.547
+        },
+        {
+          "start": 5.02,
+          "seconds": 0.32,
+          "fraction": 0.721
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 0.0,
+      "centered_energy_median_abs_db": 0.0,
+      "aligned_voiced_pairs": 398
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "neutral-xvec",
+      "file": "arrival-77-neutral-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9891197085380554,
+      "speaker_cosine_to_reference": 0.985929012298584,
+      "duration": 6.88,
+      "f0_median_hz": 257.013645291753,
+      "f0_spread_semitones": 28.699999999999996,
+      "internal_pauses": [
+        {
+          "start": 0.79,
+          "seconds": 0.34,
+          "fraction": 0.115
+        },
+        {
+          "start": 2.04,
+          "seconds": 0.33,
+          "fraction": 0.297
+        },
+        {
+          "start": 3.28,
+          "seconds": 0.79,
+          "fraction": 0.477
+        },
+        {
+          "start": 4.76,
+          "seconds": 0.24,
+          "fraction": 0.692
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 210.00000000000045,
+      "centered_energy_median_abs_db": 2.27858304977417,
+      "aligned_voiced_pairs": 399
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "sad",
+      "file": "arrival-77-sad.wav",
+      "speaker_cosine_to_neutral": 0.996090829372406,
+      "speaker_cosine_to_reference": 0.991710364818573,
+      "duration": 8.16,
+      "f0_median_hz": 309.19384990070745,
+      "f0_spread_semitones": 10.16000009342118,
+      "internal_pauses": [
+        {
+          "start": 1.75,
+          "seconds": 0.47,
+          "fraction": 0.214
+        },
+        {
+          "start": 3.16,
+          "seconds": 0.55,
+          "fraction": 0.387
+        },
+        {
+          "start": 4.62,
+          "seconds": 0.63,
+          "fraction": 0.566
+        },
+        {
+          "start": 5.93,
+          "seconds": 0.49,
+          "fraction": 0.727
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 164.9999999999997,
+      "centered_energy_median_abs_db": 0.9624804258346558,
+      "aligned_voiced_pairs": 404
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "sad-xvec",
+      "file": "arrival-77-sad-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9740256667137146,
+      "speaker_cosine_to_reference": 0.972062885761261,
+      "duration": 8.88,
+      "f0_median_hz": 222.45470667747657,
+      "f0_spread_semitones": 27.1,
+      "internal_pauses": [
+        {
+          "start": 0.78,
+          "seconds": 0.65,
+          "fraction": 0.088
+        },
+        {
+          "start": 2.53,
+          "seconds": 0.69,
+          "fraction": 0.285
+        },
+        {
+          "start": 4.29,
+          "seconds": 0.6,
+          "fraction": 0.483
+        },
+        {
+          "start": 5.72,
+          "seconds": 0.5,
+          "fraction": 0.644
+        },
+        {
+          "start": 7.15,
+          "seconds": 0.12,
+          "fraction": 0.805
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 189.9999999999999,
+      "centered_energy_median_abs_db": 5.048364639282227,
+      "aligned_voiced_pairs": 443
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "stressed",
+      "file": "arrival-77-stressed.wav",
+      "speaker_cosine_to_neutral": 0.9968479871749878,
+      "speaker_cosine_to_reference": 0.9928093552589417,
+      "duration": 6.88,
+      "f0_median_hz": 361.3787371590077,
+      "f0_spread_semitones": 10.679722956016526,
+      "internal_pauses": [
+        {
+          "start": 1.32,
+          "seconds": 0.31,
+          "fraction": 0.192
+        },
+        {
+          "start": 2.46,
+          "seconds": 0.28,
+          "fraction": 0.358
+        },
+        {
+          "start": 3.59,
+          "seconds": 0.33,
+          "fraction": 0.522
+        },
+        {
+          "start": 3.93,
+          "seconds": 0.36,
+          "fraction": 0.571
+        },
+        {
+          "start": 5.01,
+          "seconds": 0.18,
+          "fraction": 0.728
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 150.00000000000009,
+      "centered_energy_median_abs_db": 1.1584278345108032,
+      "aligned_voiced_pairs": 391
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "stressed-xvec",
+      "file": "arrival-77-stressed-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9871763586997986,
+      "speaker_cosine_to_reference": 0.9833899736404419,
+      "duration": 7.2,
+      "f0_median_hz": 303.8820846259238,
+      "f0_spread_semitones": 9.299999999999999,
+      "internal_pauses": [
+        {
+          "start": 0.69,
+          "seconds": 0.43,
+          "fraction": 0.096
+        },
+        {
+          "start": 2.04,
+          "seconds": 0.55,
+          "fraction": 0.283
+        },
+        {
+          "start": 3.53,
+          "seconds": 0.53,
+          "fraction": 0.49
+        },
+        {
+          "start": 4.79,
+          "seconds": 0.34,
+          "fraction": 0.665
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 154.99999999999983,
+      "centered_energy_median_abs_db": 3.5589425563812256,
+      "aligned_voiced_pairs": 412
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "neutral",
+      "file": "comfort-42-neutral.wav",
+      "speaker_cosine_to_neutral": 0.9999998807907104,
+      "speaker_cosine_to_reference": 0.9923194050788879,
+      "duration": 6.96,
+      "f0_median_hz": 307.41302436705854,
+      "f0_spread_semitones": 11.36006928794151,
+      "internal_pauses": [
+        {
+          "start": 1.98,
+          "seconds": 0.77,
+          "fraction": 0.284
+        },
+        {
+          "start": 4.24,
+          "seconds": 0.3,
+          "fraction": 0.609
+        },
+        {
+          "start": 5.48,
+          "seconds": 0.36,
+          "fraction": 0.787
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 0.0,
+      "centered_energy_median_abs_db": 0.0,
+      "aligned_voiced_pairs": 385
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "neutral-xvec",
+      "file": "comfort-42-neutral-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9943399429321289,
+      "speaker_cosine_to_reference": 0.9901304244995117,
+      "duration": 7.04,
+      "f0_median_hz": 280.2753675911423,
+      "f0_spread_semitones": 10.369939302954954,
+      "internal_pauses": [
+        {
+          "start": 1.56,
+          "seconds": 0.65,
+          "fraction": 0.222
+        },
+        {
+          "start": 3.85,
+          "seconds": 0.38,
+          "fraction": 0.547
+        },
+        {
+          "start": 5.38,
+          "seconds": 0.35,
+          "fraction": 0.764
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 210.00000000000045,
+      "centered_energy_median_abs_db": 1.5814998149871826,
+      "aligned_voiced_pairs": 399
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "sad",
+      "file": "comfort-42-sad.wav",
+      "speaker_cosine_to_neutral": 0.9970054626464844,
+      "speaker_cosine_to_reference": 0.9899080991744995,
+      "duration": 7.68,
+      "f0_median_hz": 273.87386934825736,
+      "f0_spread_semitones": 11.299999999999999,
+      "internal_pauses": [
+        {
+          "start": 2.04,
+          "seconds": 1.06,
+          "fraction": 0.266
+        },
+        {
+          "start": 4.56,
+          "seconds": 0.42,
+          "fraction": 0.594
+        },
+        {
+          "start": 5.94,
+          "seconds": 0.57,
+          "fraction": 0.773
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 159.99999999999997,
+      "centered_energy_median_abs_db": 1.3175883293151855,
+      "aligned_voiced_pairs": 360
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "sad-xvec",
+      "file": "comfort-42-sad-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9807970523834229,
+      "speaker_cosine_to_reference": 0.9744763374328613,
+      "duration": 8.0,
+      "f0_median_hz": 246.828951447135,
+      "f0_spread_semitones": 7.700000000000002,
+      "internal_pauses": [
+        {
+          "start": 1.65,
+          "seconds": 0.78,
+          "fraction": 0.206
+        },
+        {
+          "start": 3.94,
+          "seconds": 0.74,
+          "fraction": 0.492
+        },
+        {
+          "start": 5.79,
+          "seconds": 0.51,
+          "fraction": 0.724
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 154.9999999999998,
+      "centered_energy_median_abs_db": 4.782901287078857,
+      "aligned_voiced_pairs": 388
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "stressed",
+      "file": "comfort-42-stressed.wav",
+      "speaker_cosine_to_neutral": 0.9974502325057983,
+      "speaker_cosine_to_reference": 0.9909267425537109,
+      "duration": 6.64,
+      "f0_median_hz": 280.2753675911423,
+      "f0_spread_semitones": 10.899999999999999,
+      "internal_pauses": [
+        {
+          "start": 1.68,
+          "seconds": 0.58,
+          "fraction": 0.253
+        },
+        {
+          "start": 3.67,
+          "seconds": 0.4,
+          "fraction": 0.553
+        },
+        {
+          "start": 4.98,
+          "seconds": 0.51,
+          "fraction": 0.75
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 110.00000000000034,
+      "centered_energy_median_abs_db": 1.2253488302230835,
+      "aligned_voiced_pairs": 362
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "stressed-xvec",
+      "file": "comfort-42-stressed-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9923545718193054,
+      "speaker_cosine_to_reference": 0.9856653809547424,
+      "duration": 6.72,
+      "f0_median_hz": 267.61858152730787,
+      "f0_spread_semitones": 11.3,
+      "internal_pauses": [
+        {
+          "start": 1.51,
+          "seconds": 0.47,
+          "fraction": 0.225
+        },
+        {
+          "start": 3.38,
+          "seconds": 0.49,
+          "fraction": 0.503
+        },
+        {
+          "start": 4.92,
+          "seconds": 0.34,
+          "fraction": 0.732
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 94.99999999999983,
+      "centered_energy_median_abs_db": 1.9315540790557861,
+      "aligned_voiced_pairs": 380
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "neutral",
+      "file": "comfort-77-neutral.wav",
+      "speaker_cosine_to_neutral": 0.9999998807907104,
+      "speaker_cosine_to_reference": 0.9924529790878296,
+      "duration": 6.56,
+      "f0_median_hz": 327.579472972667,
+      "f0_spread_semitones": 9.899999999999997,
+      "internal_pauses": [
+        {
+          "start": 1.74,
+          "seconds": 0.67,
+          "fraction": 0.265
+        },
+        {
+          "start": 3.77,
+          "seconds": 0.45,
+          "fraction": 0.575
+        },
+        {
+          "start": 5.18,
+          "seconds": 0.28,
+          "fraction": 0.79
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 0.0,
+      "centered_energy_median_abs_db": 0.0,
+      "aligned_voiced_pairs": 343
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "neutral-xvec",
+      "file": "comfort-77-neutral-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9938262104988098,
+      "speaker_cosine_to_reference": 0.9892923831939697,
+      "duration": 7.36,
+      "f0_median_hz": 288.48806273763967,
+      "f0_spread_semitones": 11.599999999999998,
+      "internal_pauses": [
+        {
+          "start": 1.54,
+          "seconds": 0.68,
+          "fraction": 0.209
+        },
+        {
+          "start": 3.87,
+          "seconds": 0.7,
+          "fraction": 0.526
+        },
+        {
+          "start": 5.63,
+          "seconds": 0.4,
+          "fraction": 0.765
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 190.00000000000048,
+      "centered_energy_median_abs_db": 1.3841294050216675,
+      "aligned_voiced_pairs": 385
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "sad",
+      "file": "comfort-77-sad.wav",
+      "speaker_cosine_to_neutral": 0.995243489742279,
+      "speaker_cosine_to_reference": 0.9894267320632935,
+      "duration": 7.44,
+      "f0_median_hz": 282.7154983856679,
+      "f0_spread_semitones": 10.8,
+      "internal_pauses": [
+        {
+          "start": 1.9,
+          "seconds": 0.96,
+          "fraction": 0.255
+        },
+        {
+          "start": 4.29,
+          "seconds": 0.42,
+          "fraction": 0.577
+        },
+        {
+          "start": 5.64,
+          "seconds": 0.64,
+          "fraction": 0.758
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 129.99999999999937,
+      "centered_energy_median_abs_db": 1.6401760578155518,
+      "aligned_voiced_pairs": 339
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "sad-xvec",
+      "file": "comfort-77-sad-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9824556112289429,
+      "speaker_cosine_to_reference": 0.9761819243431091,
+      "duration": 7.68,
+      "f0_median_hz": 251.87087511019868,
+      "f0_spread_semitones": 8.749927797269066,
+      "internal_pauses": [
+        {
+          "start": 1.61,
+          "seconds": 0.73,
+          "fraction": 0.21
+        },
+        {
+          "start": 3.87,
+          "seconds": 0.58,
+          "fraction": 0.504
+        },
+        {
+          "start": 5.56,
+          "seconds": 0.64,
+          "fraction": 0.724
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 140.00000000000028,
+      "centered_energy_median_abs_db": 4.510347366333008,
+      "aligned_voiced_pairs": 372
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "stressed",
+      "file": "comfort-77-stressed.wav",
+      "speaker_cosine_to_neutral": 0.9967705607414246,
+      "speaker_cosine_to_reference": 0.9911585450172424,
+      "duration": 7.12,
+      "f0_median_hz": 296.94140822080067,
+      "f0_spread_semitones": 10.42004626320076,
+      "internal_pauses": [
+        {
+          "start": 1.68,
+          "seconds": 0.81,
+          "fraction": 0.236
+        },
+        {
+          "start": 3.89,
+          "seconds": 0.67,
+          "fraction": 0.546
+        },
+        {
+          "start": 5.57,
+          "seconds": 0.35,
+          "fraction": 0.782
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 115.00000000000024,
+      "centered_energy_median_abs_db": 1.0117055177688599,
+      "aligned_voiced_pairs": 348
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "stressed-xvec",
+      "file": "comfort-77-stressed-xvec.wav",
+      "speaker_cosine_to_neutral": 0.9900800585746765,
+      "speaker_cosine_to_reference": 0.9849950671195984,
+      "duration": 7.2,
+      "f0_median_hz": 288.48806273763967,
+      "f0_spread_semitones": 9.699999999999998,
+      "internal_pauses": [
+        {
+          "start": 1.7,
+          "seconds": 0.5,
+          "fraction": 0.236
+        },
+        {
+          "start": 3.88,
+          "seconds": 0.42,
+          "fraction": 0.539
+        },
+        {
+          "start": 5.42,
+          "seconds": 0.39,
+          "fraction": 0.753
+        }
+      ],
+      "clipped_samples": 0,
+      "centered_pitch_median_abs_cents": 149.99999999999991,
+      "centered_energy_median_abs_db": 2.3682265281677246,
+      "aligned_voiced_pairs": 390
+    }
+  ],
+  "baseline_seed_variation": [
+    {
+      "case": "arrival",
+      "seed_a": 42,
+      "seed_b": 77,
+      "centered_pitch_median_abs_cents": 169.99999999999952,
+      "centered_energy_median_abs_db": 1.5197157859802246,
+      "aligned_voiced_pairs": 392
+    },
+    {
+      "case": "comfort",
+      "seed_a": 42,
+      "seed_b": 77,
+      "centered_pitch_median_abs_cents": 109.99999999999913,
+      "centered_energy_median_abs_db": 0.8819805383682251,
+      "aligned_voiced_pairs": 355
+    }
+  ]
+}

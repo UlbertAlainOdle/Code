@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "entries": {
+    "saya_mmd_3d_settings": {"label":"3D模型、灯光、背景、相机、领带物理", "category":"3D展示", "kind":"json"},
+    "saya_mmd_light_defaults": {"label":"每模型灯光默认值、视角、模型缩放/位置、展示框尺寸", "category":"3D展示", "kind":"json"},
+    "saya_3d_live_view_snapshot_v1": {"label":"当前3D相机/模型/展示框位置尺寸与侧栏状态（实时快照）", "category":"3D展示", "kind":"json", "synthetic":true},
+    "saya_thinking_effort": {"label":"思考档位", "category":"聊天偏好", "kind":"text"},
+    "saya_recall_mode_v1": {"label":"旧记忆召回模式", "category":"聊天偏好", "kind":"text"},
+    "saya_search_mode_v1": {"label":"旧搜索模式", "category":"聊天偏好", "kind":"text"},
+    "saya_agent_tools_enabled_v1": {"label":"自主工具开关", "category":"聊天偏好", "kind":"text"},
+    "saya_mode_setting_v1": {"label":"记忆、搜索策略与预设", "category":"聊天偏好", "kind":"json"},
+    "saya_input_limits_v1": {"label":"输入与上下文限制", "category":"聊天偏好", "kind":"json"},
+    "saya_output_limits_v1": {"label":"各模型输出限制", "category":"聊天偏好", "kind":"json"},
+    "saya_assistant_strong_logic_enabled_v3": {"label":"Assistant强逻辑开关", "category":"聊天偏好", "kind":"text"},
+    "saya_style_settings_v1": {"label":"回复风格与语言", "category":"展示与个人偏好", "kind":"json", "authority":"existing_server"},
+    "saya_user_profile_v1": {"label":"浏览器个人资料副本", "category":"展示与个人偏好", "kind":"json", "authority":"existing_server"},
+    "saya_memory_graph_display_scales_v1": {"label":"记忆图谱各维度显示缩放", "category":"展示与个人偏好", "kind":"json"},
+    "saya_daily_brief_card_settings_v1": {"label":"每日卡片显示、顺序、渐变颜色", "category":"展示与个人偏好", "kind":"json"},
+    "saya_weather_city": {"label":"天气城市", "category":"展示与个人偏好", "kind":"text"},
+    "saya_rooms_v1": {"label":"房间列表", "category":"浏览定位快照", "kind":"json"},
+    "saya_current_room_v1": {"label":"当前房间", "category":"浏览定位快照", "kind":"text"},
+    "saya_current_role_mode": {"label":"当前角色模式", "category":"浏览定位快照", "kind":"text"},
+    "saya_current_project_id": {"label":"当前项目定位", "category":"浏览定位快照", "kind":"text"},
+    "mmd_try_showcase_motion_marks_v1": {"label":"MMD试验页动作标记", "category":"独立MMD工具", "kind":"json"},
+    "mmd_try_showcase_motion_annotations_v1": {"label":"MMD试验页动作备注", "category":"独立MMD工具", "kind":"json"}
+  },
+  "excluded": {
+    "saya_api_settings_v1":"由现有本机API配置按钮管理，避免产生第二份密钥源",
+    "saya_other_api_settings_v1":"由现有本机API配置按钮管理",
+    "saya_api_cache_last_backup_v1":"缓存恢复索引，不作为全局设置",
+    "saya_assistant_role_entry_memory_stamp":"会话有效性标记，不跨浏览器恢复",
+    "saya_assistant_role_memory_changed":"会话有效性标记，不跨浏览器恢复",
+    "saya_user_profile_server_migrated_v1":"迁移标记，不作为用户设置"
+  },
+  "excluded_prefixes": ["saya_api_cache_backup_"]
+}

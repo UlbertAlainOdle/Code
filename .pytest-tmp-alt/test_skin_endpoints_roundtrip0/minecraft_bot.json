@@ -1,0 +1,73 @@
+{
+  "host": "127.0.0.1",
+  "port": 1111,
+  "username": "Saya",
+  "owner_username": "Kurosawa_Jin",
+  "version": "1.21.5",
+  "account": "",
+  "status_interval": 5,
+  "auto_discard_unplanned": false,
+  "auto_attack_hostiles": true,
+  "auto_hunt_animals": false,
+  "auto_counterattack": true,
+  "counterattack_owner": false,
+  "auto_mine_ores": false,
+  "auto_mine_range": 24,
+  "auto_mine_ore_modes": {
+    "diamond": {
+      "enabled": true,
+      "distance": 24
+    },
+    "iron": {
+      "enabled": false,
+      "distance": 24
+    },
+    "gold": {
+      "enabled": false,
+      "distance": 24
+    },
+    "coal": {
+      "enabled": false,
+      "distance": 24
+    },
+    "copper": {
+      "enabled": false,
+      "distance": 24
+    },
+    "redstone": {
+      "enabled": false,
+      "distance": 24
+    },
+    "lapis": {
+      "enabled": false,
+      "distance": 24
+    },
+    "emerald": {
+      "enabled": true,
+      "distance": 24
+    },
+    "quartz": {
+      "enabled": true,
+      "distance": 24
+    },
+    "ancient_debris": {
+      "enabled": true,
+      "distance": 24
+    }
+  },
+  "slu_backend": "model",
+  "slu_local_model": "D:\\hf_cache\\slu_merged_qwen3_4b",
+  "slu_model_url": "http://127.0.0.1:8555/v1",
+  "slu_model_name": "slu-local",
+  "combat_detection_range": 48,
+  "follow_search_range": 64,
+  "skin_value": "",
+  "skin_command": "/skin set upload {model} {value}",
+  "skin_model": "classic",
+  "skin_url_base": "http://127.0.0.1:8000",
+  "skin_server_dir": "E:\\.minecraft\\versions\\1.21.5-Fabric 0.19.3",
+  "survival": {
+    "mob_policy": "counter",
+    "auto_eat_food_level": 7
+  }
+}

@@ -267,7 +267,7 @@ class WebResearchOrchestrator:
     # ----------------------------------------------------------- public
     def research(self, mode, message, api_key, context_budget_chars=None,
                  local_model=False, search_count=None, max_final_sources=None,
-                 source_strategy="official_first", safe_search="moderate"):
+                 source_strategy="official_first", safe_search="moderate", progress=None):
         """Run one research pass.
 
         ``mode`` is the raw web_search_mode. ``api_key`` is the Brave key (may
@@ -293,6 +293,8 @@ class WebResearchOrchestrator:
             return bundle
 
         bundle.performed = True
+        if getattr(self.search,'provider','brave')=='deepseek':
+            if safe_search!='off':bundle.warnings.append('search_safe_search_unavailable')
 
         direct_urls = extract_direct_urls(message)
         candidates = []  # list of dicts: {url, title, snippet, from_search}
@@ -310,12 +312,16 @@ class WebResearchOrchestrator:
             bundle.query = "direct_url_read"
         else:
             plan = build_search_plan(message, source_strategy=source_strategy)
+            if getattr(self.search,'provider','brave')=='deepseek' and plan.country:
+                bundle.warnings.append('search_region_hint_unavailable')
             bundle.query = plan.query
             if not api_key:
                 bundle.warnings.append("missing_key")
                 if normalized == "force":
                     bundle.context_text = _EMPTY_STATUS_BLOCK
                 return bundle
+            if progress:
+                progress("searching", "正在搜索相关网页……")
             results, err = self.search.search(
                 plan.query,
                 api_key,
@@ -337,7 +343,7 @@ class WebResearchOrchestrator:
             # Brave may deliver fewer results than requested. Standard/deep
             # mode tries the next page only when page one cannot fill the
             # requested final evidence set.
-            if len(results) < final_cap and requested_count >= 10:
+            if len(results) < final_cap and requested_count >= 10 and getattr(self.search,'supports_pagination',True):
                 more_results, more_err = self.search.search(
                     plan.query,
                     api_key,
@@ -369,6 +375,8 @@ class WebResearchOrchestrator:
         read_pool_cap = min(len(candidates), max(final_cap * 2, final_cap + 2))
         selected = self._select_candidates(candidates, read_pool_cap, plan)
         bundle.selected_count = len(selected)
+        if progress and selected:
+            progress("reading", f"正在阅读和核对网页来源（最多 {final_cap} 条）……")
         sources = self._read_candidates(selected, final_cap)
         self._number_sources(sources)
 
@@ -412,6 +420,8 @@ class WebResearchOrchestrator:
         bundle.sources = sources[:final_cap]
         bundle.read_count = sum(s.status == "read" for s in bundle.sources)
         bundle.snippet_count = sum(s.status == "snippet_only" for s in bundle.sources)
+        if progress:
+            progress("preparing", "正在整理检索结果与来源……")
         bundle.context_text = self._build_context(bundle.sources, context_budget_chars, local_model)
         if not bundle.sources and normalized == "force":
             # Ensure the forced-but-empty status block is present.

@@ -1,0 +1,288 @@
+--- 
++++ 
+@@ -3346,7 +3346,7 @@
+         const input = document.getElementById('new-checkin-task-input');
+         const title = input?.value.trim();
+         if (!title) return;
+-        const response = await fetch('/api/checkins/tasks/add', {
++        const response = await checkedStateFetch('/api/checkins/tasks/add', {
+             method: 'POST',
+             headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify({
+@@ -3357,7 +3357,7 @@
+         const data = await response.json();
+         const frequency = document.getElementById('new-checkin-task-frequency')?.value || 'daily';
+         if (data.task?.id) {
+-            await fetch('/api/checkins/tasks/update', {
++            await checkedStateFetch('/api/checkins/tasks/update', {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify({id: data.task.id, updates: {frequency}})
+@@ -3371,7 +3371,7 @@
+         const select = document.getElementById('new-checkin-task-preset');
+         const preset = String(select?.value || '').trim();
+         if (!preset) return;
+-        const response = await fetch('/api/checkins/tasks/add', {
++        const response = await checkedStateFetch('/api/checkins/tasks/add', {
+             method: 'POST',
+             headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify({preset})
+@@ -3386,7 +3386,7 @@
+     }
+ 
+     async function updateCheckinTaskGoal(id, goalId) {
+-        await fetch('/api/checkins/tasks/update', {
++        await checkedStateFetch('/api/checkins/tasks/update', {
+             method: 'POST',
+             headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify({id, updates: {goal_id: goalId || null}})
+@@ -3413,7 +3413,7 @@
+                 const frequency = document.getElementById('edit-checkin-frequency')?.value || currentFrequency;
+                 if (!title) return;
+                 close();
+-                await fetch('/api/checkins/tasks/update', {
++                await checkedStateFetch('/api/checkins/tasks/update', {
+                     method: 'POST',
+                     headers: {'Content-Type': 'application/json'},
+                     body: JSON.stringify({id, updates: {title, frequency: String(frequency).trim().toLowerCase()}})
+@@ -3429,7 +3429,7 @@
+         const next = index + delta;
+         if (index < 0 || next < 0 || next >= tasks.length) return;
+         [tasks[index], tasks[next]] = [tasks[next], tasks[index]];
+-        await fetch('/api/checkins/tasks/reorder', {
++        await checkedStateFetch('/api/checkins/tasks/reorder', {
+             method: 'POST',
+             headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify({ordered_ids: tasks.map(t => t.id)})
+@@ -3493,7 +3493,7 @@
+     }
+ 
+     async function doDeleteCheckinTask(id) {
+-        await fetch('/api/checkins/tasks/delete', {
++        await checkedStateFetch('/api/checkins/tasks/delete', {
+             method: 'POST',
+             headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify({id})
+@@ -3736,7 +3736,7 @@
+     }
+ 
+     async function doCreateQuestDailyTask(goalId, taskTitle, frequency) {
+-        const response = await fetch('/api/checkins/tasks/add', {
++        const response = await checkedStateFetch('/api/checkins/tasks/add', {
+             method: 'POST',
+             headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify({title: taskTitle.trim(), goal_id: goalId})
+@@ -3747,7 +3747,7 @@
+         }
+         const data = await response.json();
+         if (data.task?.id && frequency !== 'daily') {
+-            await fetch('/api/checkins/tasks/update', {
++            await checkedStateFetch('/api/checkins/tasks/update', {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify({id: data.task.id, updates: {frequency}})
+@@ -3773,7 +3773,7 @@
+     async function doFailQuest(id, reason) {
+         {
+             try {
+-                await fetch('/api/goals/update', {
++                await checkedStateFetch('/api/goals/update', {
+                     method: 'POST',
+                     headers: {'Content-Type': 'application/json'},
+                     body: JSON.stringify({
+@@ -3785,7 +3785,7 @@
+                     })
+                 });
+                 loadQuests();
+-            } catch(e) { showToast("Failed to update status", { type: 'error', duration: 3600 }); }
++            } catch(e) { if (!e.sayaNotified) showToast("Failed to update status", { type: 'error', duration: 3600 }); }
+         }
+     }
+ 
+@@ -3806,13 +3806,13 @@
+     async function doEditQuest(id, newTitle) {
+         {
+             try {
+-                await fetch('/api/goals/update', {
++                await checkedStateFetch('/api/goals/update', {
+                     method: 'POST',
+                     headers: {'Content-Type': 'application/json'},
+                     body: JSON.stringify({id: id, updates: {title: newTitle.trim()}})
+                 });
+                 loadQuests();
+-            } catch(e) { showToast("Failed to update", { type: 'error', duration: 3600 }); }
++            } catch(e) { if (!e.sayaNotified) showToast("Failed to update", { type: 'error', duration: 3600 }); }
+         }
+     }
+ 
+@@ -3841,7 +3841,7 @@
+             ? 'created_at'
+             : (status === 'completed' ? 'achieved_at' : 'failed_at');
+         try {
+-            const response = await fetch('/api/goals/update', {
++            const response = await checkedStateFetch('/api/goals/update', {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify({id, updates: {[dateField]: date}})
+@@ -3853,27 +3853,42 @@
+         }
+     }
+ 
++    async function checkedStateFetch(url, options) {
++        try {
++            const response = await fetch(url, options);
++            if (!response.ok) {
++                const error = await response.json().catch(() => ({}));
++                throw new Error(error.detail || `Save failed: ${response.status}`);
++            }
++            return response;
++        } catch (error) {
++            showToast(error.message || 'Unable to save changes.', {type: 'error', duration: 5000});
++            error.sayaNotified = true;
++            throw error;
++        }
++    }
++
+     async function addQuest() {
+         const input = document.getElementById('new-quest-input');
+         const title = input.value.trim();
+         if (!title) return;
+         
+         try {
+-            await fetch('/api/goals/add', {
++            await checkedStateFetch('/api/goals/add', {
+                 method: 'POST',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify({title: title})
+             });
+             input.value = '';
+             loadQuests();
+-        } catch(e) { showToast("Failed to add quest", { type: 'error', duration: 3600 }); }
++        } catch(e) { if (!e.sayaNotified) showToast("Failed to add quest", { type: 'error', duration: 3600 }); }
+     }
+ 
+     async function completeQuest(id, title) {
+         confirmAction("Mark this quest as completed?", async () => {
+ 
+             try {
+-                await fetch('/api/goals/update', {
++                await checkedStateFetch('/api/goals/update', {
+                     method: 'POST',
+                     headers: {'Content-Type': 'application/json'},
+                     body: JSON.stringify({id: id, updates: {status: 'completed'}})
+@@ -3884,20 +3899,20 @@
+                 confirmAction("Great job! Tell Saya about this achievement now?", () => {
+                     shareQuest(title);
+                 });
+-            } catch(e) { showToast("Failed to update", { type: 'error', duration: 3600 }); }
++            } catch(e) { if (!e.sayaNotified) showToast("Failed to update", { type: 'error', duration: 3600 }); }
+     });    }
+ 
+     async function deleteQuest(id) {
+         confirmAction("Delete this quest?", async () => {
+ 
+             try {
+-                await fetch('/api/goals/delete', {
++                await checkedStateFetch('/api/goals/delete', {
+                     method: 'POST',
+                     headers: {'Content-Type': 'application/json'},
+                     body: JSON.stringify({id: id})
+                 });
+                 loadQuests();
+-            } catch(e) { showToast("Failed to delete", { type: 'error', duration: 3600 }); }
++            } catch(e) { if (!e.sayaNotified) showToast("Failed to delete", { type: 'error', duration: 3600 }); }
+     });    }
+ 
+     function shareQuest(title) {
+@@ -15235,6 +15250,7 @@
+     });}
+ 
+     async function sendMessage(options = {}) {
++        const turnIsTemporary = temporaryChatEnabled;
+         const input = document.getElementById('user-input');
+         const directUserText = options && Object.prototype.hasOwnProperty.call(options, 'userText');
+         let userText = directUserText ? String(options.userText || '').trim() : input.value.trim();
+@@ -15285,6 +15301,10 @@
+         // Listener role: one conversation records exactly one memory; the
+         // flow has its own endpoint (no /chat_stream, no persona prompt).
+         if (currentRoleMode === 'listener') {
++            if (turnIsTemporary) {
++                showToast('Listener saves a memory. Leave Listener to use Temporary Chat.', {type: 'info'});
++                return;
++            }
+             appendUserMessageForListener(displayText || userText);
+             await sendListenerTurn(userText);
+             return;
+@@ -15373,7 +15393,7 @@
+                     history_turns: inputLimits.history_turns,
+                     style_settings: sayaStyleSnapshot,
+                     web_search_mode: agentModeEnabled ? 'auto' : webSearchMode,
+-                    temporary_chat: temporaryChatEnabled,
++                    temporary_chat: turnIsTemporary,
+                     agent_mode: agentModeEnabled,
+                     web_search_api_key: webSearchApiKey,
+                     web_search_count: agentModeEnabled ? 0 : webSearchPreset.count,
+@@ -15464,7 +15484,7 @@
+                 } else if (eventType === 'web_citation_check') {
+                     renderWebCitationCheck(aiDiv, eventData);
+                 } else if (eventType === 'chat_runtime') {
+-                    if (eventData.session_id) currentSessionId = eventData.session_id;
++                    if (eventData.session_id && !eventData.temporary) currentSessionId = eventData.session_id;
+                 } else if (eventType === 'memory_recall') {
+                     renderMemoryRecallAudit(aiDiv, eventData);
+                 } else if (eventType === 'memory_usage') {
+@@ -15541,7 +15561,7 @@
+             // BUT, if stream failed, it might be different.
+             // Safe way: fetch status from backend?
+             // Or just increment by 2
+-            if (!temporaryChatEnabled) currentHistoryLength += 2;
++            if (!turnIsTemporary) currentHistoryLength += 2;
+             updateModeProgressRing();
+ 
+             finalizeResponse(aiDiv, fullResponseText);
+@@ -15821,8 +15841,8 @@
+         details.open = status === 'needs_review' || status === 'no_citations';
+         const label = document.createElement('summary');
+         const labelByStatus = {
+-            pass: '引用证据校验通过',
+-            partial: '引用证据部分通过',
++            pass: '引用词面匹配，事实仍需核实',
++            partial: '引用词面部分匹配',
+             needs_review: '引用证据需要复核',
+             no_citations: '回答中没有编号引用'
+         };
+@@ -15831,6 +15851,10 @@
+ 
+         const body = document.createElement('div');
+         body.className = 'web-citation-check-body';
++        const limitation = document.createElement('div');
++        limitation.className = 'web-citation-empty';
++        limitation.textContent = '仅检查词面、数字及明显冲突，不代表事实已经核实。';
++        body.appendChild(limitation);
+         const claims = Array.isArray(report.claims) ? report.claims : [];
+         if (!claims.length) {
+             const empty = document.createElement('div');
+@@ -15851,15 +15875,21 @@
+                 const heading = document.createElement('div');
+                 heading.className = 'web-citation-evidence-heading';
+                 const supportLabels = {
+-                    supported: '原文支持',
++                    supported: '词面匹配',
+                     partial: '部分匹配',
+                     snippet_only: '仅搜索摘要',
+-                    unsupported: '未找到支持',
++                    unsupported: '未匹配或存在疑似冲突',
+                     invalid_reference: '引用编号不存在',
+                     unavailable: '无可用正文'
+                 };
+                 heading.textContent = `[${Number(citation.source_id) || '?'}] ${citation.title || ''} · ${supportLabels[citation.support] || '无法判断'}`;
+                 evidence.appendChild(heading);
++                const conflictLabels = {negation_mismatch: '肯定/否定不一致', direction_mismatch: '增减方向不一致', unit_mismatch: '数值单位不一致', subject_mismatch: '陈述主体不一致'};
++                if (Array.isArray(citation.conflicts) && citation.conflicts.length) {
++                    const warning = document.createElement('div');
++                    warning.textContent = '需要复核：' + citation.conflicts.map(code => conflictLabels[code] || code).join('、');
++                    evidence.appendChild(warning);
++                }
+                 if (citation.passage) {
+                     const passage = document.createElement('blockquote');
+                     passage.textContent = citation.passage;

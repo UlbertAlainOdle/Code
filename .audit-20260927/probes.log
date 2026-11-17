@@ -1,0 +1,47 @@
+Error saving goals: simulated disk full
+
+==================================================
+Please select the model to load:
+1. Qwen3 30B Q5
+2. Mistral 22B Q6
+3. Mistral 22B Q5
+4. Saya R1 q5
+5. API Mode (newapi.xiaoqianran.xyz)
+==================================================
+Non-interactive mode detected (or not a TTY). Defaulting to API Mode.
+Loading conversation history from memory...
+History initialized.
+[LOG] Prompt built. Length: 6680 chars. Est tokens: 2226
+[LOG] Memory runtime: api fast=fixture-model strong=fixture-model response=fixture-model
+{
+  "recompleted_goal_date": "2026-01-01 10:00:00",
+  "failed_save_returns_created_goal": true,
+  "failed_save_persisted": false,
+  "citation_negation": {
+    "status": "pass",
+    "support": "supported"
+  },
+  "citation_direction": {
+    "status": "pass",
+    "support": "supported"
+  },
+  "citation_chinese": {
+    "status": "pass",
+    "support": "supported"
+  },
+  "backup_race": "Backup checksum failed: knowledge/knowledge.json",
+  "restore_goals": {
+    "status": "success",
+    "runtime_reloaded": [
+      "checkins"
+    ],
+    "goals_became_none": true
+  },
+  "temporary_chat": {
+    "PRIVATE_JOURNAL_SENTINEL": true,
+    "PRIVATE_PROJECT_SENTINEL": true,
+    "PRIVATE_CHECKIN_SENTINEL": true,
+    "fixture_answer_streamed": true,
+    "saved_messages": 0
+  }
+}

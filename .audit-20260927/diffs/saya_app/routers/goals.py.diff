@@ -1,0 +1,33 @@
+--- 
++++ 
+@@ -1,4 +1,4 @@
+-from fastapi import APIRouter
++from fastapi import APIRouter, HTTPException
+ 
+ from core_services import checkin_manager, goal_manager, sync_life_memory
+ 
+@@ -34,14 +34,22 @@
+ 
+ @router.post("/add")
+ def add_goal(req: dict):
+-    result = goal_manager.add_goal(req.get("title"), req.get("description", ""))
++    try:
++        result = goal_manager.add_goal(req.get("title"), req.get("description", ""))
++    except ValueError as exc:
++        raise HTTPException(status_code=400, detail=str(exc))
+     _sync_life_memory_best_effort()
+     return result
+ 
+ 
+ @router.post("/update")
+ def update_goal(req: dict):
+-    result = goal_manager.update_goal(req.get("id"), req.get("updates"))
++    try:
++        result = goal_manager.update_goal(req.get("id"), req.get("updates"))
++    except ValueError as exc:
++        raise HTTPException(status_code=400, detail=str(exc))
++    if result is None:
++        raise HTTPException(status_code=404, detail="Goal not found or invalid update")
+     _sync_life_memory_best_effort()
+     return result
+ 

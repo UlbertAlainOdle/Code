@@ -10,6 +10,14 @@ from saya_app.services.chat_runtime import ChatRuntimeManager
 
 
 class SessionRuntimeTests(unittest.TestCase):
+    def test_pending_user_turn_keeps_a_sidebar_timestamp(self):
+        with tempfile.TemporaryDirectory() as root:
+            manager = MemoryManager(root)
+            timestamp = manager._last_completed_qa_time([
+                {"role": "user", "content": "pending", "time": "2026-09-15 04:00:00"},
+            ])
+            self.assertEqual(timestamp, "2026-09-15 04:00:00")
+
     def test_explicit_sessions_do_not_follow_global_current_file(self):
         with tempfile.TemporaryDirectory() as root:
             manager = MemoryManager(root)
@@ -72,8 +80,19 @@ class MemoryRecallAuditTests(unittest.TestCase):
             self.assertEqual(audit["selected_count"], len(audit["selected"]))
             self.assertGreaterEqual(audit["candidate_summary"]["superseded_filtered"], 1)
             selected = next(item for item in audit["selected"] if item["title"] == "Current notebook preference")
+            self.assertEqual(selected["memory_id"], new["id"])
+            self.assertIn("Doctor now prefers the new red notebook", selected["content_preview"])
+            self.assertIn("Current notebook preference", selected["prompt_excerpt"])
+            self.assertIn(selected["prompt_excerpt"], context)
+            self.assertTrue(selected["included_in_prompt"])
             self.assertEqual(selected["reason"], "protected_priority")
             self.assertIn(selected["conflict"]["status"], {"needs_review", "updates_older"})
+
+            legacy_audit = {"selected": [{"title": "Current notebook preference"}]}
+            enriched = kb.enrich_memory_recall_audit(legacy_audit)
+            legacy_selected = enriched["selected"][0]
+            self.assertEqual(legacy_selected["memory_id"], new["id"])
+            self.assertIn("Doctor now prefers the new red notebook", legacy_selected["content_preview"])
 
 
 class BackupRestoreTests(unittest.TestCase):

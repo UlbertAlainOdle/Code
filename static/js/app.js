@@ -1,5 +1,15 @@
+const sayaSettings = window.SayaSettingsStore?.storage || localStorage;
+const sayaPageReady = window.SayaWebWindow?.whenReady || ((fn,options)=>document.addEventListener('DOMContentLoaded',fn,options));
+const sayaPageLoaded = window.SayaWebWindow?.whenLoaded || (fn=>window.addEventListener('load',fn));
 // === BUILD MARKER v20260806-g11 === (if you see this in console, the latest code is loaded)
     console.log('%c[app.js] BUILD v20260806-g11 loaded', 'color: #4a9eff; font-weight: bold;');
+
+// Inline icon helper (ChatGPT/Grok UI refresh): renders the CSS-mask icon set
+// defined in style.css. Usage: ic('trash') / ic('plus', 'icn-sm').
+    function ic(name, cls) {
+        return `<span class="icn icn-${name}${cls ? ' ' + cls : ''}" aria-hidden="true"></span>`;
+    }
+    window.ic = ic;
 
 // Error handler
     window.onerror = function(msg, url, line, col, error) {
@@ -59,212 +69,556 @@
         return sanitizeHtml(marked.parse(String(text ?? '')));
     }
 
-    const WORKSPACE_GRADIENT_STORAGE_KEY = 'saya_workspace_gradients_v1';
-    let activeWorkspaceGradientHero = null;
-    let workspaceGradientObserver = null;
+// Workspace gradient customization was removed from the UI (2026-09-14):
+// saved gradients stay untouched in localStorage under the original key
+// and are simply no longer read or applied.
 
-    function getSavedWorkspaceGradients() {
-        try {
-            const saved = JSON.parse(localStorage.getItem(WORKSPACE_GRADIENT_STORAGE_KEY) || '{}');
-            return saved && typeof saved === 'object' ? saved : {};
-        } catch (error) {
-            console.warn('Workspace gradient settings are invalid; using defaults.', error);
-            return {};
+// ======================================================================
+// UNIFIED FEEDBACK + CONTROL COMPONENTS (secondary interface system)
+// Toast / ConfirmDialog / PromptDialog replace every native dialog;
+// seg controls and switches bind to the original hidden form fields so
+// all existing save/load logic keeps working untouched.
+// ======================================================================
+
+    function ensureToastWrap() {
+        let wrap = document.querySelector('.st-toast-wrap');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'st-toast-wrap';
+            document.body.appendChild(wrap);
         }
+        return wrap;
     }
 
-    function getWorkspaceThemeKey(hero) {
-        if (!hero) return '';
-        if (hero.dataset.workspaceTheme) return hero.dataset.workspaceTheme;
-        const modalId = hero.closest('.modal-overlay')?.id || 'workspace';
-        const peers = Array.from(hero.closest('.modal-overlay')?.querySelectorAll('.workspace-hero, .workspace-customizable-hero') || [hero]);
-        const index = Math.max(0, peers.indexOf(hero));
-        const key = `${modalId}-${index}`;
-        hero.dataset.workspaceTheme = key;
-        return key;
+    function showToast(message, { type = 'success', duration = 2600 } = {}) {
+        const wrap = ensureToastWrap();
+        const toast = document.createElement('div');
+        toast.className = `st-toast ${type}`;
+        const icon = type === 'error' ? 'alert' : (type === 'success' ? 'check-circle' : 'note');
+        toast.innerHTML = `${ic(icon, 'icn-sm')}<span>${escapeHtml(message)}</span>`;
+        wrap.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('leaving');
+            setTimeout(() => toast.remove(), 240);
+        }, duration);
     }
+    window.showToast = showToast;
 
-    function getWorkspaceGradientDefaults(hero) {
-        if (hero?.classList.contains('workspace-hero-tools')) {
-            return {start: '#2b1019', end: '#07080c', accent: '#e2a1af', frame: '#7d3c4b', angle: 135, depth: 16};
+    // Shared state renderer for every secondary surface.  Keeping loading,
+    // empty and error states in one component prevents individual workspaces
+    // from falling back to raw text or browser-native error presentation.
+    function renderSurfaceState(target, {
+        kind = 'error',
+        title = kind === 'error' ? 'Something went wrong' : 'Nothing here yet',
+        message = '',
+        retry = null,
+        retryLabel = 'Retry',
+        details = null,
+        icon = kind === 'error' ? 'alert' : 'layers'
+    } = {}) {
+        const element = typeof target === 'string' ? document.querySelector(target) : target;
+        if (!element) return null;
+        const state = document.createElement('div');
+        state.className = kind === 'error' ? 'st-page-error' : (kind === 'loading' ? 'st-empty st-loading-state' : 'st-empty');
+        state.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+        state.setAttribute('aria-live', kind === 'error' ? 'assertive' : 'polite');
+        state.appendChild(document.createRange().createContextualFragment(ic(icon)));
+        const heading = document.createElement('strong');
+        heading.textContent = title;
+        state.appendChild(heading);
+        if (message) {
+            const copy = document.createElement('span');
+            copy.textContent = message;
+            state.appendChild(copy);
         }
-        if (hero?.classList.contains('workspace-hero-roles')) {
-            return {start: '#142442', end: '#07090f', accent: '#9eb8ed', frame: '#3f5f98', angle: 135, depth: 16};
+        if (typeof retry === 'function') {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'workspace-secondary-action';
+            button.innerHTML = `${ic('refresh', 'icn-sm')}<span>${escapeHtml(retryLabel)}</span>`;
+            button.addEventListener('click', retry);
+            state.appendChild(button);
         }
-        if (hero?.classList.contains('workspace-hero-crimson')) {
-            return {start: '#2a1018', end: '#0d0b12', accent: '#e29bad', frame: '#80424f', angle: 135, depth: 12};
+        if (details) {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = technicalDetailsHtml(details);
+            const detail = wrapper.firstElementChild;
+            if (detail) state.appendChild(detail);
         }
-        if (hero?.classList.contains('workspace-hero-purple')) {
-            return {start: '#211336', end: '#0b0d15', accent: '#c2a1ee', frame: '#634c86', angle: 135, depth: 10};
-        }
-        return {start: '#14233f', end: '#0a0d16', accent: '#9ab8f1', frame: '#405f98', angle: 135, depth: 12};
+        element.replaceChildren(state);
+        return state;
+    }
+    window.renderSurfaceState = renderSurfaceState;
+
+    function technicalDetailsHtml(error) {
+        const text = String(error?.message || error || '').slice(0, 1200);
+        if (!text) return '';
+        return `<details class="st-dialog-details"><summary>Technical details</summary><pre>${escapeHtml(text)}</pre></details>`;
     }
 
-    function normalizeWorkspaceGradientSettings(hero, settings = {}) {
-        return {...getWorkspaceGradientDefaults(hero), ...(settings || {})};
-    }
-
-    function darkenWorkspaceHex(hex, depth) {
-        const clean = String(hex || '').replace('#', '');
-        if (!/^[0-9a-f]{6}$/i.test(clean)) return '#07080c';
-        const factor = Math.max(0, Math.min(80, Number(depth) || 0)) / 100;
-        const parts = [0, 2, 4].map(offset => Math.round(parseInt(clean.slice(offset, offset + 2), 16) * (1 - factor)));
-        return `#${parts.map(value => value.toString(16).padStart(2, '0')).join('')}`;
-    }
-
-    function applyWorkspaceGradient(hero, settings) {
-        if (!hero || !settings) return;
-        const normalized = normalizeWorkspaceGradientSettings(hero, settings);
-        const angle = Math.max(0, Math.min(360, Number(normalized.angle) || 135));
-        const end = darkenWorkspaceHex(normalized.end, normalized.depth);
-        hero.style.setProperty('background', `linear-gradient(${angle}deg, ${normalized.start} 0%, ${end} 100%)`, 'important');
-        applyWorkspaceThemeTokens(hero, normalized);
-    }
-
-    function applyWorkspaceThemeTokens(hero, settings) {
-        if (!hero || !settings) return;
-        const normalized = normalizeWorkspaceGradientSettings(hero, settings);
-        hero.style.setProperty('--workspace-accent', normalized.accent);
-        hero.style.setProperty('--workspace-frame-color', normalized.frame);
-        const modalContent = hero.closest('.modal-content');
-        if (modalContent) {
-            modalContent.dataset.workspaceThemedFrame = 'true';
-            modalContent.style.setProperty('--workspace-frame-color', normalized.frame);
-        }
-    }
-
-    function ensureWorkspaceGradientEditor() {
-        let editor = document.getElementById('workspace-gradient-editor');
-        if (editor) return editor;
-        editor = document.createElement('div');
-        editor.id = 'workspace-gradient-editor';
-        editor.className = 'workspace-gradient-editor';
-        editor.hidden = true;
-        editor.innerHTML = `
-            <div class="workspace-gradient-editor-title"><span>Workspace gradient</span><button type="button" onclick="closeWorkspaceGradientEditor()">x</button></div>
-            <label>Start color<input id="workspace-gradient-start" type="color"></label>
-            <label>End color<input id="workspace-gradient-end" type="color"></label>
-            <label>Text accent<input id="workspace-gradient-accent" type="color"></label>
-            <label>Outer frame<input id="workspace-gradient-frame" type="color"></label>
-            <label>Direction <span id="workspace-gradient-angle-value">135°</span><input id="workspace-gradient-angle" type="range" min="0" max="360" step="5"></label>
-            <label>Shadow depth <span id="workspace-gradient-depth-value">16%</span><input id="workspace-gradient-depth" type="range" min="0" max="80" step="2"></label>
-            <div class="workspace-gradient-editor-actions"><button type="button" onclick="resetWorkspaceGradient()">Default</button><button type="button" onclick="closeWorkspaceGradientEditor()">Done</button></div>
-        `;
-        document.body.appendChild(editor);
-        ['start', 'end', 'accent', 'frame', 'angle', 'depth'].forEach(name => {
-            editor.querySelector(`#workspace-gradient-${name}`)?.addEventListener('input', saveActiveWorkspaceGradient);
-        });
-        return editor;
-    }
-
-    function openWorkspaceGradientEditor(hero, event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        activeWorkspaceGradientHero = hero;
-        const editor = ensureWorkspaceGradientEditor();
-        const key = getWorkspaceThemeKey(hero);
-        const settings = normalizeWorkspaceGradientSettings(hero, getSavedWorkspaceGradients()[key]);
-        editor.querySelector('#workspace-gradient-start').value = settings.start;
-        editor.querySelector('#workspace-gradient-end').value = settings.end;
-        editor.querySelector('#workspace-gradient-accent').value = settings.accent;
-        editor.querySelector('#workspace-gradient-frame').value = settings.frame;
-        editor.querySelector('#workspace-gradient-angle').value = String(settings.angle);
-        editor.querySelector('#workspace-gradient-depth').value = String(settings.depth);
-        editor.querySelector('#workspace-gradient-angle-value').textContent = `${settings.angle}°`;
-        editor.querySelector('#workspace-gradient-depth-value').textContent = `${settings.depth}%`;
-        const rect = hero.getBoundingClientRect();
-        editor.hidden = false;
-        editor.style.left = `${Math.max(12, Math.min(window.innerWidth - 270, rect.right - 260))}px`;
-        editor.style.top = `${Math.max(12, Math.min(window.innerHeight - 300, rect.top + 12))}px`;
-    }
-
-    function saveActiveWorkspaceGradient() {
-        if (!activeWorkspaceGradientHero) return;
-        const editor = ensureWorkspaceGradientEditor();
-        const settings = {
-            start: editor.querySelector('#workspace-gradient-start').value,
-            end: editor.querySelector('#workspace-gradient-end').value,
-            accent: editor.querySelector('#workspace-gradient-accent').value,
-            frame: editor.querySelector('#workspace-gradient-frame').value,
-            angle: Number(editor.querySelector('#workspace-gradient-angle').value),
-            depth: Number(editor.querySelector('#workspace-gradient-depth').value),
+    function buildStDialog({ title, bodyHtml, confirmLabel = 'Confirm', cancelLabel = 'Cancel', danger = false, onConfirm, onCancel }) {
+        const overlay = document.createElement('div');
+        overlay.className = 'st-dialog-overlay';
+        overlay.innerHTML = `
+            <div class="st-dialog" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
+                <div class="st-dialog-title">${escapeHtml(title)}</div>
+                <div class="st-dialog-body">${bodyHtml}</div>
+                <div class="st-dialog-footer">
+                    <button type="button" class="st-btn-cancel workspace-secondary-action"><span class="btn-label-ic">${ic('close', 'icn-sm')}${escapeHtml(cancelLabel)}</span></button>
+                    <button type="button" class="st-btn-confirm ${danger ? 'workspace-secondary-action' : 'workspace-primary-action'}" ${danger ? 'style="color:var(--color-danger);border-color:rgba(248,113,113,.4);"' : ''}><span class="btn-label-ic">${danger ? ic('alert', 'icn-sm') : ic('check', 'icn-sm')}${escapeHtml(confirmLabel)}</span></button>
+                </div>
+            </div>`;
+        let settled = false;
+        const finish = cancelled => {
+            if (settled) return;
+            settled = true;
+            overlay.remove();
+            if (cancelled) onCancel?.();
         };
-        editor.querySelector('#workspace-gradient-angle-value').textContent = `${settings.angle}°`;
-        editor.querySelector('#workspace-gradient-depth-value').textContent = `${settings.depth}%`;
-        const saved = getSavedWorkspaceGradients();
-        saved[getWorkspaceThemeKey(activeWorkspaceGradientHero)] = settings;
-        localStorage.setItem(WORKSPACE_GRADIENT_STORAGE_KEY, JSON.stringify(saved));
-        applyWorkspaceGradient(activeWorkspaceGradientHero, settings);
+        const closeConfirmed = () => { if (!settled) { settled = true; overlay.remove(); } };
+        overlay.querySelector('.st-btn-cancel').addEventListener('click', () => finish(true));
+        overlay.addEventListener('mousedown', event => { if (event.target === overlay) finish(true); });
+        overlay.querySelector('.st-btn-confirm').addEventListener('click', async () => {
+            try { await onConfirm?.(closeConfirmed); } catch (error) { console.error(error); }
+        });
+        overlay.addEventListener('saya:esc-close', () => finish(true));
+        document.body.appendChild(overlay);
+        const focusTarget = overlay.querySelector('input, textarea') || overlay.querySelector('.st-btn-confirm');
+        focusTarget?.focus();
+        return { overlay, close: () => finish(true) };
     }
 
-    function resetWorkspaceGradient() {
-        if (!activeWorkspaceGradientHero) return;
-        const saved = getSavedWorkspaceGradients();
-        delete saved[getWorkspaceThemeKey(activeWorkspaceGradientHero)];
-        localStorage.setItem(WORKSPACE_GRADIENT_STORAGE_KEY, JSON.stringify(saved));
-        activeWorkspaceGradientHero.style.removeProperty('background');
-        applyWorkspaceThemeTokens(activeWorkspaceGradientHero, getWorkspaceGradientDefaults(activeWorkspaceGradientHero));
-        openWorkspaceGradientEditor(activeWorkspaceGradientHero);
+    function showConfirmDialog({ title, message, impact = [], details = null, confirmLabel = 'Confirm', cancelLabel = 'Cancel', danger = false, onConfirm, onCancel }) {
+        const list = impact.length ? `<ul>${impact.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '';
+        const body = `<p>${escapeHtml(message)}</p>${list}${details ? technicalDetailsHtml(details) : ''}`;
+        return buildStDialog({ title, bodyHtml: body, confirmLabel, cancelLabel, danger, onConfirm, onCancel });
     }
+    window.showConfirmDialog = showConfirmDialog;
 
-    function closeWorkspaceGradientEditor() {
-        const editor = document.getElementById('workspace-gradient-editor');
-        if (editor) editor.hidden = true;
-        activeWorkspaceGradientHero = null;
-    }
-
-    function syncWorkspaceGradientEditorVisibility() {
-        if (!activeWorkspaceGradientHero) return;
-        const modal = activeWorkspaceGradientHero.closest('.modal-overlay');
-        const heroVisible = activeWorkspaceGradientHero.isConnected && activeWorkspaceGradientHero.getClientRects().length > 0;
-        const modalVisible = !modal || (getComputedStyle(modal).display !== 'none' && modal.getClientRects().length > 0);
-        if (!heroVisible || !modalVisible) closeWorkspaceGradientEditor();
-    }
-
-    function installWorkspaceGradientControls(root = document) {
-        const heroes = root.matches?.('.workspace-hero, .workspace-customizable-hero')
-            ? [root]
-            : Array.from(root.querySelectorAll?.('.workspace-hero, .workspace-customizable-hero') || []);
-        const saved = getSavedWorkspaceGradients();
-        heroes.forEach(hero => {
-            const key = getWorkspaceThemeKey(hero);
-            const settings = normalizeWorkspaceGradientSettings(hero, saved[key]);
-            applyWorkspaceThemeTokens(hero, settings);
-            if (saved[key]) applyWorkspaceGradient(hero, settings);
-            if (hero.querySelector(':scope > .workspace-gradient-trigger')) return;
-            const trigger = document.createElement('button');
-            trigger.type = 'button';
-            trigger.className = 'workspace-gradient-trigger';
-            trigger.title = 'Customize this gradient';
-            trigger.setAttribute('aria-label', 'Customize this workspace gradient');
-            trigger.innerHTML = '<span aria-hidden="true">◌</span>';
-            trigger.addEventListener('click', event => openWorkspaceGradientEditor(hero, event));
-            hero.appendChild(trigger);
+    // confirmAction: drop-in replacement for native confirm() guards.
+    // Derives title/impact/danger from the message text.
+    function confirmAction(message, run, { title, confirmLabel, danger, onCancel } = {}) {
+        const lines = String(message).split('\n').map(line => line.trim()).filter(Boolean);
+        const rawTitle = lines[0] || 'Please confirm';
+        const derivedTitle = rawTitle.length > 90 ? rawTitle.slice(0, 87) + '…' : rawTitle;
+        const rest = lines.slice(1);
+        const impact = rest.filter(line => line.startsWith('-')).map(line => line.slice(1).trim());
+        const messageText = rest.filter(line => !line.startsWith('-')).join(' ');
+        const derivedDanger = danger !== undefined ? danger : /delete|permanent|cannot be undone|clear|remove|overwrite|rebuild|compress|switch/i.test(String(message));
+        showConfirmDialog({
+            title: title || derivedTitle,
+            message: messageText || 'Please confirm to continue.',
+            impact,
+            confirmLabel: confirmLabel || 'Confirm',
+            danger: derivedDanger,
+            onConfirm: close => { close(); run(); },
+            onCancel
         });
     }
+    window.confirmAction = confirmAction;
 
-    function initializeWorkspaceGradientSystem() {
-        ensureWorkspaceGradientEditor();
-        installWorkspaceGradientControls(document);
-        if (!workspaceGradientObserver) {
-            workspaceGradientObserver = new MutationObserver(mutations => {
-                mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
-                    if (node.nodeType === 1) installWorkspaceGradientControls(node);
-                }));
-                requestAnimationFrame(syncWorkspaceGradientEditorVisibility);
-            });
-            workspaceGradientObserver.observe(document.body, {
-                childList: true,
-                subtree: true,
-                attributes: true,
-                attributeFilter: ['class', 'style', 'hidden']
-            });
+    function showPromptDialog({ title, label, placeholder = '', value = '', multiline = false, confirmLabel = 'Save', onConfirm }) {
+        const field = multiline
+            ? `<textarea class="st-prompt-field" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea>`
+            : `<input type="text" class="st-prompt-field" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(value)}">`;
+        const body = `<label class="form-label" style="display:block;">${escapeHtml(label)}</label>${field}`;
+        const dialog = buildStDialog({
+            title, bodyHtml: body, confirmLabel,
+            onConfirm: close => {
+                const fieldEl = dialog.overlay.querySelector('.st-prompt-field');
+                const val = (fieldEl?.value ?? '').trim();
+                if (!val) { fieldEl?.focus(); return; }
+                onConfirm?.(val, close);
+            }
+        });
+        return dialog;
+    }
+    window.showPromptDialog = showPromptDialog;
+
+    // --- Settings Workspace: one shell, seven category panes ---------
+    const SETTINGS_PANE_TITLES = {
+        prompt: 'Settings · System Prompt',
+        style: 'Settings · Saya Style',
+        agents: 'Settings · 智能体 Agents',
+        qq: 'Settings · QQ 接入',
+        companion: 'Settings · Companion 陪伴',
+        llm: 'Settings · LLM API',
+        other: 'Settings · Other API',
+        voice: 'Settings · Voice 语音',
+        limits: 'Settings · Token Limits',
+        mode: 'Settings · Mode Setting',
+        backup: 'Settings · Backup & Restore'
+    };
+    let activeSettingsPane = null;
+
+    function showSettingsPane(pane) {
+        const panesRoot = document.getElementById('settings-panes');
+        if (!panesRoot) return;
+        activeSettingsPane = pane;
+        if (pane === 'voice') window.SayaVoice?.refresh();
+        if (pane === 'companion') void loadCompanionPane();
+        if (pane === 'agents') void window.SayaAgents?.refresh();
+        if (pane === 'qq') void window.SayaQQSettings?.refresh();
+        panesRoot.querySelectorAll('.settings-pane').forEach(section => {
+            section.hidden = section.dataset.pane !== pane;
+        });
+        document.querySelectorAll('#settings-nav .settings-nav-item').forEach(item => {
+            const active = item.dataset.pane === pane;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-current', active ? 'true' : 'false');
+        });
+        document.getElementById('settings-workspace-title').textContent = SETTINGS_PANE_TITLES[pane] || 'Settings';
+        // The settings workspace keeps its category navigation visible on every
+        // viewport, so the header only needs the close action (no Back button).
+        const backBtn = document.getElementById('settings-back-btn');
+        if (backBtn) {
+            backBtn.hidden = true;
+            backBtn.setAttribute('aria-hidden', 'true');
+        }
+        const paneEl = panesRoot.querySelector(`.settings-pane[data-pane="${pane}"]`);
+        if (paneEl) {
+            initSegControls(paneEl);
+            initSwitchControls(paneEl);
+            initPasswordToggles(paneEl);
+            paneEl.scrollTop = 0;
         }
     }
 
-    document.addEventListener('DOMContentLoaded', initializeWorkspaceGradientSystem);
+    function openSettingsWorkspace(pane = 'prompt') {
+        const menu = document.getElementById('settings-menu');
+        if (menu) menu.style.display = 'none';
+        const modal = document.getElementById('settings-workspace-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        showSettingsPane(pane);
+    }
+
+    function closeSettingsWorkspace() {
+        const modal = document.getElementById('settings-workspace-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function settingsNavigateBack() {
+        const nav = document.getElementById('settings-nav');
+        if (nav) nav.classList.remove('pane-open');
+        const backBtn = document.getElementById('settings-back-btn');
+        if (backBtn) {
+            backBtn.hidden = true;
+            backBtn.setAttribute('aria-hidden', 'true');
+        }
+        const title = document.getElementById('settings-workspace-title');
+        if (title) title.textContent = 'Settings';
+    }
+
+    sayaPageReady( () => {
+        document.getElementById('settings-nav')?.addEventListener('click', event => {
+            const item = event.target.closest('.settings-nav-item');
+            if (item) showSettingsPane(item.dataset.pane);
+        });
+    });
+    window.openSettingsWorkspace = openSettingsWorkspace;
+    window.closeSettingsWorkspace = closeSettingsWorkspace;
+    window.showSettingsPane = showSettingsPane;
+    window.settingsNavigateBack = settingsNavigateBack;
+
+    // LLM connection test — only runs when the user clicks the button.
+    async function testLlmConnection() {
+        await window.SayaLocalProfile?.ready();
+        const effective = getSavedApiSettings();
+        const statusEl = document.getElementById('llm-connection-status');
+        const baseUrl = (effective.api_url || '').trim().replace(/\/+$/, '');
+        const apiKey = effective.api_key || '';
+        if (!baseUrl) {
+            if (statusEl) { statusEl.textContent = 'Base URL required'; statusEl.className = 'st-badge danger'; }
+            return;
+        }
+        if (statusEl) { statusEl.textContent = 'Testing…'; statusEl.className = 'st-badge running'; }
+        try {
+            const models = await fetchProviderModels(false);
+            if (models && models.length) {
+                if (statusEl) { statusEl.textContent = `Connected · ${models.length} models`; statusEl.className = 'st-badge success'; }
+            } else {
+                if (statusEl) { statusEl.textContent = 'Connected (no model list)'; statusEl.className = 'st-badge success'; }
+            }
+        } catch (error) {
+            if (statusEl) { statusEl.textContent = 'Unreachable'; statusEl.className = 'st-badge danger'; }
+            console.warn('LLM connection test failed:', error);
+        }
+    }
+    window.testLlmConnection = testLlmConnection;
+
+    // Model-list datalist: fetched through the backend proxy so the browser
+    // never talks to the provider directly (no CORS dependency, key stays in
+    // the request body). Returns the model array, or null on failure.
+    async function fetchProviderModels(notify = true) {
+        await window.SayaLocalProfile?.ready();
+        const effective = getSavedApiSettings();
+        const baseUrl = (effective.api_url || '').trim().replace(/\/+$/, '');
+        const apiKey = effective.api_key || '';
+        if (!baseUrl) {
+            if (notify) showToast('Base URL required before loading models.', { type: 'info' });
+            return null;
+        }
+        try {
+            const res = await fetch('/api/llm/models', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_url: baseUrl, api_key: apiKey })
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            const models = Array.isArray(data.models) ? data.models : [];
+            const datalist = document.getElementById('api-model-options');
+            if (datalist) {
+                datalist.innerHTML = models.slice(0, 300).map(m => `<option value="${escapeHtml(m)}"></option>`).join('');
+            }
+            if (notify) showToast(`已加载 ${models.length} 个模型名。`, { type: 'info', duration: 3000 });
+            return models;
+        } catch (error) {
+            if (notify) showToast('Model list failed: ' + (error.message || error), { type: 'error' });
+            return null;
+        }
+    }
+    window.fetchProviderModels = fetchProviderModels;
+
+    // API usage panel (backend ledger via /api/usage/summary).
+    async function renderApiUsagePanel() {
+        const panel = document.getElementById('api-usage-panel');
+        if (!panel) return;
+        panel.innerHTML = '<p class="form-help">Loading…</p>';
+        try {
+            const res = await fetch('/api/usage/summary?days=7');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            const todayKey = new Date().toISOString().slice(0, 10);
+            const today = (data.per_day || {})[todayKey] || { requests: 0, failed: 0, total_tokens: 0 };
+            const totalTokens7d = Object.values(data.per_day || {}).reduce((sum, d) => sum + (d.total_tokens || 0), 0);
+            const totalReq7d = Object.values(data.per_day || {}).reduce((sum, d) => sum + (d.requests || 0), 0);
+            const rows = Object.entries(data.per_model || {})
+                .sort((a, b) => (b[1].total_tokens || 0) - (a[1].total_tokens || 0))
+                .slice(0, 8)
+                .map(([model, agg]) => `<div class="usage-row"><span class="usage-model">${escapeHtml(model)}</span><strong>${Number(agg.total_tokens || 0).toLocaleString()} tok · ${agg.requests || 0} 次${agg.failed ? ` · ${agg.failed} 失败` : ''}</strong></div>`)
+                .join('');
+            panel.innerHTML = `
+                <div class="usage-row"><span>今日</span><strong>${Number(today.total_tokens || 0).toLocaleString()} tokens · ${today.requests || 0} 请求${today.failed ? ` · ${today.failed} 失败` : ''}</strong></div>
+                <div class="usage-row"><span>近 7 天</span><strong>${Number(totalTokens7d).toLocaleString()} tokens · ${totalReq7d} 请求</strong></div>
+                ${rows || '<p class="form-help">尚无按模型数据。</p>'}`;
+        } catch (error) {
+            panel.innerHTML = `<p class="form-help">用量加载失败：${escapeHtml(error.message || String(error))}</p>`;
+        }
+    }
+    window.renderApiUsagePanel = renderApiUsagePanel;
+
+    // Token limit presets
+    const TOKEN_LIMIT_PRESETS = {
+        conservative: { api: 4096, qwen3_30b_q5: 2048, mistral_22b_q6: 2048, mistral_22b_q5: 2048, saya_r1_q5: 2048 },
+        balanced: { api: 8192, qwen3_30b_q5: 4096, mistral_22b_q6: 4096, mistral_22b_q5: 4096, saya_r1_q5: 4096 },
+        long: { api: 16384, qwen3_30b_q5: 8192, mistral_22b_q6: 8192, mistral_22b_q5: 8192, saya_r1_q5: 8192 }
+    };
+
+    function applyTokenPreset(name) {
+        const preset = TOKEN_LIMIT_PRESETS[name];
+        if (!preset) return;
+        Object.entries(preset).forEach(([key, value]) => {
+            const input = document.getElementById(`output-limit-${key}`);
+            if (input) input.value = String(value);
+        });
+        if (typeof updateOutputCostPreview === 'function') updateOutputCostPreview();
+    }
+    window.applyTokenPreset = applyTokenPreset;
+
+    sayaPageReady( () => {
+        document.getElementById('token-preset-seg')?.addEventListener('click', event => {
+            const btn = event.target.closest('.seg-btn[data-preset]');
+            if (!btn) return;
+            document.querySelectorAll('#token-preset-seg .seg-btn').forEach(other => other.classList.toggle('active', other === btn));
+            applyTokenPreset(btn.dataset.preset);
+        });
+    });
+
+    // Other API provider badges reflect configuration state
+    function refreshProviderStatusBadges() {
+        const settings = getSavedOtherApiSettings();
+        const translationConfigured = !!(settings.translation_secret_id && settings.translation_secret_key);
+        const ttsConfigured = !!settings.tts_api_key;
+        const setBadge = (key, configured, label) => {
+            const badge = document.querySelector(`.provider-status[data-status="${key}"]`);
+            if (!badge) return;
+            badge.textContent = configured ? 'Configured' : (label || 'Not configured');
+            badge.className = `provider-status st-badge${configured ? ' success' : ''}`;
+        };
+        setBadge('translation', translationConfigured);
+        setBadge('tts', ttsConfigured);
+    }
+    document.addEventListener('input', event => {
+        if (event.target.closest?.('.settings-pane[data-pane="other"]')) refreshProviderStatusBadges();
+    });
+    window.addEventListener('saya-web-configuration', refreshProviderStatusBadges);
+
+    // --- Esc + focus management for the modal layer stack -------------
+    function visibleLayers() {
+        return Array.from(document.querySelectorAll('.st-dialog-overlay, .uni-popover:not([hidden]), .modal-overlay'))
+            .filter(el => el.style.display !== 'none' && el.getClientRects().length > 0);
+    }
+
+    function closeLayerElement(layer) {
+        if (layer.classList.contains('st-dialog-overlay')) {
+            if (layer.dataset.persistent === 'true') { layer.hidden = true; }
+            else {
+                layer.dispatchEvent(new CustomEvent('saya:esc-close'));
+                if (layer.isConnected) layer.remove();
+            }
+            return;
+        }
+        if (layer.classList.contains('uni-popover')) { layer.remove(); return; }
+        const closeBtn = layer.querySelector('.modal-close-btn[onclick]');
+        const handler = closeBtn?.getAttribute('onclick');
+        if (handler) { try { new Function(handler)(); } catch (e) { console.error(e); } }
+        else layer.style.display = 'none';
+    }
+
+    // --- anchored context menu (row "…" buttons, export actions) -------
+    function showMenuAt(anchor, items, { align = 'start' } = {}) {
+        document.querySelectorAll('.uni-popover').forEach(p => p.remove());
+        const rect = anchor.getBoundingClientRect();
+        const popover = document.createElement('div');
+        popover.className = 'uni-popover';
+        popover.setAttribute('role', 'menu');
+        items.forEach(item => {
+            if (item === '-') {
+                const sep = document.createElement('div');
+                sep.className = 'uni-menu-sep';
+                popover.appendChild(sep);
+                return;
+            }
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `uni-menu-item${item.danger ? ' danger' : ''}`;
+            button.setAttribute('role', 'menuitem');
+            button.innerHTML = `${ic(item.icon || 'chevron-right', 'icn-sm')}<span>${escapeHtml(item.label)}</span>`;
+            button.addEventListener('click', () => {
+                popover.remove();
+                item.onClick?.();
+            });
+            popover.appendChild(button);
+        });
+        document.body.appendChild(popover);
+        // viewport collision handling
+        const box = popover.getBoundingClientRect();
+        let left = align === 'end' ? rect.right - box.width : rect.left;
+        left = Math.max(8, Math.min(left, window.innerWidth - box.width - 8));
+        let top = rect.bottom + 6;
+        if (top + box.height > window.innerHeight - 8) top = Math.max(8, rect.top - box.height - 6);
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
+        const dismiss = event => {
+            if (!popover.contains(event.target)) { popover.remove(); document.removeEventListener('mousedown', dismiss); }
+        };
+        setTimeout(() => document.addEventListener('mousedown', dismiss), 0);
+        return popover;
+    }
+    window.showMenuAt = showMenuAt;
+
+    document.addEventListener('keydown', event => {
+        const layers = visibleLayers();
+        if (!layers.length) return;
+        const top = layers[layers.length - 1];
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeLayerElement(top);
+        } else if (event.key === 'Tab') {
+            const focusables = top.querySelectorAll('button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])');
+            const visible = Array.from(focusables).filter(el => el.offsetParent !== null || el === document.activeElement);
+            if (!visible.length) return;
+            const first = visible[0], last = visible[visible.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+            else if (!top.contains(document.activeElement)) { event.preventDefault(); first.focus(); }
+        }
+    });
+
+    // --- segmented controls / switches bound to original fields -------
+    function syncSegFor(selectEl) {
+        const seg = document.querySelector(`.seg[data-seg-for="${selectEl.id}"]`);
+        if (!seg) return;
+        seg.querySelectorAll('.seg-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.value === selectEl.value);
+        });
+    }
+
+    function initSegControls(root = document) {
+        root.querySelectorAll?.('.seg[data-seg-for]').forEach(seg => {
+            const selectEl = document.getElementById(seg.dataset.segFor);
+            if (!selectEl) return;
+            if (seg.dataset.segBound) { syncSegFor(selectEl); return; }
+            seg.dataset.segBound = '1';
+            seg.addEventListener('click', event => {
+                const btn = event.target.closest('.seg-btn');
+                if (!btn) return;
+                selectEl.value = btn.dataset.value;
+                selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+                selectEl.dispatchEvent(new Event('input', { bubbles: true }));
+                syncSegFor(selectEl);
+            });
+            if (selectEl.value) syncSegFor(selectEl);
+        });
+    }
+
+    function initSwitchControls(root = document) {
+        root.querySelectorAll?.('.switch input[data-switch-for]').forEach(input => {
+            const target = document.getElementById(input.dataset.switchFor);
+            if (!target) return;
+            const sync = () => {
+                const on = target.type === 'checkbox' ? target.checked : target.value === input.dataset.onValue;
+                input.checked = on;
+            };
+            if (input.dataset.switchBound) { sync(); return; }
+            input.dataset.switchBound = '1';
+            input.addEventListener('change', () => {
+                if (target.type === 'checkbox') {
+                    target.checked = input.checked;
+                } else {
+                    target.value = input.checked ? (input.dataset.onValue || 'on') : (input.dataset.offValue || 'off');
+                }
+                target.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            target.addEventListener('change', sync);
+            if (target.value !== '' || target.type === 'checkbox') sync();
+        });
+    }
+
+    function initPasswordToggles(root = document) {
+        root.querySelectorAll?.('.pw-toggle').forEach(btn => {
+            if (btn.dataset.pwBound) return;
+            btn.dataset.pwBound = '1';
+            btn.addEventListener('click', () => {
+                const input = btn.parentElement?.querySelector('input');
+                if (!input) return;
+                const show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.innerHTML = ic(show ? 'close' : 'eye', 'icn-sm');
+                btn.title = show ? 'Hide' : 'Show';
+            });
+        });
+    }
+
+    sayaPageReady( () => {
+        initSegControls(document);
+        initSwitchControls(document);
+        initPasswordToggles(document);
+    });
+    // re-bind controls after any modal body is (re)rendered
+    const _segObserver = new MutationObserver(mutations => {
+        mutations.forEach(mutation => mutation.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return;
+            initSegControls(node);
+            initSwitchControls(node);
+            initPasswordToggles(node);
+        }));
+    });
+    sayaPageReady( () => {
+        _segObserver.observe(document.body, { childList: true, subtree: true });
+    });
 
     // --- API FIX FOR SEPARATE FRONTEND HOSTING ---
     // Redirects API calls to port 8000 if frontend is running on a different port (e.g. VSCode Live Server)
@@ -279,12 +633,21 @@
 
     // --- SIDEBAR TOGGLE ---
     function updateRoleNavigationButton() {
-        const button = document.getElementById('btn-toggle-sidebar');
+        const panelButton = document.getElementById('btn-toggle-sidebar-panel');
+        const chatButton = document.getElementById('btn-toggle-sidebar-chat');
         const panel = document.querySelector('.model-panel');
-        if (!button || !panel) return;
+        if (!panel) return;
         const assistantBack = currentRoleMode === 'assistant' && panel.classList.contains('collapsed');
-        button.textContent = assistantBack ? '<' : '☰';
-        button.title = assistantBack ? 'Back to Assistant' : 'Toggle Sidebar';
+        if (panelButton) {
+            panelButton.innerHTML = ic('sidebar-collapse', 'icn-sm');
+            panelButton.title = 'Hide Sidebar';
+            panelButton.setAttribute('aria-label', 'Hide Sidebar');
+        }
+        if (chatButton) {
+            chatButton.innerHTML = ic(assistantBack ? 'arrow-left' : 'sidebar-expand', 'icn-sm');
+            chatButton.title = assistantBack ? 'Back to Assistant' : 'Show Sidebar';
+            chatButton.setAttribute('aria-label', chatButton.title);
+        }
     }
 
     function setCurrentRoleMode(mode, options = {}) {
@@ -294,18 +657,18 @@
             const alreadyChanged = assistantMemoryChangedSinceEntry === true;
             assistantRoleEntryMemoryStamp = assistantRoleState?.last_read_at || '';
             assistantMemoryChangedSinceEntry = alreadyChanged;
-            localStorage.setItem('saya_assistant_role_entry_memory_stamp', assistantRoleEntryMemoryStamp);
-            localStorage.setItem('saya_assistant_role_memory_changed', alreadyChanged ? 'true' : 'false');
+            sayaSettings.setItem('saya_assistant_role_entry_memory_stamp', assistantRoleEntryMemoryStamp);
+            sayaSettings.setItem('saya_assistant_role_memory_changed', alreadyChanged ? 'true' : 'false');
         }
         currentRoleMode = nextRoleMode;
         if (options.persist !== false) {
-            localStorage.setItem('saya_current_role_mode', currentRoleMode);
+            sayaSettings.setItem('saya_current_role_mode', currentRoleMode);
         }
         if (previousRoleMode === 'assistant' && currentRoleMode !== 'assistant') {
             assistantRoleEntryMemoryStamp = '';
             assistantMemoryChangedSinceEntry = false;
-            localStorage.removeItem('saya_assistant_role_entry_memory_stamp');
-            localStorage.removeItem('saya_assistant_role_memory_changed');
+            sayaSettings.removeItem('saya_assistant_role_entry_memory_stamp');
+            sayaSettings.removeItem('saya_assistant_role_memory_changed');
         }
         document.body.classList.toggle('assistant-role-active', currentRoleMode === 'assistant');
         syncAssistantStrongLogicToggle();
@@ -322,6 +685,7 @@
         document.body.classList.add('sidebar-collapsed');
         updateRoleNavigationButton();
         setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
             onWindowResize();
         }, 300);
     }
@@ -340,6 +704,7 @@
         
         // Resize three.js renderer
         setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
             onWindowResize();
             // Center chat content if collapsed
             const chatContent = document.getElementById('chat-content');
@@ -352,6 +717,7 @@
                  document.body.classList.remove('sidebar-collapsed');
             }
             updateRoleNavigationButton();
+            window.SayaSettingsStore?.markViewDirty();
         }, 300); // Wait for transition
     }
 
@@ -374,20 +740,25 @@
         '#99f6e4', '#bae6fd', '#c4b5fd', '#f0abfc'
     ]);
 
-    function getSavedApiSettings() {
+    function getBrowserApiSettings() {
         try {
-            const saved = JSON.parse(localStorage.getItem(API_SETTINGS_STORAGE_KEY) || '{}');
+            const saved = JSON.parse(sayaSettings.getItem(API_SETTINGS_STORAGE_KEY) || '{}');
             return saved && typeof saved === 'object' ? saved : {};
         } catch (e) {
-            console.warn("Saved API settings are invalid; using defaults.", e);
+            console.warn("Saved API settings are invalid; using defaults.");
             return {};
         }
     }
 
+    function getSavedApiSettings() {
+        const draft = getBrowserApiSettings();
+        return window.SayaLocalProfile?.api(draft) || draft;
+    }
+
     function saveApiSettings(updates = {}) {
-        const settings = {...getSavedApiSettings(), ...updates};
+        const settings = {...getBrowserApiSettings(), ...updates};
         delete settings.memory_fast_model_name;
-        localStorage.setItem(API_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+        sayaSettings.setItem(API_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
         return settings;
     }
 
@@ -410,26 +781,40 @@
         }
     }
 
-    function saveCurrentApiSettings() {
+    function saveCurrentApiSettings(event) {
         const apiUrlInput = document.getElementById('api-url-input');
         const normalizedApiUrl = normalizeApiBaseUrlForChat(apiUrlInput?.value || '');
         if (apiUrlInput && normalizedApiUrl && normalizedApiUrl !== apiUrlInput.value.trim()) {
             apiUrlInput.value = normalizedApiUrl;
         }
-        saveApiSettings({
+        const savedApiSettings = saveApiSettings({
             api_url: normalizedApiUrl,
+            use_shared_credentials: document.getElementById('api-use-shared-credentials')?.checked || false,
             api_key: document.getElementById('api-key-input')?.value.trim() || '',
             api_model_name: document.getElementById('api-model-input')?.value.trim() || '',
             multimodal_model_name: document.getElementById('api-multimodal-model-input')?.value.trim() || '',
             strong_logic_model_name: document.getElementById('api-strong-logic-model-input')?.value.trim() || '',
             autonomous_memory_model_name: document.getElementById('api-autonomous-memory-model-input')?.value.trim() || '',
             memory_strong_model_name: document.getElementById('api-memory-strong-model-input')?.value.trim() || '',
-            brave_search_api_key: document.getElementById('brave-search-key-input')?.value.trim() || ''
+            brave_search_api_key: document.getElementById('brave-search-key-input')?.value.trim() || '',
+            deepseek_search_api_key: document.getElementById('deepseek-search-key-input')?.value.trim() || ''
         });
+        // Passive saves (including Send) must never replace server credentials
+        // with browser defaults. The selected search provider is server-owned; model bundles
+        // are synchronized only through the explicit connection action.
+        // Editing only updates this browser's draft. Disk writes are explicit.
     }
+    window.syncSavedApiToServer = () => {
+        return window.SayaLocalProfile?.push();
+    };
 
     function loadApiSettings() {
-        const settings = getSavedApiSettings();
+        const settings = getBrowserApiSettings();
+        const sharedCredentials = document.getElementById('api-use-shared-credentials');
+        if (sharedCredentials) {
+            sharedCredentials.checked = settings.use_shared_credentials === true;
+            sharedCredentials.onchange = saveCurrentApiSettings;
+        }
 
         const apiUrlInput = document.getElementById('api-url-input');
         const apiKeyInput = document.getElementById('api-key-input');
@@ -439,6 +824,7 @@
         const autonomousMemoryModelInput = document.getElementById('api-autonomous-memory-model-input');
         const memoryStrongModelInput = document.getElementById('api-memory-strong-model-input');
         const braveSearchKeyInput = document.getElementById('brave-search-key-input');
+        const deepseekSearchKeyInput = document.getElementById('deepseek-search-key-input');
 
         if (apiUrlInput && settings.api_url) {
             apiUrlInput.value = normalizeApiBaseUrlForChat(settings.api_url);
@@ -453,15 +839,31 @@
         if (autonomousMemoryModelInput && settings.autonomous_memory_model_name) autonomousMemoryModelInput.value = settings.autonomous_memory_model_name;
         if (memoryStrongModelInput && settings.memory_strong_model_name) memoryStrongModelInput.value = settings.memory_strong_model_name;
         if (braveSearchKeyInput && settings.brave_search_api_key) braveSearchKeyInput.value = settings.brave_search_api_key;
+        if (deepseekSearchKeyInput && settings.deepseek_search_api_key) deepseekSearchKeyInput.value = settings.deepseek_search_api_key;
 
-        [apiUrlInput, apiKeyInput, apiModelInput, multimodalModelInput, strongLogicModelInput, autonomousMemoryModelInput, memoryStrongModelInput, braveSearchKeyInput]
+        [apiUrlInput, apiKeyInput, apiModelInput, multimodalModelInput, strongLogicModelInput, autonomousMemoryModelInput, memoryStrongModelInput, braveSearchKeyInput, deepseekSearchKeyInput]
             .filter(Boolean)
             .forEach(input => { input.oninput = saveCurrentApiSettings; });
     }
 
     function clearSavedApiSettings() {
-        if (!confirm("Forget all saved API URLs, model names, and API keys in this browser?")) return;
-        localStorage.removeItem(API_SETTINGS_STORAGE_KEY);
+        showConfirmDialog({
+            title: 'Forget saved API settings?',
+            message: 'All saved API URLs, model names and API keys will be removed from this browser.',
+            impact: ['Chat stops using the saved API until configured again', 'Backend defaults apply afterwards'],
+            confirmLabel: 'Forget',
+            danger: true,
+            onConfirm: close => {
+                close();
+                doClearSavedApiSettings();
+            }
+        });
+    }
+
+    function doClearSavedApiSettings() {
+        sayaSettings.removeItem(API_SETTINGS_STORAGE_KEY);
+        const sharedCredentials = document.getElementById('api-use-shared-credentials');
+        if (sharedCredentials) sharedCredentials.checked = false;
 
         const apiUrlInput = document.getElementById('api-url-input');
         const apiKeyInput = document.getElementById('api-key-input');
@@ -479,40 +881,90 @@
         if (memoryStrongModelInput) memoryStrongModelInput.value = '';
         const braveSearchKeyInput = document.getElementById('brave-search-key-input');
         if (braveSearchKeyInput) braveSearchKeyInput.value = '';
-        localStorage.setItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY, 'false');
+        const deepseekSearchKeyInput = document.getElementById('deepseek-search-key-input');
+        if (deepseekSearchKeyInput) deepseekSearchKeyInput.value = '';
+        sayaSettings.setItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY, 'false');
         syncAssistantStrongLogicToggle();
-        alert("Saved API information has been cleared.");
+        showToast("Saved API information has been cleared.");
     }
 
-    // --- Mode persistence (single dropdown, Recall + Search sections) ---
+    // --- Mode persistence (legacy request compatibility; no chat-bar selector) ---
     const RECALL_MODE_STORAGE_KEY = 'saya_recall_mode_v1';
     const SEARCH_MODE_STORAGE_KEY = 'saya_search_mode_v1';
     let _currentRecallMode = 'auto';
     let _currentSearchMode = 'off';
+    let temporaryChatEnabled = false;
+    // Agent Tools is a durable preference: Saya decides tool use on every
+    // turn once the user opts in, so the choice survives page reloads.
+    // Temporary Chat stays session-only for privacy and never persists.
+    const AGENT_MODE_STORAGE_KEY = 'saya_agent_tools_enabled_v1';
+    let agentModeEnabled = sayaSettings.getItem(AGENT_MODE_STORAGE_KEY) === '1';
+
+    function persistAgentMode() {
+        try {
+            sayaSettings.setItem(AGENT_MODE_STORAGE_KEY, agentModeEnabled ? '1' : '0');
+        } catch { /* storage unavailable: keep the in-memory flag */ }
+    }
+
+    function syncAgentPrivacyModeToggles() {
+        document.querySelectorAll('[data-mode-toggle="temporary"]').forEach(button => {
+            button.textContent = temporaryChatEnabled ? 'Temporary Chat · on' : 'Temporary Chat · off';
+            button.classList.toggle('active', temporaryChatEnabled);
+            button.setAttribute('aria-pressed', String(temporaryChatEnabled));
+        });
+        document.querySelectorAll('[data-mode-toggle="agent"]').forEach(button => {
+            button.textContent = agentModeEnabled ? 'Agent Tools · on' : 'Agent Tools · off';
+            button.classList.toggle('active', agentModeEnabled);
+            button.setAttribute('aria-pressed', String(agentModeEnabled));
+        });
+    }
+
+    function toggleTemporaryChat() {
+        temporaryChatEnabled = !temporaryChatEnabled;
+        if (temporaryChatEnabled && agentModeEnabled) {
+            agentModeEnabled = false;
+            persistAgentMode();
+        }
+        syncAgentPrivacyModeToggles();
+        showToast(temporaryChatEnabled ? 'Temporary Chat enabled: personal memory is isolated.' : 'Temporary Chat disabled.');
+    }
+
+    function toggleAgentMode() {
+        if (!agentModeEnabled && temporaryChatEnabled) {
+            showToast('Agent Tools are unavailable during Temporary Chat.', { type: 'warning' });
+            return;
+        }
+        agentModeEnabled = !agentModeEnabled;
+        persistAgentMode();
+        syncAgentPrivacyModeToggles();
+        showToast(agentModeEnabled
+            ? 'Agent tools enabled: Saya will decide when to search memory or the web.'
+            : 'Agent tools disabled.');
+    }
 
     function _modeDefaultFallback(part) {
         try {
-            const ms = JSON.parse(localStorage.getItem(MODE_SETTING_STORAGE_KEY) || '{}');
+            const ms = JSON.parse(sayaSettings.getItem(MODE_SETTING_STORAGE_KEY) || '{}');
             if (part === 'recall') return ms.default_recall_mode || 'auto';
             return ms.default_search_mode || 'off';
         } catch { return part === 'recall' ? 'auto' : 'off'; }
     }
 
     function getSavedRecallMode() {
-        const v = (localStorage.getItem(RECALL_MODE_STORAGE_KEY) || '').trim().toLowerCase();
+        const v = (sayaSettings.getItem(RECALL_MODE_STORAGE_KEY) || '').trim().toLowerCase();
         if (v === 'off' || v === 'auto' || v === 'on') return v;
         return _modeDefaultFallback('recall');
     }
 
     function getSavedSearchMode() {
-        const v = (localStorage.getItem(SEARCH_MODE_STORAGE_KEY) || '').trim().toLowerCase();
+        const v = (sayaSettings.getItem(SEARCH_MODE_STORAGE_KEY) || '').trim().toLowerCase();
         if (v === 'force') return 'on';
         if (v === 'off' || v === 'auto' || v === 'on') return v;
         return _modeDefaultFallback('search');
     }
 
-    function saveRecallMode(mode) { localStorage.setItem(RECALL_MODE_STORAGE_KEY, mode); }
-    function saveSearchMode(mode) { localStorage.setItem(SEARCH_MODE_STORAGE_KEY, mode); }
+    function saveRecallMode(mode) { sayaSettings.setItem(RECALL_MODE_STORAGE_KEY, mode); }
+    function saveSearchMode(mode) { sayaSettings.setItem(SEARCH_MODE_STORAGE_KEY, mode); }
 
     function _updateModeDropdownUI() {
         const trigger = document.getElementById('mode-dropdown-trigger');
@@ -605,32 +1057,33 @@
     const INPUT_LIMITS_DEFAULTS = {
         history_turns: 10,
         max_conversations: 50,
+        api_history_chars: 0,
     };
 
     function getInputLimits() {
         try {
-            const saved = JSON.parse(localStorage.getItem(INPUT_LIMITS_STORAGE_KEY) || '{}');
+            const saved = JSON.parse(sayaSettings.getItem(INPUT_LIMITS_STORAGE_KEY) || '{}');
             return {...INPUT_LIMITS_DEFAULTS, ...saved};
         } catch { return {...INPUT_LIMITS_DEFAULTS}; }
     }
 
     function saveInputLimits(updates = {}) {
         const settings = {...getInputLimits(), ...updates};
-        localStorage.setItem(INPUT_LIMITS_STORAGE_KEY, JSON.stringify(settings));
+        sayaSettings.setItem(INPUT_LIMITS_STORAGE_KEY, JSON.stringify(settings));
         updateModeProgressRing();
         return settings;
     }
 
     function getModeSettings() {
         try {
-            const saved = JSON.parse(localStorage.getItem(MODE_SETTING_STORAGE_KEY) || '{}');
+            const saved = JSON.parse(sayaSettings.getItem(MODE_SETTING_STORAGE_KEY) || '{}');
             return {...MODE_SETTING_DEFAULTS, ...saved};
         } catch { return {...MODE_SETTING_DEFAULTS}; }
     }
 
     function saveModeSettings(updates = {}) {
         const settings = {...getModeSettings(), ...updates};
-        localStorage.setItem(MODE_SETTING_STORAGE_KEY, JSON.stringify(settings));
+        sayaSettings.setItem(MODE_SETTING_STORAGE_KEY, JSON.stringify(settings));
         return settings;
     }
 
@@ -642,53 +1095,25 @@
         return RECALL_PRESETS[getModeSettings().recall_preset] || RECALL_PRESETS.standard;
     }
 
+
     function organizeModeSettingSections() {
-        const body = document.querySelector('#mode-setting-modal .api-workspace-body');
-        if (!body || body.querySelector('.mode-setting-section')) return;
-        const hero = body.querySelector('.workspace-hero');
-        const groups = [
-            {
-                title: 'WEB SEARCH',
-                description: 'When to search, how widely to search, and which sources to prefer.',
-                ids: ['default-search-mode-select', 'web-search-preset-select', 'web-source-strategy-select', 'safe-search-select']
-            },
-            {
-                title: 'MEMORY RECALL',
-                description: 'When to recall, how many memories to use, and whether relationships may expand context.',
-                ids: ['default-recall-mode-select', 'recall-preset-select', 'graph-recall-mode-select']
-            },
-            {
-                title: 'MEMORY CAPACITY',
-                description: 'Optional DeepSeek compression is user-confirmed and always preceded by a scoped token estimate.',
-                ids: ['ai-memory-compression-toggle']
-            }
-        ];
-        let anchor = hero;
-        groups.forEach(group => {
-            const section = document.createElement('section');
-            section.className = 'mode-setting-section';
-            const heading = document.createElement('div');
-            heading.className = 'mode-setting-section-title';
-            const title = document.createElement('span');
-            title.textContent = group.title;
-            const description = document.createElement('small');
-            description.textContent = group.description;
-            heading.appendChild(title);
-            heading.appendChild(description);
-            section.appendChild(heading);
-            group.ids.forEach(id => {
-                const row = document.getElementById(id)?.closest('.api-setting-row');
-                if (row) section.appendChild(row);
-            });
-            anchor.insertAdjacentElement('afterend', section);
-            anchor = section;
-        });
+        // Keep the mode workspace deterministic for keyboard users and for
+        // compact layouts: WEB SEARCH always precedes MEMORY RECALL.
+        const searchIds = ['default-search-mode-select', 'web-search-preset-select', 'web-source-strategy-select', 'safe-search-select'];
+        const recallIds = ['default-recall-mode-select', 'recall-preset-select', 'graph-recall-mode-select'];
+        const pane = document.querySelector('.settings-pane[data-pane="mode"]');
+        if (!pane) return;
+        const sections = Array.from(pane.querySelectorAll(':scope > .form-section'));
+        const searchSection = sections.find(section => searchIds.some(id => section.querySelector(`#${id}`)));
+        const recallSection = sections.find(section => recallIds.some(id => section.querySelector(`#${id}`)));
+        if (searchSection && recallSection && searchSection !== recallSection) {
+            pane.insertBefore(searchSection, recallSection);
+        }
     }
 
     function openModeSettingModal() {
-        const modal = document.getElementById('mode-setting-modal');
-        if (!modal) return;
         organizeModeSettingSections();
+        syncAgentPrivacyModeToggles();
         const s = getModeSettings();
         const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
         setVal('web-search-preset-select', s.web_search_preset);
@@ -700,12 +1125,11 @@
         setVal('safe-search-select', s.safe_search);
         const aiCompressionToggle = document.getElementById('ai-memory-compression-toggle');
         if (aiCompressionToggle) aiCompressionToggle.checked = s.ai_memory_compression_enabled === true;
-        modal.style.display = 'flex';
+        openSettingsWorkspace('mode');
     }
 
     function closeModeSettingModal() {
-        const modal = document.getElementById('mode-setting-modal');
-        if (modal) modal.style.display = 'none';
+        closeSettingsWorkspace();
     }
 
     async function saveModeSettingsFromModal() {
@@ -733,12 +1157,12 @@
             surfaceMemoryMaintenanceResult(data);
             closeModeSettingModal();
         } catch (error) {
-            alert(`Mode Setting could not be saved: ${error.message || error}`);
+            showToast(`Mode Setting could not be saved: ${error.message || error}`, { type: 'error', duration: 4200 });
         }
     }
 
     async function resetModeSettings() {
-        localStorage.removeItem(MODE_SETTING_STORAGE_KEY);
+        sayaSettings.removeItem(MODE_SETTING_STORAGE_KEY);
         try {
             await fetch('/api/kb/settings', {
                 method: 'POST',
@@ -771,24 +1195,19 @@
     }
 
     async function openBackupRestoreModal() {
-        const menu = document.getElementById('settings-menu');
-        if (menu) menu.style.display = 'none';
-        const modal = document.getElementById('backup-restore-modal');
-        if (!modal) return;
-        modal.style.display = 'flex';
+        openSettingsWorkspace('backup');
         document.getElementById('backup-preview')?.setAttribute('hidden', '');
         await loadSayaBackups();
     }
 
     function closeBackupRestoreModal() {
-        const modal = document.getElementById('backup-restore-modal');
-        if (modal) modal.style.display = 'none';
+        closeSettingsWorkspace();
     }
 
     async function loadSayaBackups() {
         const list = document.getElementById('backup-list');
         if (!list) return;
-        list.textContent = 'Loading backups…';
+        list.innerHTML = `<div class="st-skeleton st-skeleton-row"><span class="st-skeleton st-skeleton-avatar"></span><span class="st-skeleton st-skeleton-body"><span class="st-skeleton st-skeleton-text" style="width:60%"></span></span></div>`;
         setBackupStatus('');
         try {
             const response = await fetch('/api/backups');
@@ -797,35 +1216,36 @@
             list.innerHTML = '';
             const backups = Array.isArray(data.backups) ? data.backups : [];
             if (!backups.length) {
-                list.textContent = 'No backups yet.';
+                list.innerHTML = `<div class="st-empty">${ic('shield')}<span>No backups yet.</span><button type="button" class="workspace-secondary-action" onclick="createSayaBackup()">${ic('plus', 'icn-sm')}Create the first backup</button></div>`;
                 return;
             }
+            const table = document.createElement('div');
+            table.className = 'limits-table backup-table';
+            table.innerHTML = '<div class="limits-table-head"><span>Date</span><span>Scopes</span><span class="backup-col-num">Files</span><span class="backup-col-num">Size</span><span>Status</span><span></span></div>';
             backups.forEach(backup => {
                 const row = document.createElement('div');
-                row.className = `backup-list-row${backup.valid === false ? ' invalid' : ''}`;
-                const info = document.createElement('div');
-                const title = document.createElement('strong');
-                title.textContent = backup.created_at || backup.backup_id || 'Backup';
-                const meta = document.createElement('small');
-                meta.textContent = backup.valid === false
-                    ? (backup.error || 'Invalid backup')
-                    : `${(backup.scopes || []).join(', ')} · ${backup.file_count || 0} files · ${formatBackupSize(backup.archive_size)}`;
-                info.appendChild(title);
-                info.appendChild(meta);
-                row.appendChild(info);
-                if (backup.valid !== false) {
-                    const button = document.createElement('button');
-                    button.type = 'button';
-                    button.className = 'workspace-secondary-action';
-                    button.textContent = 'Preview restore';
-                    button.addEventListener('click', () => previewSayaRestore(backup.backup_id));
-                    row.appendChild(button);
-                }
-                list.appendChild(row);
+                row.className = 'limits-table-row backup-table-row';
+                const valid = backup.valid !== false;
+                const scopesText = (backup.scopes || []).join(', ') || '—';
+                row.innerHTML = `
+                    <span class="backup-col-date" title="${escapeHtml(backup.backup_id || '')}">${escapeHtml(backup.created_at || backup.backup_id || 'Backup')}</span>
+                    <span class="backup-col-scopes">${escapeHtml(scopesText)}</span>
+                    <span class="backup-col-num">${valid ? Number(backup.file_count || 0).toLocaleString() : '—'}</span>
+                    <span class="backup-col-num">${valid ? formatBackupSize(backup.archive_size) : '—'}</span>
+                    <span>${valid ? '<span class="st-badge success">Valid</span>' : `<span class="st-badge danger" title="${escapeHtml(backup.error || '')}">Invalid</span>`}</span>
+                    <span class="backup-col-actions">${valid ? `<button type="button" class="workspace-secondary-action" onclick="previewSayaRestore('${escapeJsString(backup.backup_id)}')">Preview restore</button>` : ''}</span>`;
+                table.appendChild(row);
             });
+            list.appendChild(table);
         } catch (error) {
-            list.textContent = '';
-            setBackupStatus(error.message || String(error), true);
+            list.innerHTML = `
+                <div class="st-page-error">
+                    ${ic('alert')}
+                    <strong>Unable to read the backup list.</strong>
+                    <span>Your data and existing backups are safe. Check that the backend is running, then try again.</span>
+                    <button type="button" class="workspace-secondary-action" onclick="loadSayaBackups()">${ic('refresh', 'icn-sm')}Retry</button>
+                </div>`;
+            console.warn('Backup list failed:', error);
         }
     }
 
@@ -896,7 +1316,20 @@
     }
 
     async function restoreSayaBackup(backupId, scopes, confirmationToken) {
-        if (!confirm('Restore the selected data now? A safety backup will be created first.')) return;
+        showConfirmDialog({
+            title: 'Restore this backup?',
+            message: 'The selected data will be overwritten with the backup contents. A safety backup of the current state is created first.',
+            impact: ['Selected scopes are replaced by the backup version', 'Anything added after the backup is kept only in the safety backup'],
+            confirmLabel: 'Restore',
+            danger: true,
+            onConfirm: close => {
+                close();
+                doRestoreSayaBackup(backupId, scopes, confirmationToken);
+            }
+        });
+    }
+
+    async function doRestoreSayaBackup(backupId, scopes, confirmationToken) {
         setBackupStatus('Restoring data…');
         try {
             const response = await fetch(`/api/backups/${encodeURIComponent(backupId)}/restore`, {
@@ -931,14 +1364,19 @@
         tts_model_id: 'eleven_multilingual_v2'
     });
 
-    function getSavedOtherApiSettings() {
+    function getBrowserOtherApiSettings() {
         try {
-            const saved = JSON.parse(localStorage.getItem(OTHER_API_SETTINGS_STORAGE_KEY) || '{}');
+            const saved = JSON.parse(sayaSettings.getItem(OTHER_API_SETTINGS_STORAGE_KEY) || '{}');
             return {...DEFAULT_OTHER_API_SETTINGS, ...(saved && typeof saved === 'object' ? saved : {})};
         } catch (e) {
-            console.warn('Saved Other API settings are invalid; using defaults.', e);
+            console.warn('Saved Other API settings are invalid; using defaults.');
             return {...DEFAULT_OTHER_API_SETTINGS};
         }
+    }
+
+    function getSavedOtherApiSettings() {
+        const draft = getBrowserOtherApiSettings();
+        return window.SayaLocalProfile?.other(draft) || draft;
     }
 
     function collectOtherApiSettings() {
@@ -956,7 +1394,7 @@
 
     function saveOtherApiSettings(settings = collectOtherApiSettings()) {
         const clean = {...DEFAULT_OTHER_API_SETTINGS, ...(settings || {})};
-        localStorage.setItem(OTHER_API_SETTINGS_STORAGE_KEY, JSON.stringify(clean));
+        sayaSettings.setItem(OTHER_API_SETTINGS_STORAGE_KEY, JSON.stringify(clean));
         return clean;
     }
 
@@ -982,24 +1420,36 @@
     function openOtherApiSettingsModal() {
         const menu = document.getElementById('settings-menu');
         if (menu && menu.style.display === 'flex') menu.style.display = 'none';
-        applyOtherApiSettings(getSavedOtherApiSettings());
-        document.getElementById('other-api-settings-modal').style.display = 'flex';
+        applyOtherApiSettings(getBrowserOtherApiSettings());
+        openSettingsWorkspace('other');
+        refreshProviderStatusBadges();
     }
 
     function closeOtherApiSettingsModal() {
-        document.getElementById('other-api-settings-modal').style.display = 'none';
+        closeSettingsWorkspace();
     }
 
     function saveOtherApiSettingsFromModal() {
         saveOtherApiSettings();
-        alert('Other API settings saved.');
+        showToast('Other API settings saved.');
         closeOtherApiSettingsModal();
     }
 
     function clearOtherApiSettings() {
-        if (!confirm('Reset saved Translation and TTS API settings?')) return;
-        localStorage.removeItem(OTHER_API_SETTINGS_STORAGE_KEY);
-        applyOtherApiSettings({...DEFAULT_OTHER_API_SETTINGS});
+        showConfirmDialog({
+            title: 'Reset Translation and TTS settings?',
+            message: 'Saved credentials for both providers will be cleared from this browser.',
+            impact: ['Falls back to backend environment variables', 'Fields return to their default values'],
+            confirmLabel: 'Reset',
+            danger: true,
+            onConfirm: close => {
+                close();
+                sayaSettings.removeItem(OTHER_API_SETTINGS_STORAGE_KEY);
+                applyOtherApiSettings({...DEFAULT_OTHER_API_SETTINGS});
+                refreshProviderStatusBadges();
+                showToast('Translation and TTS settings were reset.');
+            }
+        });
     }
 
     const OUTPUT_LIMIT_STORAGE_KEY = 'saya_output_limits_v1';
@@ -1022,7 +1472,7 @@
     function getSavedOutputLimits() {
         let saved = {};
         try {
-            saved = JSON.parse(localStorage.getItem(OUTPUT_LIMIT_STORAGE_KEY) || '{}');
+            saved = JSON.parse(sayaSettings.getItem(OUTPUT_LIMIT_STORAGE_KEY) || '{}');
         } catch (e) {
             console.warn('Saved output limits are invalid; using defaults.', e);
         }
@@ -1073,12 +1523,12 @@
         Object.keys(DEFAULT_OUTPUT_LIMITS).forEach(model => {
             limits[model] = normalizeOutputLimit(document.getElementById(`output-limit-${model}`)?.value, model);
         });
-        localStorage.setItem(OUTPUT_LIMIT_STORAGE_KEY, JSON.stringify(limits));
+        sayaSettings.setItem(OUTPUT_LIMIT_STORAGE_KEY, JSON.stringify(limits));
         loadOutputLimits();
     }
 
     function resetOutputLimits() {
-        localStorage.setItem(OUTPUT_LIMIT_STORAGE_KEY, JSON.stringify(DEFAULT_OUTPUT_LIMITS));
+        sayaSettings.setItem(OUTPUT_LIMIT_STORAGE_KEY, JSON.stringify(DEFAULT_OUTPUT_LIMITS));
         loadOutputLimits();
     }
 
@@ -1101,14 +1551,16 @@
         const hs = document.getElementById('input-history-turns-select');
         const mc = document.getElementById('input-max-conversations-select');
         if (hs) hs.value = String(s.history_turns);
+        const hbOpen = document.getElementById('api-history-budget-select');
+        if (hbOpen) hbOpen.value = String(s.api_history_chars || 0);
         if (mc) mc.value = String(s.max_conversations);
-        const modal = document.getElementById('token-limits-modal');
-        if (modal) modal.style.display = 'flex';
+        const hb = document.getElementById('api-history-budget-select');
+        if (hb) hb.value = String(s.api_history_chars || 0);
+        openSettingsWorkspace('limits');
     }
 
     function closeTokenLimitsModal() {
-        const modal = document.getElementById('token-limits-modal');
-        if (modal) modal.style.display = 'none';
+        closeSettingsWorkspace();
     }
 
     function saveTokenLimitsFromModal() {
@@ -1118,13 +1570,14 @@
         saveInputLimits({
             history_turns: parseInt(document.getElementById('input-history-turns-select')?.value || '10', 10),
             max_conversations: parseInt(document.getElementById('input-max-conversations-select')?.value || '50', 10),
+            api_history_chars: parseInt(document.getElementById('api-history-budget-select')?.value || '0', 10),
         });
         closeTokenLimitsModal();
     }
 
     function resetTokenLimits() {
         resetOutputLimits();
-        localStorage.removeItem(INPUT_LIMITS_STORAGE_KEY);
+        sayaSettings.removeItem(INPUT_LIMITS_STORAGE_KEY);
         updateModeProgressRing();
         // Reload input UI values.
         const s = getInputLimits();
@@ -1142,7 +1595,7 @@
     const ASSISTANT_STRONG_LOGIC_STORAGE_KEY = 'saya_assistant_strong_logic_enabled_v3';
 
     function isAssistantStrongLogicEnabled() {
-        return localStorage.getItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY) === 'true';
+        return sayaSettings.getItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY) === 'true';
     }
 
     function syncAssistantStrongLogicToggle() {
@@ -1165,18 +1618,18 @@
     function setAssistantStrongLogicEnabled(enabled) {
         if (enabled) {
             const settings = getSavedApiSettings();
-            const modelName = document.getElementById('api-strong-logic-model-input')?.value.trim() || settings.strong_logic_model_name || '';
-            const apiKey = document.getElementById('api-key-input')?.value.trim() || settings.api_key || '';
+            const modelName = settings.strong_logic_model_name || '';
+            const apiKey = settings.api_key || '';
             if (!modelName || !apiKey) {
-                localStorage.setItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY, 'false');
+                sayaSettings.setItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY, 'false');
                 syncAssistantStrongLogicToggle();
-                alert('Configure both API Key and Strong Logic Model in LLM API first.');
+                showToast('Configure both API Key and Strong Logic Model in LLM API first.', { type: 'error', duration: 3600 });
                 closeAssistantRoleModal();
                 openApiSettingsModal();
                 return;
             }
         }
-        localStorage.setItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY, enabled ? 'true' : 'false');
+        sayaSettings.setItem(ASSISTANT_STRONG_LOGIC_STORAGE_KEY, enabled ? 'true' : 'false');
         syncAssistantStrongLogicToggle();
     }
 
@@ -1204,7 +1657,7 @@
     function getSavedUserProfile() {
         if (currentUserProfile) return normalizeUserProfile(currentUserProfile);
         try {
-            const saved = JSON.parse(localStorage.getItem(USER_PROFILE_STORAGE_KEY) || '{}');
+            const saved = JSON.parse(sayaSettings.getItem(USER_PROFILE_STORAGE_KEY) || '{}');
             return normalizeUserProfile({
                 ...DEFAULT_USER_PROFILE,
                 ...(saved && typeof saved === 'object' ? saved : {})
@@ -1218,7 +1671,7 @@
     function saveUserProfile(profile) {
         const clean = normalizeUserProfile(profile);
         currentUserProfile = clean;
-        localStorage.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(clean));
+        sayaSettings.setItem(USER_PROFILE_STORAGE_KEY, JSON.stringify(clean));
         return clean;
     }
 
@@ -1258,7 +1711,8 @@
             let serverProfile = normalizeUserProfile(data.profile || {});
 
             const shouldMigrateLocalProfile = (
-                localStorage.getItem(USER_PROFILE_MIGRATION_KEY) !== 'true' &&
+                !window.SayaSettingsStore?.state()?.enabled &&
+                sayaSettings.getItem(USER_PROFILE_MIGRATION_KEY) !== 'true' &&
                 serverProfile.name === DEFAULT_USER_PROFILE.name &&
                 !serverProfile.avatar &&
                 serverProfile.avatars.length === 0 &&
@@ -1289,7 +1743,7 @@
                     avatar: migratedAvatar
                 });
             }
-            localStorage.setItem(USER_PROFILE_MIGRATION_KEY, 'true');
+            sayaSettings.setItem(USER_PROFILE_MIGRATION_KEY, 'true');
             saveUserProfile(serverProfile);
             renderUserProfile();
         } catch (e) {
@@ -1506,7 +1960,7 @@
 
     function getSayaStyleSettings() {
         try {
-            const saved = JSON.parse(localStorage.getItem(SAYA_STYLE_STORAGE_KEY) || '{}');
+            const saved = JSON.parse(sayaSettings.getItem(SAYA_STYLE_STORAGE_KEY) || '{}');
             return {...DEFAULT_SAYA_STYLE, ...(saved && typeof saved === 'object' ? saved : {})};
         } catch (e) {
             console.warn("Saya style settings are invalid; using defaults.", e);
@@ -1533,7 +1987,7 @@
             allow_emoji: Boolean(settings?.allow_emoji),
             readable: Boolean(settings?.readable)
         };
-        localStorage.setItem(SAYA_STYLE_STORAGE_KEY, JSON.stringify(clean));
+        sayaSettings.setItem(SAYA_STYLE_STORAGE_KEY, JSON.stringify(clean));
         return clean;
     }
 
@@ -1602,22 +2056,23 @@
     async function openSayaStyleModal() {
         const menu = document.getElementById('settings-menu');
         if (menu && menu.style.display === 'flex') menu.style.display = 'none';
-        document.getElementById('saya-style-modal').style.display = 'flex';
         await loadSayaStyleIntoModal();
+        openSettingsWorkspace('style');
     }
 
     function closeSayaStyleModal() {
-        document.getElementById('saya-style-modal').style.display = 'none';
+        closeSettingsWorkspace();
     }
 
     async function saveSayaStyleSettingsFromModal() {
         const settings = saveSayaStyleSettings(collectSayaStyleFromModal());
         try {
             await persistSayaStyleSettings(settings);
-            alert("Saya style saved.");
+            showToast("Saya style saved.");
             closeSayaStyleModal();
         } catch (e) {
-            alert("Saya style is saved in this browser but could not be synced: " + (e.message || e));
+            showToast("Saved in this browser, but could not be synced.", { type: 'error', duration: 4200 });
+            console.warn('Saya style sync failed:', e);
         }
     }
 
@@ -1626,35 +2081,210 @@
         try {
             await persistSayaStyleSettings(settings);
         } catch (e) {
-            alert("Saya style reset locally but could not be synced: " + (e.message || e));
+            showToast("Reset locally, but could not be synced.", { type: 'error', duration: 4200 });
+            console.warn('Saya style sync failed:', e);
         }
         applySayaStyleToModal(settings);
+        showToast("Saya style was reset to defaults.");
     }
 
     function openApiSettingsModal() {
         const menu = document.getElementById('settings-menu');
         if (menu && menu.style.display === 'flex') menu.style.display = 'none';
         loadApiSettings();
-        document.getElementById('api-settings-modal').style.display = 'flex';
+        renderApiUsagePanel();
+        openSettingsWorkspace('llm');
+        const statusEl = document.getElementById('llm-connection-status');
+        if (statusEl) { statusEl.textContent = 'Not tested'; statusEl.className = 'st-badge'; }
     }
 
     function closeApiSettingsModal() {
-        document.getElementById('api-settings-modal').style.display = 'none';
+        closeSettingsWorkspace();
     }
+
+    // ---- Companion settings pane (echo / mood / conflicts / dream) --------
+    function openCompanionSettingsModal(focusMood = false) {
+        openSettingsWorkspace('companion');
+        if (focusMood) document.getElementById('companion-mood-status')?.scrollIntoView({ block: 'center' });
+    }
+    window.openCompanionSettingsModal = openCompanionSettingsModal;
+
+    const COMPANION_FIELDS = [
+        ['companion-echo-enabled', 'echo_enabled', 'bool'],
+        ['companion-echo-source-projects', 'echo_source_projects', 'bool'],
+        ['companion-echo-source-dates', 'echo_source_dates', 'bool'],
+        ['companion-echo-source-dream', 'echo_source_dream', 'bool'],
+        ['companion-echo-source-context', 'echo_source_context', 'bool'],
+        ['companion-echo-min-idle', 'echo_min_idle_minutes', 'int'],
+        ['companion-echo-min-gap', 'echo_min_gap_minutes', 'int'],
+        ['companion-echo-timezone', 'echo_timezone', 'text'],
+        ['companion-echo-project-stale-days', 'echo_project_stale_days', 'int'],
+        ['companion-echo-daily-limit', 'echo_daily_limit', 'int'],
+        ['companion-echo-quiet-start', 'echo_quiet_start', 'int'],
+        ['companion-echo-quiet-end', 'echo_quiet_end', 'int'],
+        ['companion-mood-enabled', 'mood_continuity_enabled', 'bool'],
+        ['companion-conflict-enabled', 'conflict_negotiation_enabled', 'bool'],
+        ['companion-conflict-daily-limit', 'conflict_daily_limit', 'int'],
+        ['companion-dream-enabled', 'dream_enabled', 'bool'],
+        ['companion-dream-idle-hours', 'dream_idle_hours', 'int'],
+        ['companion-dream-window-start', 'dream_window_start', 'int'],
+        ['companion-dream-window-end', 'dream_window_end', 'int'],
+    ];
+
+    async function loadCompanionPane() {
+        try {
+            const res = await fetch('/api/companion/settings');
+            const data = await res.json();
+            const settings = data.settings || {};
+            for (const [fieldId, key, kind] of COMPANION_FIELDS) {
+                const el = document.getElementById(fieldId);
+                if (!el || !(key in settings)) continue;
+                el.value = kind === 'bool' ? String(!!settings[key]) : String(settings[key]);
+            }
+            const echoStatus = await (await fetch('/api/companion/echo/status')).json();
+            const echoEl = document.getElementById('companion-echo-status');
+            if (echoEl) {
+                const last = echoStatus.last_sent_at ? `上次开口：${echoStatus.last_sent_at}` : '还没有主动开过口';
+                const match = echoStatus.last_match ? `最近匹配：${echoStatus.last_match.kind} · ${echoStatus.last_match.topic}` : '';
+                const cands = (echoStatus.current_candidates || []).map(c => `${c.kind}:${c.topic}`).join('，');
+                const reasons={disabled:'已关闭',no_candidate:'暂无可用话题',awaiting_reply:'等你有新回复再考虑',quiet_hours:'免打扰时段',recent_interaction:'还未达到聊天空闲时间',daily_limit:'今日已达上限',cooldown:'仍在间隔内',pending:'已有一条待处理',chose_silence:'这次选择安静',ready:'准备就绪'};
+                echoEl.textContent = echoStatus.last_reason ? `当前：${reasons[echoStatus.last_reason]||'等待合适的话题'} · ${echoStatus.timezone} · 有话题才考虑开口，不凑次数；QQ主动互动需单独开启。` : `${last}${match ? ' · ' + match : ''}${cands ? ' · 当前候选：' + cands : ''}`;
+            }
+            await updateMoodChip();
+            const dreamStatus = await (await fetch('/api/companion/dream/status')).json();
+            const dreamEl = document.getElementById('companion-dream-status');
+            if (dreamEl) {
+                const doneKeys = Object.keys(dreamStatus.done || {});
+                dreamEl.textContent = dreamStatus.running ? '梦任务运行中…'
+                    : (doneKeys.length ? `已整理：${doneKeys.slice(-3).join('、')}` : '还没有整理过');
+            }
+            renderCompanionDiaryList();
+        } catch (e) {
+            console.warn('companion pane load failed', e);
+        }
+    }
+    window.loadCompanionPane = loadCompanionPane;
+
+    async function saveCompanionSettings() {
+        const settings = {};
+        for (const [fieldId, key, kind] of COMPANION_FIELDS) {
+            const el = document.getElementById(fieldId);
+            if (!el) continue;
+            settings[key] = kind === 'bool' ? el.value === 'true' : kind === 'text' ? el.value.trim() : parseInt(el.value || '0', 10);
+        }
+        try {
+            const res = await fetch('/api/companion/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Saya-Proactive':'1' },
+                body: JSON.stringify({ settings })
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            showToast('Companion settings saved.', { type: 'info', duration: 3000 });
+            loadCompanionPane();
+        } catch (e) {
+            showToast('Save failed: ' + e.message, { type: 'error', duration: 3600 });
+        }
+    }
+    window.saveCompanionSettings = saveCompanionSettings;
+
+    let dreamPendingRequest = null;
+    let dreamQueryOnly = false;
+    let dreamInFlight = false;
+    function dreamOutcomeNotice(report) {
+        const ops = report.operations || {};
+        const theme = ops.dream_theme?.items?.[0]?.state;
+        const diary = ops.dream_diary?.items?.[0];
+        const uncertain = Object.values(ops).some(op => (op.items || []).some(item => ['pending', 'unknown'].includes(item.state)));
+        if (uncertain) return 'Dream 部分结果处理中或未知，请只核对原日期结果。';
+        if (diary?.file_pending) return diary.recovery_blocked ? '主题结果已登记，日记恢复被来源或文件变化阻止。' : '主题结果已登记，日记文件待恢复；再次点击只恢复原文件。';
+        if (theme === 'invalid' || diary?.state === 'invalid') return '来源或权限已变化，过期步骤未保存。';
+        if (!Object.keys(ops).length) return '本次未生成：' + (report.reason || '没有可用来源');
+        return '原日期整理结果：' + (theme === 'committed' ? '主题记忆已保存' : '未保存主题记忆') + '；' + (diary?.state === 'committed' ? '日记已保存，当前是否可用以日记列表为准。' : '未保存日记。');
+    }
+    async function runDreamNow() {
+        if (dreamInFlight) return;
+        dreamInFlight = true;
+        try {
+            if (!dreamPendingRequest) {
+                const statusResponse = await fetch('/api/companion/dream/status');
+                const status = await statusResponse.json();
+                if (!statusResponse.ok || !status.target_date) throw new Error(status.detail || '无法取得原日期');
+                dreamPendingRequest = { force: true, date: status.target_date };
+            }
+            const request = dreamPendingRequest;
+            const query = dreamQueryOnly;
+            const res = await fetch(query ? '/api/companion/dream/result?date=' + encodeURIComponent(request.date) : '/api/companion/dream/run',
+                query ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) });
+            const data = await res.json();
+            if (!res.ok) {
+                const error = new Error(data.detail || '无法核对 Dream 结果');
+                error.noOperation = query && res.status === 404;
+                if (error.noOperation) dreamQueryOnly = false;
+                throw error;
+            }
+            const report = data.report || data;
+            dreamQueryOnly = Object.values(report.operations || {}).some(op => (op.items || []).some(item => ['pending', 'unknown'].includes(item.state)));
+            const filePending = Object.values(report.operations || {}).some(op => (op.items || []).some(item => item.file_pending));
+            if (!dreamQueryOnly && !filePending) dreamPendingRequest = null;
+            showToast(dreamOutcomeNotice(report), { type: 'info', duration: 6500 });
+            loadCompanionPane();
+        } catch (e) {
+            if (dreamPendingRequest && !e.noOperation) dreamQueryOnly = true;
+            showToast('Dream 未核对完成：' + e.message, { type: 'error', duration: 5000 });
+        } finally {
+            dreamInFlight = false;
+        }
+    }
+    window.runDreamNow = runDreamNow;
+
+    async function renderCompanionDiaryList() {
+        const listEl = document.getElementById('companion-diary-list');
+        const entryEl = document.getElementById('companion-diary-entry');
+        if (!listEl) return;
+        try {
+            const data = await (await fetch('/api/companion/diary')).json();
+            const diaries = data.diaries || [];
+            listEl.innerHTML = diaries.length
+                ? diaries.map(d => `<button class="workspace-secondary-action" style="margin:2px 4px 2px 0;" onclick="viewCompanionDiary('${escapeJsString(d.date)}')">${d.date}</button>`).join('')
+                : '<p class="form-help">还没有日记。开启梦任务后，深夜空闲时会自动写。</p>';
+            if (entryEl) entryEl.innerHTML = '';
+        } catch (e) {
+            listEl.innerHTML = '<p class="form-help">日记加载失败。</p>';
+        }
+    }
+    window.renderCompanionDiaryList = renderCompanionDiaryList;
+
+    async function viewCompanionDiary(date) {
+        const entryEl = document.getElementById('companion-diary-entry');
+        if (!entryEl) return;
+        try {
+            const data = await (await fetch(`/api/companion/diary/${encodeURIComponent(date)}`)).json();
+            const stats = data.stats || {};
+            entryEl.innerHTML = `
+                <div class="companion-diary-entry">
+                    <div class="usage-row"><span>${escapeHtml(date)}</span><strong>证据校验 ${stats.kept ?? '?'}/${(stats.kept ?? 0) + (stats.dropped ?? 0)} 句通过</strong></div>
+                    <p>${escapeHtml(String(data.entry || '')).split('\n').join('<br>')}</p>
+                </div>`;
+        } catch (e) {
+            entryEl.innerHTML = '<p class="form-help">这一天的日记读取失败。</p>';
+        }
+    }
+    window.viewCompanionDiary = viewCompanionDiary;
 
     function saveApiSettingsFromModal() {
         saveCurrentApiSettings();
-        alert("LLM API settings saved.");
+        showToast("LLM API settings saved.");
         closeApiSettingsModal();
     }
 
     // Initialize on load
-    document.addEventListener('DOMContentLoaded', () => {
+    sayaPageReady( () => {
         loadApiSettings();
         loadModesIntoSelects();
         initModeDropdown();
         updateModeProgressRing();
-        loadPendingMemoryCandidates();
+        // Memory confirmation boxes travel with their replies inside each
+        // chat session; the cross-chat floating candidate stack stays off.
         initializeUserProfile();
         setCurrentRoleMode(currentRoleMode || '', {persist: false});
         const chatContent = document.getElementById('chat-content');
@@ -1723,64 +2353,119 @@
     // --- PROMPT LOGIC ---
     function openPromptModal() {
         toggleSettings();
-        document.getElementById('prompt-modal').style.display = 'flex';
+        openSettingsWorkspace('prompt');
         loadPrompt();
     }
 
     function closePromptModal() {
-        document.getElementById('prompt-modal').style.display = 'none';
+        closeSettingsWorkspace();
         // Reset state
         const editor = document.getElementById('system-prompt-editor');
-        editor.disabled = true;
-        editor.style.borderColor = '#444';
-        document.getElementById('btn-unlock-prompt').style.display = 'block';
-        document.getElementById('btn-save-prompt').style.display = 'none';
+        if (editor) {
+            editor.disabled = true;
+            editor.style.borderColor = '';
+        }
+        const unlockBtn = document.getElementById('btn-unlock-prompt');
+        const saveBtn = document.getElementById('btn-save-prompt');
+        if (unlockBtn) unlockBtn.style.display = '';
+        if (saveBtn) saveBtn.style.display = 'none';
+        const badge = document.getElementById('prompt-state-badge');
+        if (badge) { badge.textContent = 'Locked'; badge.className = 'st-badge'; }
+        const dirty = document.getElementById('prompt-dirty-hint');
+        if (dirty) dirty.hidden = true;
+    }
+
+    sayaPageReady( () => {
+        const editor = document.getElementById('system-prompt-editor');
+        editor?.addEventListener('input', () => {
+            if (editor.disabled) return;
+            const dirty = document.getElementById('prompt-dirty-hint');
+            if (dirty) dirty.hidden = false;
+        });
+    });
+
+    function setPromptEditingState(editing) {
+        const editor = document.getElementById('system-prompt-editor');
+        const badge = document.getElementById('prompt-state-badge');
+        if (editor) {
+            editor.disabled = !editing;
+            editor.style.borderColor = editing ? 'rgba(251,191,36,.55)' : '';
+        }
+        const unlockBtn = document.getElementById('btn-unlock-prompt');
+        const saveBtn = document.getElementById('btn-save-prompt');
+        if (unlockBtn) unlockBtn.style.display = editing ? 'none' : '';
+        if (saveBtn) saveBtn.style.display = editing ? '' : 'none';
+        if (badge) {
+            badge.textContent = editing ? 'Editing' : 'Locked';
+            badge.className = `st-badge${editing ? ' warning' : ''}`;
+        }
+        if (!editing) {
+            const dirty = document.getElementById('prompt-dirty-hint');
+            if (dirty) dirty.hidden = true;
+        }
     }
 
     async function loadPrompt() {
         const editor = document.getElementById('system-prompt-editor');
-        editor.value = "Loading...";
+        const errorBox = document.getElementById('prompt-load-error');
+        editor.value = '';
+        if (errorBox) errorBox.hidden = true;
         try {
             const res = await fetch('/api/system_prompt');
             const data = await res.json();
             editor.value = data.prompt;
         } catch(e) {
-            editor.value = "Error loading prompt.";
+            editor.value = '';
+            if (errorBox) {
+                errorBox.hidden = false;
+                errorBox.innerHTML = `${ic('alert', 'icn-sm')}<span>The system prompt could not be loaded. Your current prompt is unchanged and safe.</span><button type="button" onclick="loadPrompt()">Retry</button>${technicalDetailsHtml(e)}`;
+            }
         }
     }
 
     function unlockPrompt() {
-        if(confirm("⚠️ Warning: Changing the system prompt can fundamentally alter Saya's behavior and personality.\n\nAre you sure you want to unlock editing?")) {
-            const editor = document.getElementById('system-prompt-editor');
-            editor.disabled = false;
-            editor.style.borderColor = '#ce4242';
-            document.getElementById('btn-unlock-prompt').style.display = 'none';
-            document.getElementById('btn-save-prompt').style.display = 'block';
-        }
+        showConfirmDialog({
+            title: 'Unlock the system prompt?',
+            message: 'Changing the system prompt can fundamentally alter Saya\'s behavior and personality.',
+            impact: ['Applies to every future reply once saved', 'The previous prompt is not versioned — keep your own copy if it matters'],
+            confirmLabel: 'Unlock to Edit',
+            danger: true,
+            onConfirm: close => {
+                setPromptEditingState(true);
+                close();
+            }
+        });
     }
 
     async function savePrompt() {
-        if(!confirm("Apply changes? This will immediately affect all subsequent responses.")) return;
-        
-        const editor = document.getElementById('system-prompt-editor');
-        const newPrompt = editor.value;
-        
-        try {
-            const res = await fetch('/api/system_prompt/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({new_prompt: newPrompt})
-            });
-            const data = await res.json();
-            if(data.status === 'success') {
-                alert("Prompt updated successfully.");
-                closePromptModal();
-            } else {
-                alert("Update failed: " + data.message);
+        showConfirmDialog({
+            title: 'Apply system prompt changes?',
+            message: 'This will immediately affect all subsequent responses.',
+            confirmLabel: 'Apply',
+            onConfirm: async close => {
+                close();
+                const editor = document.getElementById('system-prompt-editor');
+                const newPrompt = editor.value;
+                try {
+                    const res = await fetch('/api/system_prompt/update', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({new_prompt: newPrompt})
+                    });
+                    const data = await res.json();
+                    if(data.status === 'success') {
+                        showToast('System prompt updated.');
+                        setPromptEditingState(false);
+                        closePromptModal();
+                    } else {
+                        showToast('Update failed: ' + (data.message || 'unknown error'), { type: 'error' });
+                    }
+                } catch(e) {
+                    showToast('Could not save the prompt. It is unchanged.', { type: 'error' });
+                    console.error('Error saving prompt:', e);
+                }
             }
-        } catch(e) {
-            alert("Error saving prompt: " + e);
-        }
+        });
     }
 
     // --- MEMORY SYSTEM UI ---
@@ -1851,6 +2536,7 @@
     let projectsCache = [];
 
     function showMemoryMaintenanceNotice(event) {
+        // This engine uses no LLM tokens for deterministic capacity maintenance.
         if (!event || !event.id || renderedMemoryMaintenanceEventIds.has(String(event.id))) return;
         renderedMemoryMaintenanceEventIds.add(String(event.id));
         document.querySelector('.memory-maintenance-toast')?.remove();
@@ -1869,9 +2555,9 @@
             <small>${compressionLabel} · ${Number(event.token_usage || 0)} tokens</small>
             <div>
                 ${aiRecommended
-                    ? `<button type="button" onclick="openAiMemoryCompressionPlanner('${escapeJsString(event.id)}')">Review AI compression</button>`
-                    : `<button type="button" onclick="openMemorySettings(); acknowledgeMemoryMaintenance('${escapeJsString(event.id)}')">Review settings</button>`}
-                <button type="button" onclick="acknowledgeMemoryMaintenance('${escapeJsString(event.id)}')">Dismiss</button>
+                    ? `<button type="button" onclick="openAiMemoryCompressionPlanner('${escapeJsString(event.id)}')">${ic('zap', 'icn-sm')}Review AI compression</button>`
+                    : `<button type="button" onclick="openMemorySettings(); acknowledgeMemoryMaintenance('${escapeJsString(event.id)}')">${ic('settings', 'icn-sm')}Review settings</button>`}
+                <button type="button" onclick="acknowledgeMemoryMaintenance('${escapeJsString(event.id)}')">${ic('close', 'icn-sm')}Dismiss</button>
             </div>`;
         document.body.appendChild(toast);
     }
@@ -1908,7 +2594,7 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    sayaPageReady( () => {
         window.setTimeout(checkMemoryMaintenanceNotices, 1200);
     });
 
@@ -1939,7 +2625,7 @@
             saveModeSettings({ai_memory_compression_enabled: true});
             await loadAiMemoryCompressionPreview('pressure', 50);
         } catch (error) {
-            alert(`AI compression could not be enabled: ${error.message || error}`);
+            showToast(`AI compression could not be enabled: ${error.message || error}`, { type: 'error', duration: 3600 });
         }
     }
 
@@ -1954,12 +2640,11 @@
         if (getModeSettings().ai_memory_compression_enabled !== true) {
             body.innerHTML = `
                 <div class="ai-compression-disabled-state">
-                    <span class="workspace-kicker">EXPLICIT CONSENT REQUIRED</span>
                     <h3>AI compression is currently off</h3>
                     <p>Enable it to build a scoped DeepSeek plan and see the estimated tokens. Enabling the switch does not start compression.</p>
                     <div class="workspace-form-actions">
-                        <button class="workspace-secondary-action" onclick="abandonAiMemoryCompression()">Skip AI compression</button>
-                        <button class="workspace-primary-action" onclick="enableAiMemoryCompressionFromPlanner()">Enable & estimate</button>
+                        <button class="workspace-secondary-action" onclick="abandonAiMemoryCompression()">${ic('close', 'icn-sm')}Skip AI compression</button>
+                        <button class="workspace-primary-action" onclick="enableAiMemoryCompressionFromPlanner()">${ic('zap', 'icn-sm')}Enable &amp; estimate</button>
                     </div>
                 </div>`;
             return;
@@ -1991,8 +2676,8 @@
                     <h3>Estimate unavailable</h3>
                     <p>${escapeHtml(error.message || error)}</p>
                     <div class="workspace-form-actions">
-                        <button class="workspace-secondary-action" onclick="abandonAiMemoryCompression()">Skip AI compression</button>
-                        <button class="workspace-primary-action" onclick="openAiMemoryCompressionPlanner('${escapeJsString(aiMemoryCompressionEventId)}')">Retry</button>
+                        <button class="workspace-secondary-action" onclick="abandonAiMemoryCompression()">${ic('close', 'icn-sm')}Skip AI compression</button>
+                        <button class="workspace-primary-action" onclick="openAiMemoryCompressionPlanner('${escapeJsString(aiMemoryCompressionEventId)}')">${ic('refresh', 'icn-sm')}Retry</button>
                     </div>
                 </div>`;
         }
@@ -2007,8 +2692,8 @@
         const noSafeGroups = data.status !== 'ready' || !data.plan_id;
         body.innerHTML = `
             <div class="ai-compression-workspace">
-                <section class="workspace-hero workspace-hero-blue compact">
-                    <div><span class="workspace-kicker">USER-CONFIRMED ONLY</span><h3>Scoped semantic compression</h3><p>Local compression has stopped at its safe generation limit. Full source memories remain archived after a successful AI run.</p></div>
+                <section class="page-intro">
+                    <div class="page-intro-copy"><h3 class="page-intro-title">Scoped semantic compression</h3><p class="page-intro-sub">Local compression has stopped at its safe generation limit. Full source memories remain archived after a successful AI run.</p></div>
                     <span class="workspace-status-pill">${noSafeGroups ? 'No safe group' : `${Number(data.candidate_count || 0)} memories`}</span>
                 </section>
                 <div class="ai-compression-controls">
@@ -2023,7 +2708,7 @@
                     <label>Maximum source memories
                         <input id="ai-compression-limit" type="number" min="2" max="200" value="${Math.max(2, Math.min(200, Number(limit || 50)))}">
                     </label>
-                    <button class="workspace-secondary-action" onclick="refreshAiMemoryCompressionEstimate()">Update estimate</button>
+                    <button class="workspace-secondary-action" onclick="refreshAiMemoryCompressionEstimate()">${ic('refresh', 'icn-sm')}Update estimate</button>
                 </div>
                 ${noSafeGroups ? `
                     <div class="ai-compression-empty">
@@ -2044,8 +2729,8 @@
                 `}
                 <div id="ai-compression-run-status" class="ai-compression-run-status"></div>
                 <div class="workspace-form-actions">
-                    <button class="workspace-secondary-action" onclick="abandonAiMemoryCompression()">Skip AI compression</button>
-                    ${noSafeGroups ? '' : '<button id="ai-compression-execute" class="workspace-primary-action" onclick="executeAiMemoryCompression()" disabled>Compress with DeepSeek</button>'}
+                    <button class="workspace-secondary-action" onclick="abandonAiMemoryCompression()">${ic('close', 'icn-sm')}Skip AI compression</button>
+                    ${noSafeGroups ? '' : `<button id="ai-compression-execute" class="workspace-primary-action" onclick="executeAiMemoryCompression()" disabled>${ic('zap', 'icn-sm')}Compress with DeepSeek</button>`}
                 </div>
             </div>`;
     }
@@ -2065,44 +2750,45 @@
         if (!aiMemoryCompressionPlan?.plan_id || document.getElementById('ai-compression-consent')?.checked !== true) return;
         const settings = getSavedApiSettings();
         if (!settings.api_key) {
-            if (confirm('A DeepSeek API key is required. Open LLM API settings now?')) {
+            confirmAction('A DeepSeek API key is required. Open LLM API settings now?', () => {
                 closeAiMemoryCompressionPlanner();
                 openApiSettingsModal();
-            }
+            });
             return;
         }
         const estimate = aiMemoryCompressionPlan.token_estimate || {};
-        if (!confirm(`Compress ${Number(aiMemoryCompressionPlan.candidate_count || 0)} memories now? Estimated total: ${Number(estimate.estimated_total_tokens || 0).toLocaleString()} DeepSeek tokens. Full sources will be archived.`)) return;
-        const button = document.getElementById('ai-compression-execute');
-        const status = document.getElementById('ai-compression-run-status');
-        if (button) button.disabled = true;
-        if (status) status.textContent = 'DeepSeek is compressing the confirmed range...';
-        try {
-            const response = await fetch('/api/kb/ai-compression/execute', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    plan_id: aiMemoryCompressionPlan.plan_id,
-                    api_key: settings.api_key || '',
-                    api_url: settings.api_url || '',
-                    api_model_name: settings.api_model_name || '',
-                    memory_strong_model_name: settings.memory_strong_model_name || ''
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || 'AI compression failed');
-            if (aiMemoryCompressionEventId) await acknowledgeMemoryMaintenance(aiMemoryCompressionEventId);
-            const usage = data.usage || {};
-            if (status) status.innerHTML = `Completed: ${Number(data.archived_count || 0)} sources → ${Number(data.summary_count || 0)} summaries. Actual usage: <b>${Number(usage.total_tokens || 0).toLocaleString()} tokens</b>.`;
-            surfaceMemoryMaintenanceResult(data);
-            if (button) button.remove();
-        } catch (error) {
-            if (status) status.textContent = `No memories were changed: ${error.message || error}`;
-            if (button) button.disabled = false;
-        }
-    }
+        confirmAction(`Compress ${Number(aiMemoryCompressionPlan.candidate_count || 0)} memories now? Estimated total: ${Number(estimate.estimated_total_tokens || 0).toLocaleString()} DeepSeek tokens. Full sources will be archived.`, async () => {
+
+            const button = document.getElementById('ai-compression-execute');
+            const status = document.getElementById('ai-compression-run-status');
+            if (button) button.disabled = true;
+            if (status) status.textContent = 'DeepSeek is compressing the confirmed range...';
+            try {
+                const response = await fetch('/api/kb/ai-compression/execute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        plan_id: aiMemoryCompressionPlan.plan_id,
+                        api_key: settings.api_key || '',
+                        api_url: settings.api_url || '',
+                        api_model_name: settings.api_model_name || '',
+                        memory_strong_model_name: settings.memory_strong_model_name || ''
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'AI compression failed');
+                if (aiMemoryCompressionEventId) await acknowledgeMemoryMaintenance(aiMemoryCompressionEventId);
+                const usage = data.usage || {};
+                if (status) status.innerHTML = `Completed: ${Number(data.archived_count || 0)} sources → ${Number(data.summary_count || 0)} summaries. Actual usage: <b>${Number(usage.total_tokens || 0).toLocaleString()} tokens</b>.`;
+                surfaceMemoryMaintenanceResult(data);
+                if (button) button.remove();
+            } catch (error) {
+                if (status) status.textContent = `No memories were changed: ${error.message || error}`;
+                if (button) button.disabled = false;
+            }
+    });    }
     let currentQuestTab = 'active';
-    let currentRoleMode = localStorage.getItem('saya_current_role_mode') || "";
+    let currentRoleMode = sayaSettings.getItem('saya_current_role_mode') || "";
     let learnerState = {tasks: [], runs: [], counts: {}, creators: []};
     let learnerPollTimer = null;
     let learnerSchedulerTimer = null;
@@ -2112,9 +2798,9 @@
     let ankiBusy = false;
     let ankiDraftPath = '';
     let assistantRoleState = null;
-    let assistantRoleEntryMemoryStamp = localStorage.getItem('saya_assistant_role_entry_memory_stamp') || "";
-    let assistantMemoryChangedSinceEntry = localStorage.getItem('saya_assistant_role_memory_changed') === 'true';
-    currentProjectId = localStorage.getItem('saya_current_project_id') || "";
+    let assistantRoleEntryMemoryStamp = sayaSettings.getItem('saya_assistant_role_entry_memory_stamp') || "";
+    let assistantMemoryChangedSinceEntry = sayaSettings.getItem('saya_assistant_role_memory_changed') === 'true';
+    currentProjectId = sayaSettings.getItem('saya_current_project_id') || "";
 
     // --- DAILY CHECK-IN LOGIC ---
     function checkinStatusClass(status) {
@@ -2625,10 +3311,73 @@
         document.getElementById('checkin-modal').style.display = 'none';
     }
 
+    // --- unified Daily add-task dialog ---------------------------------
+    function openCheckinAddTaskDialog(mode = 'fixed') {
+        const overlay = document.getElementById('checkin-add-task-overlay');
+        if (!overlay) return;
+        overlay.hidden = false;
+        setCheckinAddTaskMode(mode);
+        populateCheckinGoalSelector('new-checkin-task-goal', '', true);
+        populateCheckinGoalSelector('new-checkin-daily-task-goal', '', true);
+    }
+
+    function closeCheckinAddTaskDialog() {
+        const overlay = document.getElementById('checkin-add-task-overlay');
+        if (overlay) overlay.hidden = true;
+    }
+
+    function setCheckinAddTaskMode(mode) {
+        const overlay = document.getElementById('checkin-add-task-overlay');
+        if (!overlay) return;
+        overlay.querySelectorAll('#checkin-add-task-mode .seg-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+        overlay.querySelectorAll('[data-mode-body]').forEach(body => {
+            body.hidden = body.dataset.modeBody !== mode;
+        });
+    }
+
+    sayaPageReady( () => {
+        document.getElementById('checkin-add-task-mode')?.addEventListener('click', event => {
+            const btn = event.target.closest('.seg-btn[data-mode]');
+            if (btn) setCheckinAddTaskMode(btn.dataset.mode);
+        });
+    });
+
+    async function submitCheckinAddTaskDialog() {
+        const overlay = document.getElementById('checkin-add-task-overlay');
+        const mode = overlay?.querySelector('#checkin-add-task-mode .seg-btn.active')?.dataset.mode || 'fixed';
+        if (mode === 'fixed') await addCheckinTask();
+        else if (mode === 'today') await addCheckinDailyTask();
+        else await addCheckinPresetTask();
+    }
+
+    function openCheckinExportMenu(anchor) {
+        showMenuAt(anchor, [
+            { label: 'Export month report', icon: 'download', onClick: () => exportCheckinReport('month') },
+            { label: 'Export year report', icon: 'download', onClick: () => exportCheckinReport('year') }
+        ], { align: 'end' });
+    }
+    window.openCheckinAddTaskDialog = openCheckinAddTaskDialog;
+    window.closeCheckinAddTaskDialog = closeCheckinAddTaskDialog;
+    window.submitCheckinAddTaskDialog = submitCheckinAddTaskDialog;
+    window.openCheckinExportMenu = openCheckinExportMenu;
+
+    function updateCheckinProgressBadge() {
+        const badge = document.getElementById('checkin-progress-badge');
+        const record = checkinState?.selected_record || {};
+        const done = Number(record.done || 0);
+        const total = Number(record.total || 0);
+        if (badge) {
+            badge.textContent = total ? `${done}/${total} done` : 'No tasks';
+            badge.className = `st-badge${total && done >= total ? ' success' : ''}`;
+        }
+    }
+
     async function changeCheckinMonth(delta) {
         const date = new Date(checkinViewYear, checkinViewMonth - 1 + delta, 1);
         if (!isCheckinMonthAllowed(date.getFullYear(), date.getMonth() + 1)) {
-            alert(`Check-in browsing is limited to ${checkinWindowText()}.`);
+            showToast(`Check-in browsing is limited to ${checkinWindowText()}.`, { type: 'error' });
             return;
         }
         await saveSelectedCheckinDay({silent: true, skipReload: true});
@@ -2729,7 +3478,7 @@
 
     async function selectCheckinDate(date) {
         if (!isCheckinDateAllowed(date)) {
-            alert(`Check-in editing is limited to ${checkinWindowText()}.`);
+            showToast(`Check-in editing is limited to ${checkinWindowText()}.`, { type: 'error' });
             return;
         }
         await saveSelectedCheckinDay({silent: true, skipReload: true});
@@ -2755,13 +3504,17 @@
         if (mood) mood.value = record.mood || '';
         if (energy) energy.value = record.energy || '';
         if (difficulty) difficulty.value = record.difficulty || '';
+        [mood, energy, difficulty].forEach(el => { if (el) syncSegFor(el); });
+        updateCheckinProgressBadge();
+        const dayMeta = document.getElementById('checkin-day-meta');
+        if (dayMeta) dayMeta.textContent = `Tasks and notes for ${checkinSelectedDate}`;
         list.innerHTML = '';
 
         const fixedTasks = checkinState.selected_tasks || checkinState.active_tasks || [];
         const dailyTasks = Array.isArray(record.daily_tasks) ? record.daily_tasks : [];
 
         if (fixedTasks.length === 0 && dailyTasks.length === 0) {
-            list.innerHTML = '<div style="color:#888; font-size:0.85rem; line-height:1.5;">No tasks for this day yet. Add a fixed daily task or a one-day task below.</div>';
+            list.innerHTML = `<div class="st-empty">${ic('check-circle')}<span>No tasks for this day yet.</span><button type="button" class="workspace-secondary-action" onclick="openCheckinAddTaskDialog()">${ic('plus', 'icn-sm')}Add task</button></div>`;
             return;
         }
 
@@ -2784,20 +3537,20 @@
                 : [];
             const automaticText = automatic
                 ? automaticDetail.completed
-                    ? `Anki 已确认${completedDecks.length ? ` · ${completedDecks.join(' / ')}` : ''}`
+                    ? `Anki confirmed${completedDecks.length ? ` · ${completedDecks.join(' / ')}` : ''}`
                     : automaticDetail.source
-                        ? `${Number(automaticDetail.today_reviews || 0)} 次复习 · 尚无已完成牌组`
-                        : '等待读取 Anki 今日状态'
+                        ? `${Number(automaticDetail.today_reviews || 0)} reviews · no completed decks yet`
+                        : `Waiting for today's Anki status`
                 : '';
             row.innerHTML = `
                 <input type="checkbox" data-task-id="${escapeHtml(task.id)}" ${checked} ${automatic ? 'disabled aria-label="Automatically verified by Anki"' : 'onchange="saveSelectedCheckinDay({silent:true})"'}>
                 <span class="checkin-task-title">${escapeHtml(task.title)}${automatic ? `<small class="checkin-auto-status">${escapeHtml(automaticText)}</small>` : ''}</span>
                 <span class="checkin-task-badge">${automatic ? 'Anki · auto' : escapeHtml(task.frequency || 'daily')}</span>
                 <select class="checkin-goal-link" title="Related Life Quest" onchange="updateCheckinTaskGoal('${safeId}', this.value)">${checkinGoalOptions(task.goal_id || '')}</select>
-                ${automatic ? '' : `<button type="button" onclick="editCheckinTask('${safeId}')" title="Edit task">✎</button>`}
-                <button type="button" onclick="moveCheckinTask('${safeId}', -1)" title="Move up">↑</button>
-                <button type="button" onclick="moveCheckinTask('${safeId}', 1)" title="Move down">↓</button>
-                <button type="button" onclick="deleteCheckinTask('${safeId}')" title="Delete task">×</button>
+                ${automatic ? '' : `<button type="button" onclick="editCheckinTask('${safeId}')" title="Edit task">${ic('edit', 'icn-sm')}</button>`}
+                <button type="button" onclick="moveCheckinTask('${safeId}', -1)" title="Move up">${ic('arrow-up-sm', 'icn-sm')}</button>
+                <button type="button" onclick="moveCheckinTask('${safeId}', 1)" title="Move down">${ic('arrow-down', 'icn-sm')}</button>
+                <button type="button" onclick="deleteCheckinTask('${safeId}')" title="Delete task">${ic('trash', 'icn-sm')}</button>
             `;
             list.appendChild(row);
         });
@@ -2839,7 +3592,7 @@
             <span class="checkin-task-title">${escapeHtml(title)}</span>
             <span class="checkin-task-badge">today</span>
             <select class="checkin-goal-link" title="Related Life Quest" onchange="updateCheckinDailyTaskGoal('${safeId}', this.value)">${checkinGoalOptions(task.goal_id || '')}</select>
-            <button type="button" onclick="deleteCheckinDailyTask('${safeId}')" title="Delete today's task">×</button>
+            <button type="button" onclick="deleteCheckinDailyTask('${safeId}')" title="Delete today's task">${ic('trash', 'icn-sm')}</button>
         `;
         list.appendChild(row);
     }
@@ -2859,7 +3612,7 @@
     async function saveSelectedCheckinDay(options = {}) {
         if (!checkinSelectedDate) return null;
         if (!isCheckinDateAllowed(checkinSelectedDate)) {
-            if (!options.silent) alert(`Check-in editing is limited to ${checkinWindowText()}.`);
+            if (!options.silent) showToast(`Check-in editing is limited to ${checkinWindowText()}.`, { type: 'error' });
             return null;
         }
         const list = document.getElementById('checkin-task-list');
@@ -2883,7 +3636,7 @@
         }
         const data = await response.json();
         if (!options.skipReload) await loadCheckinState({renderModal: true});
-        if (!options.silent) alert("Check-in saved.");
+        if (!options.silent) showToast('Check-in saved.');
         return data.record;
     }
 
@@ -2891,7 +3644,7 @@
         const input = document.getElementById('new-checkin-task-input');
         const title = input?.value.trim();
         if (!title) return;
-        const response = await fetch('/api/checkins/tasks/add', {
+        const response = await checkedStateFetch('/api/checkins/tasks/add', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
@@ -2902,7 +3655,7 @@
         const data = await response.json();
         const frequency = document.getElementById('new-checkin-task-frequency')?.value || 'daily';
         if (data.task?.id) {
-            await fetch('/api/checkins/tasks/update', {
+            await checkedStateFetch('/api/checkins/tasks/update', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({id: data.task.id, updates: {frequency}})
@@ -2916,14 +3669,14 @@
         const select = document.getElementById('new-checkin-task-preset');
         const preset = String(select?.value || '').trim();
         if (!preset) return;
-        const response = await fetch('/api/checkins/tasks/add', {
+        const response = await checkedStateFetch('/api/checkins/tasks/add', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({preset})
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) {
-            alert(data.detail || 'Unable to add the preset task.');
+            showToast(data.detail || 'Unable to add the preset task.', { type: 'error' });
             return;
         }
         if (select) select.value = '';
@@ -2931,7 +3684,7 @@
     }
 
     async function updateCheckinTaskGoal(id, goalId) {
-        await fetch('/api/checkins/tasks/update', {
+        await checkedStateFetch('/api/checkins/tasks/update', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({id, updates: {goal_id: goalId || null}})
@@ -2942,15 +3695,30 @@
     async function editCheckinTask(id) {
         const task = (checkinState?.tasks || []).find(t => t.id === id);
         if (!task) return;
-        const title = prompt("Edit fixed task title:", task.title);
-        if (!title || !title.trim()) return;
-        const frequency = prompt("Frequency: daily, weekdays, weekends, weekly, monthly", task.frequency || 'daily') || task.frequency || 'daily';
-        await fetch('/api/checkins/tasks/update', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({id, updates: {title: title.trim(), frequency: frequency.trim().toLowerCase()}})
+        const currentFrequency = String(task.frequency || 'daily');
+        buildStDialog({
+            title: 'Edit fixed task',
+            bodyHtml: `
+                <label class="form-label" style="display:block; margin-bottom:6px;" for="edit-checkin-title">Task title</label>
+                <input type="text" class="st-prompt-field" id="edit-checkin-title" value="${escapeHtml(task.title || '')}">
+                <label class="form-label" style="display:block; margin:12px 0 6px;" for="edit-checkin-frequency">Frequency</label>
+                <select id="edit-checkin-frequency" style="width:100%; min-height:40px; padding:8px 11px; border-radius:6px; background:var(--surface-input); color:var(--text-primary); border:1px solid var(--border-default);">
+                    ${['daily', 'weekdays', 'weekends', 'weekly', 'monthly'].map(freq => `<option value="${freq}" ${freq === currentFrequency ? 'selected' : ''}>${freq.charAt(0).toUpperCase() + freq.slice(1)}</option>`).join('')}
+                </select>`,
+            confirmLabel: 'Save',
+            onConfirm: async close => {
+                const title = document.getElementById('edit-checkin-title')?.value.trim();
+                const frequency = document.getElementById('edit-checkin-frequency')?.value || currentFrequency;
+                if (!title) return;
+                close();
+                await checkedStateFetch('/api/checkins/tasks/update', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id, updates: {title, frequency: String(frequency).trim().toLowerCase()}})
+                });
+                await loadCheckinState({renderModal: true});
+            }
         });
-        await loadCheckinState({renderModal: true});
     }
 
     async function moveCheckinTask(id, delta) {
@@ -2959,7 +3727,7 @@
         const next = index + delta;
         if (index < 0 || next < 0 || next >= tasks.length) return;
         [tasks[index], tasks[next]] = [tasks[next], tasks[index]];
-        await fetch('/api/checkins/tasks/reorder', {
+        await checkedStateFetch('/api/checkins/tasks/reorder', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ordered_ids: tasks.map(t => t.id)})
@@ -3012,8 +3780,18 @@
     }
 
     async function deleteCheckinTask(id) {
-        if (!confirm("Delete this fixed check-in task? Past records will stay in the data file, but the task will no longer appear.")) return;
-        await fetch('/api/checkins/tasks/delete', {
+        showConfirmDialog({
+            title: 'Delete this fixed task?',
+            message: 'Past records stay in the data file; the task simply stops appearing.',
+            impact: ['Existing history and statistics are kept'],
+            confirmLabel: 'Delete task',
+            danger: true,
+            onConfirm: close => { close(); doDeleteCheckinTask(id); }
+        });
+    }
+
+    async function doDeleteCheckinTask(id) {
+        await checkedStateFetch('/api/checkins/tasks/delete', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({id})
@@ -3059,7 +3837,21 @@
             })
         });
         const data = await response.json();
-        alert(`Exported ${scope} report:\nMarkdown: ${data.markdown_path}\nBackup JSON: ${data.json_path}`);
+        if (!response.ok) {
+            showToast(data.detail || 'The report could not be exported.', { type: 'error' });
+            return;
+        }
+        const scopeLabel = scope === 'year' ? 'year' : 'month';
+        showConfirmDialog({
+            title: `${scopeLabel.charAt(0).toUpperCase() + scopeLabel.slice(1)} report exported`,
+            message: `The ${scopeLabel} report and a safety JSON were written to the reports folder.`,
+            impact: [
+                `Markdown: ${data.markdown_path || 'reports folder'}`,
+                `Backup JSON: ${data.json_path || 'reports folder'}`
+            ],
+            confirmLabel: 'Done',
+            cancelLabel: 'Close'
+        });
     }
 
     // --- QUEST LOGIC ---
@@ -3171,27 +3963,27 @@
                 const safeTitle = escapeHtml(g.title);
                 const dateValue = formatQuestDate(getQuestStatusDate(g));
                 const safeDateJs = escapeJsString(dateValue);
-                const dateAction = `<button class="btn-quest-action btn-edit" onclick="editQuestDate('${safeId}', '${g.status}', '${safeDateJs}')" title="Edit ${getQuestDateLabel(g.status)} date">📅</button>`;
+                const dateAction = `<button class="btn-quest-action btn-edit" onclick="editQuestDate('${safeId}', '${g.status}', '${safeDateJs}')" title="Edit ${getQuestDateLabel(g.status)} date">${ic('calendar', 'icn-sm')}</button>`;
 
                 let actions = '';
                 if (g.status === 'active') {
                     actions = dateAction + `
-                        <button class="btn-quest-action btn-link-daily" onclick="createQuestDailyTask('${safeId}', '${safeTitleJs}')" title="Add a Daily task linked to this quest">+ Daily</button>
-                        <button class="btn-quest-action btn-complete" onclick="completeQuest('${safeId}', '${safeTitleJs}')" title="Mark Complete">✅</button>
-                        <button class="btn-quest-action btn-fail" onclick="failQuest('${safeId}', '${safeTitleJs}')" title="Mark Failed">😭</button>
-                        <button class="btn-quest-action btn-edit" onclick="editQuest('${safeId}', '${safeTitleJs}')" title="Edit">✏️</button>
-                        <button class="btn-quest-action btn-delete" onclick="deleteQuest('${safeId}')" title="Delete">🗑️</button>
+                        <button class="btn-quest-action btn-link-daily" onclick="createQuestDailyTask('${safeId}', '${safeTitleJs}')" title="Add a Daily task linked to this quest">${ic('plus', 'icn-sm')}Daily</button>
+                        <button class="btn-quest-action btn-complete" onclick="completeQuest('${safeId}', '${safeTitleJs}')" title="Mark Complete">${ic('check-circle', 'icn-sm')}</button>
+                        <button class="btn-quest-action btn-fail" onclick="failQuest('${safeId}', '${safeTitleJs}')" title="Mark Failed">${ic('alert', 'icn-sm')}</button>
+                        <button class="btn-quest-action btn-edit" onclick="editQuest('${safeId}', '${safeTitleJs}')" title="Edit">${ic('edit', 'icn-sm')}</button>
+                        <button class="btn-quest-action btn-delete" onclick="deleteQuest('${safeId}')" title="Delete">${ic('trash', 'icn-sm')}</button>
                     `;
                 } else if (g.status === 'completed') {
                     actions = dateAction + `
-                        <button class="btn-quest-action btn-share" onclick="shareQuest('${safeTitleJs}')" title="Share with Saya">💬</button>
-                        <button class="btn-quest-action btn-edit" onclick="editQuest('${safeId}', '${safeTitleJs}')" title="Edit">✏️</button>
-                        <button class="btn-quest-action btn-delete" onclick="deleteQuest('${safeId}')" title="Delete">🗑️</button>
+                        <button class="btn-quest-action btn-share" onclick="shareQuest('${safeTitleJs}')" title="Share with Saya">${ic('chat', 'icn-sm')}</button>
+                        <button class="btn-quest-action btn-edit" onclick="editQuest('${safeId}', '${safeTitleJs}')" title="Edit">${ic('edit', 'icn-sm')}</button>
+                        <button class="btn-quest-action btn-delete" onclick="deleteQuest('${safeId}')" title="Delete">${ic('trash', 'icn-sm')}</button>
                     `;
                 } else if (g.status === 'failed') {
                     actions = dateAction + `
-                        <button class="btn-quest-action btn-edit" onclick="editQuest('${safeId}', '${safeTitleJs}')" title="Edit">✏️</button>
-                        <button class="btn-quest-action btn-delete" onclick="deleteQuest('${safeId}')" title="Delete">🗑️</button>
+                        <button class="btn-quest-action btn-edit" onclick="editQuest('${safeId}', '${safeTitleJs}')" title="Edit">${ic('edit', 'icn-sm')}</button>
+                        <button class="btn-quest-action btn-delete" onclick="deleteQuest('${safeId}')" title="Delete">${ic('trash', 'icn-sm')}</button>
                     `;
                 }
 
@@ -3218,28 +4010,42 @@
     }
 
     async function createQuestDailyTask(goalId, goalTitle) {
-        const taskTitle = prompt(`Add a Daily task for “${goalTitle}”:`, '');
-        if (!taskTitle || !taskTitle.trim()) return;
-        const frequencyInput = prompt('Frequency: daily, weekdays, weekends, weekly, monthly', 'daily');
-        if (frequencyInput === null) return;
-        const frequency = String(frequencyInput || 'daily').trim().toLowerCase();
-        const allowed = new Set(['daily', 'weekdays', 'weekends', 'weekly', 'monthly']);
-        if (!allowed.has(frequency)) {
-            alert('Please use daily, weekdays, weekends, weekly, or monthly.');
-            return;
-        }
-        const response = await fetch('/api/checkins/tasks/add', {
+        buildStDialog({
+            title: `Add a Daily task for “${goalTitle}”`,
+            bodyHtml: `
+                <label class="form-label" style="display:block; margin-bottom:6px;" for="quest-daily-title">Task title</label>
+                <input type="text" class="st-prompt-field" id="quest-daily-title" placeholder="Describe the recurring task">
+                <label class="form-label" style="display:block; margin:12px 0 6px;" for="quest-daily-frequency">Frequency</label>
+                <select id="quest-daily-frequency" style="width:100%; min-height:40px; padding:8px 11px; border-radius:6px; background:var(--surface-input); color:var(--text-primary); border:1px solid var(--border-default);">
+                    <option value="daily">Daily</option>
+                    <option value="weekdays">Weekdays</option>
+                    <option value="weekends">Weekends</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>`,
+            confirmLabel: 'Add task',
+            onConfirm: async close => {
+                const taskTitle = document.getElementById('quest-daily-title')?.value.trim();
+                if (!taskTitle) return;
+                close();
+                await doCreateQuestDailyTask(goalId, taskTitle, document.getElementById('quest-daily-frequency')?.value || 'daily');
+            }
+        });
+    }
+
+    async function doCreateQuestDailyTask(goalId, taskTitle, frequency) {
+        const response = await checkedStateFetch('/api/checkins/tasks/add', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({title: taskTitle.trim(), goal_id: goalId})
         });
         if (!response.ok) {
-            alert('Unable to create the linked Daily task.');
+            showToast('Unable to create the linked Daily task.', { type: 'error', duration: 3600 });
             return;
         }
         const data = await response.json();
         if (data.task?.id && frequency !== 'daily') {
-            await fetch('/api/checkins/tasks/update', {
+            await checkedStateFetch('/api/checkins/tasks/update', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({id: data.task.id, updates: {frequency}})
@@ -3249,10 +4055,23 @@
     }
 
     async function failQuest(id, title) {
-        const reason = prompt("Reason for failure or secondary achievement?", "");
-        if (reason !== null) {
+        showPromptDialog({
+            title: 'Mark quest as failed',
+            label: 'Reason for failure or secondary achievement?',
+            value: '',
+            multiline: true,
+            confirmLabel: 'Mark failed',
+            onConfirm: (reason, close) => {
+                close();
+                doFailQuest(id, reason);
+            }
+        });
+    }
+
+    async function doFailQuest(id, reason) {
+        {
             try {
-                await fetch('/api/goals/update', {
+                await checkedStateFetch('/api/goals/update', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -3264,38 +4083,63 @@
                     })
                 });
                 loadQuests();
-            } catch(e) { alert("Failed to update status"); }
+            } catch(e) { if (!e.sayaNotified) showToast("Failed to update status", { type: 'error', duration: 3600 }); }
         }
     }
 
     async function editQuest(id, currentTitle) {
-        const newTitle = prompt("Edit goal title:", currentTitle);
-        if (newTitle && newTitle.trim() !== "" && newTitle !== currentTitle) {
+        showPromptDialog({
+            title: 'Edit goal title',
+            label: 'Goal title',
+            value: currentTitle,
+            confirmLabel: 'Save',
+            onConfirm: (newTitle, close) => {
+                close();
+                if (newTitle === currentTitle) return;
+                doEditQuest(id, newTitle);
+            }
+        });
+    }
+
+    async function doEditQuest(id, newTitle) {
+        {
             try {
-                await fetch('/api/goals/update', {
+                await checkedStateFetch('/api/goals/update', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({id: id, updates: {title: newTitle.trim()}})
                 });
                 loadQuests();
-            } catch(e) { alert("Failed to update"); }
+            } catch(e) { if (!e.sayaNotified) showToast("Failed to update", { type: 'error', duration: 3600 }); }
         }
     }
 
     async function editQuestDate(id, status, currentDate) {
         const label = getQuestDateLabel(status);
-        const nextDate = prompt(`Set ${label} date (YYYY-MM-DD):`, currentDate || '');
-        if (nextDate === null) return;
-        const date = nextDate.trim();
-        if (!isValidQuestDate(date)) {
-            alert('Please enter a valid date in YYYY-MM-DD format.');
-            return;
-        }
+        showPromptDialog({
+            title: `Set ${label.toLowerCase()} date`,
+            label: 'Date (YYYY-MM-DD)',
+            value: currentDate || '',
+            placeholder: todayIsoDate(),
+            confirmLabel: 'Save',
+            onConfirm: (nextDate, close) => {
+                const date = nextDate.trim();
+                if (!isValidQuestDate(date)) {
+                    showToast('Please enter a valid date in YYYY-MM-DD format.', { type: 'info', duration: 3600 });
+                    return;
+                }
+                close();
+                doEditQuestDate(id, status, date);
+            }
+        });
+    }
+
+    async function doEditQuestDate(id, status, date) {
         const dateField = status === 'active'
             ? 'created_at'
             : (status === 'completed' ? 'achieved_at' : 'failed_at');
         try {
-            const response = await fetch('/api/goals/update', {
+            const response = await checkedStateFetch('/api/goals/update', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({id, updates: {[dateField]: date}})
@@ -3303,7 +4147,22 @@
             if (!response.ok) throw new Error(`Update failed: ${response.status}`);
             await loadQuests();
         } catch (e) {
-            alert('Failed to update quest date: ' + (e.message || e));
+            showToast('Failed to update quest date: ' + (e.message || e), { type: 'error', duration: 3600 });
+        }
+    }
+
+    async function checkedStateFetch(url, options) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.detail || `Save failed: ${response.status}`);
+            }
+            return response;
+        } catch (error) {
+            showToast(error.message || 'Unable to save changes.', {type: 'error', duration: 5000});
+            error.sayaNotified = true;
+            throw error;
         }
     }
 
@@ -3313,44 +4172,46 @@
         if (!title) return;
         
         try {
-            await fetch('/api/goals/add', {
+            await checkedStateFetch('/api/goals/add', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({title: title})
             });
             input.value = '';
             loadQuests();
-        } catch(e) { alert("Failed to add quest"); }
+        } catch(e) { if (!e.sayaNotified) showToast("Failed to add quest", { type: 'error', duration: 3600 }); }
     }
 
     async function completeQuest(id, title) {
-        if(!confirm("Mark this quest as completed?")) return;
-        try {
-            await fetch('/api/goals/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id, updates: {status: 'completed'}})
-            });
-            loadQuests();
+        confirmAction("Mark this quest as completed?", async () => {
+
+            try {
+                await checkedStateFetch('/api/goals/update', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id: id, updates: {status: 'completed'}})
+                });
+                loadQuests();
             
-            // Prompt to share
-            if(confirm("Great job! Tell Saya about this achievement now?")) {
-                shareQuest(title);
-            }
-        } catch(e) { alert("Failed to update"); }
-    }
+                // Prompt to share
+                confirmAction("Great job! Tell Saya about this achievement now?", () => {
+                    shareQuest(title);
+                });
+            } catch(e) { if (!e.sayaNotified) showToast("Failed to update", { type: 'error', duration: 3600 }); }
+    });    }
 
     async function deleteQuest(id) {
-        if(!confirm("Delete this quest?")) return;
-        try {
-            await fetch('/api/goals/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id})
-            });
-            loadQuests();
-        } catch(e) { alert("Failed to delete"); }
-    }
+        confirmAction("Delete this quest?", async () => {
+
+            try {
+                await checkedStateFetch('/api/goals/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id: id})
+                });
+                loadQuests();
+            } catch(e) { if (!e.sayaNotified) showToast("Failed to delete", { type: 'error', duration: 3600 }); }
+    });    }
 
     function shareQuest(title) {
         closeQuestModal();
@@ -3379,10 +4240,12 @@
         if (titleEl) titleEl.innerText = title || "";
         if (!backEl) return;
         if (backHandler) {
-            backEl.style.display = 'inline-flex';
+            backEl.hidden = false;
+            backEl.setAttribute('aria-hidden', 'false');
             backEl.setAttribute('onclick', backHandler);
         } else {
-            backEl.style.display = 'none';
+            backEl.hidden = true;
+            backEl.setAttribute('aria-hidden', 'true');
             backEl.setAttribute('onclick', '');
         }
     }
@@ -3395,21 +4258,20 @@
         const body = document.getElementById('modal-body');
         setMemoryModalHeader("Memories", "openAboutYouModal()");
         body.innerHTML = `
-            <section class="workspace-hero workspace-hero-tools memory-workspace-hero" data-workspace-theme="memory-workspace">
-                <div>
-                    <span class="workspace-kicker">Durable context</span>
-                    <h3>Layered memory workspace</h3>
-                    <p>Search, curate and inspect what Saya can recall. Archived originals remain preserved but stay outside normal prompts.</p>
+            <section class="page-intro">
+                <div class="page-intro-copy">
+                    <h3 class="page-intro-title">Memories</h3>
+                    <p class="page-intro-sub">Search, curate and inspect what Saya can recall. Archived originals stay preserved but outside normal prompts.</p>
                 </div>
-                <div class="workspace-mini-metrics">
-                    <span><strong id="memory-hero-active">--</strong>active</span>
-                    <span><strong id="memory-hero-archived">--</strong>archived</span>
-                    <span><strong id="memory-hero-store">--</strong>store</span>
+                <div class="page-intro-actions">
+                    <span class="st-badge"><strong id="memory-hero-active">--</strong>&nbsp;active</span>
+                    <span class="st-badge"><strong id="memory-hero-archived">--</strong>&nbsp;archived</span>
+                    <span class="st-badge" id="memory-hero-store">--</span>
                 </div>
             </section>
             <div class="memory-toolbar">
                 <input id="memory-search-input" type="text" placeholder="Search memories..." oninput="loadMemoryList()" />
-                <select id="memory-category-filter" onchange="memoryViewerCategory = this.value; loadMemoryList()">
+                <select id="memory-category-filter" onchange="memoryViewerCategory = this.value; loadMemoryList()" title="Category">
                     <option value="">All categories</option>
                     <option value="identity">Identity</option>
                     <option value="preference">Preference</option>
@@ -3424,66 +4286,136 @@
                     <option value="learning_note">Learning note</option>
                     <option value="general">General</option>
                 </select>
-                <select id="memory-layer-filter" onchange="setMemoryLayerFilter(this.value)">
+                <select id="memory-layer-filter" onchange="setMemoryLayerFilter(this.value)" hidden>
                     <option value="">All layers</option>
-                    <option value="core">Core · always available</option>
-                    <option value="semantic">Semantic · retrieved by meaning</option>
-                    <option value="episodic">Episodic · events and summaries</option>
-                    <option value="archive">Archive · preserved originals</option>
+                    <option value="core">Core</option>
+                    <option value="semantic">Semantic</option>
+                    <option value="episodic">Episodic</option>
+                    <option value="archive">Archive</option>
                 </select>
-                <button class="memory-network-entry" onclick="openMemoryGraphViewer()" title="Explore and manage relationships between memories">Network map</button>
-                <button onclick="toggleAddMemoryPanel()" title="Add a manual memory">Add memory</button>
-                <button onclick="rebuildMemoryMetadata()" title="Rebuild Memory 3.0 layers and metadata">Rebuild metadata</button>
+                <button class="workspace-secondary-action" onclick="openMemoryGraphViewer()" title="Explore and manage relationships between memories">${ic('share-net', 'icn-sm')}Network map</button>
+                <button class="row-menu-btn" onclick="showMemoryToolsMenu(this)" title="More actions" aria-label="More actions" aria-haspopup="menu">${ic('more', 'icn-sm')}</button>
+                <button class="workspace-primary-action" onclick="toggleAddMemoryPanel()" title="Add a manual memory">${ic('plus', 'icn-sm')}Add memory</button>
             </div>
-            <div id="memory-layer-overview" class="memory-layer-overview">
-                <button class="memory-layer-stat core" onclick="setMemoryLayerFilter('core')"><strong>Core</strong><span>Stable identity and essential preferences</span><em>…</em></button>
-                <button class="memory-layer-stat semantic" onclick="setMemoryLayerFilter('semantic')"><strong>Semantic</strong><span>Facts, projects and learning notes</span><em>…</em></button>
-                <button class="memory-layer-stat episodic" onclick="setMemoryLayerFilter('episodic')"><strong>Episodic</strong><span>Events and conversation summaries</span><em>…</em></button>
-                <button class="memory-layer-stat archive" onclick="setMemoryLayerFilter('archive')"><strong>Archive</strong><span>Compressed or retired originals</span><em>…</em></button>
+            <div class="ws-tabs" id="memory-layer-overview" role="tablist">
+                <button type="button" class="ws-tab" data-memory-layer-tab="" role="tab">All<em class="memory-tab-count" data-count-layer="all"></em></button>
+                <button type="button" class="ws-tab" data-memory-layer-tab="core" role="tab">Core<em class="memory-tab-count" data-count-layer="core"></em></button>
+                <button type="button" class="ws-tab" data-memory-layer-tab="semantic" role="tab">Semantic<em class="memory-tab-count" data-count-layer="semantic"></em></button>
+                <button type="button" class="ws-tab" data-memory-layer-tab="episodic" role="tab">Episodic<em class="memory-tab-count" data-count-layer="episodic"></em></button>
+                <button type="button" class="ws-tab" data-memory-layer-tab="archive" role="tab">Archive<em class="memory-tab-count" data-count-layer="archive"></em></button>
             </div>
-            <div class="memory-layer-help">Prompt order is Core → Semantic → Episodic. “Summarize to Episodic” creates an active conversation summary. Archive contains retired, compressed or manually archived memory records and is not normally injected. Managed records are generated by their owning feature and cannot be edited or deleted here.</div>
-            <div id="memory-add-panel" class="memory-add-panel" style="display:none;">
-                <div class="memory-add-grid">
-                    <input id="memory-add-title" type="text" placeholder="Title (optional)" />
-                    <select id="memory-add-category">
-                        <option value="">Auto category</option>
-                        <option value="identity">Identity</option>
-                        <option value="preference">Preference</option>
-                        <option value="relationship">Relationship</option>
-                        <option value="project">Project</option>
-                        <option value="goal">Goal</option>
-                        <option value="schedule">Schedule</option>
-                        <option value="health">Health</option>
-                        <option value="emotion">Emotion</option>
-                        <option value="general">General</option>
-                    </select>
-                    <select id="memory-add-layer">
-                        <option value="">Auto layer</option>
-                        <option value="core">Core</option>
-                        <option value="semantic">Semantic</option>
-                        <option value="episodic">Episodic</option>
-                    </select>
+            <p class="form-help memory-layer-help">Prompt order is Core → Semantic → Episodic. Managed records are generated by their owning feature and cannot be edited or deleted here.</p>
+            <div id="memory-list"></div>
+            <section class="memory-v4-panel" aria-labelledby="memory-v4-panel-title">
+                <div class="memory-v4-panel-heading">
+                    <div><strong id="memory-v4-panel-title">V4 memory controls</strong><span>Audited facts, versions and retrieval policy</span></div>
+                    <div><span id="memory-v4-status" class="st-badge">Checking…</span><button type="button" class="workspace-secondary-action" onclick="loadMemoryV4Panel()">Refresh</button></div>
                 </div>
-                <textarea id="memory-add-content" rows="4" placeholder="Write the memory to save..."></textarea>
-                <div class="memory-add-actions">
-                    <label><input id="memory-add-important" type="checkbox" checked> Star important</label>
-                    <label><input id="memory-add-locked" type="checkbox"> Lock</label>
-                    <label id="memory-add-project-label" style="display:none;"><input id="memory-add-project" type="checkbox"> Current project only</label>
-                    <button onclick="saveManualMemory()">Save memory</button>
-                </div>
-            </div>
-            <div id="memory-list">Loading...</div>
+                <div id="memory-v4-list"><div class="st-empty">Loading V4 memory state…</div></div>
+            </section>
         `;
-        const projectLabel = document.getElementById('memory-add-project-label');
-        if (projectLabel && currentProjectId) projectLabel.style.display = 'inline-flex';
+        ensureMemoryAddDialog();
         const categoryFilter = document.getElementById('memory-category-filter');
         if (categoryFilter) categoryFilter.value = memoryViewerCategory;
         const layerFilter = document.getElementById('memory-layer-filter');
         if (layerFilter) layerFilter.value = memoryViewerLayer;
+        syncMemoryLayerTabs(memoryViewerLayer);
         modal.style.display = 'flex';
 
-        await Promise.all([loadMemoryLayerOverview(), loadMemoryList()]);
+        await Promise.all([loadMemoryLayerOverview(), loadMemoryList(), loadMemoryV4Panel()]);
     }
+
+    async function loadMemoryV4Panel() {
+        const list = document.getElementById('memory-v4-list');
+        const badge = document.getElementById('memory-v4-status');
+        if (!list) return;
+        try {
+            const statusResponse = await fetch('/api/kb/v4/status');
+            const status = await statusResponse.json();
+            if (badge) {
+                badge.textContent = status.status === 'ready' ? (status.read_enabled ? 'Ready · read' : 'Ready · controls') : (status.status || 'Unavailable');
+                badge.className = `st-badge ${status.status === 'ready' ? 'success' : 'running'}`;
+            }
+            if (!statusResponse.ok || status.status !== 'ready') {
+                list.innerHTML = `<div class="st-empty">V4 is not enabled. Existing memories remain unchanged.</div>`;
+                return;
+            }
+            const response = await fetch('/api/kb/v4/controls/summary?limit=100');
+            const data = await response.json();
+            if (!response.ok || !Array.isArray(data.memories)) throw new Error(data.reason || 'Unable to load V4 memories');
+            renderMemoryV4Panel(data.memories);
+        } catch (error) {
+            if (badge) { badge.textContent = 'Unavailable'; badge.className = 'st-badge danger'; }
+            list.innerHTML = `<div class="st-empty">V4 controls are unavailable right now. ${escapeHtml(error.message || '')}</div>`;
+        }
+    }
+
+    function renderMemoryV4Panel(memories) {
+        const list = document.getElementById('memory-v4-list');
+        if (!list) return;
+        if (!memories.length) {
+            list.innerHTML = '<div class="st-empty">No V4 facts have been committed yet.</div>';
+            return;
+        }
+        list.innerHTML = memories.map(memory => {
+            const id = escapeJsString(memory.id);
+            const meta = memory.metadata && typeof memory.metadata === 'object' ? memory.metadata : {};
+            const noMention = Boolean(meta.do_not_mention);
+            const flags = [memory.pinned ? 'pinned' : '', memory.locked ? 'locked' : '', noMention ? 'do not mention' : ''].filter(Boolean).join(' · ');
+            return `<article class="memory-v4-card" data-memory-v4-id="${escapeHtml(memory.id)}" data-content-version="${escapeHtml(memory.content_version || '')}">
+                <div class="memory-v4-card-copy"><strong>${escapeHtml(memory.canonical_text || 'Untitled fact')}</strong><small>${escapeHtml(memory.kind || 'fact')} · rev ${Number(memory.revision || 0)} · ${escapeHtml(memory.lifecycle || 'active')}${flags ? ` · ${escapeHtml(flags)}` : ''}</small></div>
+                <div class="memory-v4-card-actions">
+                    <button type="button" onclick="correctMemoryV4('${id}')">Correct</button>
+                    <button type="button" onclick="toggleMemoryV4Pin('${id}', ${memory.pinned ? 'false' : 'true'})">${memory.pinned ? 'Unpin' : 'Pin'}</button>
+                    <button type="button" onclick="toggleMemoryV4NoMention('${id}', ${noMention ? 'false' : 'true'})">${noMention ? 'Allow mention' : 'Do not mention'}</button>
+                    <button type="button" class="danger" onclick="forgetMemoryV4('${id}')">Delete</button>
+                </div>
+            </article>`;
+        }).join('');
+    }
+
+    async function applyMemoryV4Control(operation, memoryId, extra = {}) {
+        const expected_version = extra.expected_version || requireMemoryVersion(document.querySelector(`.memory-v4-card[data-memory-v4-id="${cssEscapeValue(memoryId)}"]`));
+        const response = await fetch('/api/kb/v4/controls', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({operation, memory_id: memoryId, ...extra, expected_version, actor: 'memory_ui'})
+        });
+        const data = await response.json();
+        if (!response.ok || data.status !== 'success') throw new Error(data.detail || data.reason || '操作未提交，请重新读取状态核对。');
+        await loadMemoryV4Panel();
+        return data;
+    }
+
+    function toggleMemoryV4Pin(memoryId, enabled) {
+        applyMemoryV4Control(enabled ? 'pin' : 'unpin', memoryId).catch(error => showToast(error.message, {type: 'error'}));
+    }
+
+    function toggleMemoryV4NoMention(memoryId, enabled) {
+        applyMemoryV4Control('do_not_mention', memoryId, {enabled}).catch(error => showToast(error.message, {type: 'error'}));
+    }
+
+    function correctMemoryV4(memoryId) {
+        let expected_version;
+        try { expected_version = requireMemoryVersion(document.querySelector(`.memory-v4-card[data-memory-v4-id="${cssEscapeValue(memoryId)}"]`)); }
+        catch (error) { showToast(error.message, {type:'error'}); return; }
+        showPromptDialog({title: 'Correct V4 memory', label: 'New fact text', multiline: true, placeholder: 'Write the corrected fact', onConfirm: (value, close) => {
+            applyMemoryV4Control('correct', memoryId, {updates: {canonical_text: value}, expected_version}).then(() => { close(); showToast('V4 memory corrected.'); }).catch(error => showToast(error.message, {type: 'error'}));
+        }});
+    }
+
+    function forgetMemoryV4(memoryId) {
+        let expected_version;
+        try { expected_version = requireMemoryVersion(document.querySelector(`.memory-v4-card[data-memory-v4-id="${cssEscapeValue(memoryId)}"]`)); }
+        catch (error) { showToast(error.message, {type:'error'}); return; }
+        showConfirmDialog({title: 'Delete this V4 memory?', message: 'The active fact will be tombstoned and excluded from future V4 recall.', confirmLabel: 'Delete', danger: true, onConfirm: close => {
+            applyMemoryV4Control('forget', memoryId, {expected_version}).then(() => { close(); showToast('V4 memory deleted.'); }).catch(error => showToast(error.message, {type: 'error'}));
+        }});
+    }
+    window.loadMemoryV4Panel = loadMemoryV4Panel;
+    window.toggleMemoryV4Pin = toggleMemoryV4Pin;
+    window.toggleMemoryV4NoMention = toggleMemoryV4NoMention;
+    window.correctMemoryV4 = correctMemoryV4;
+    window.forgetMemoryV4 = forgetMemoryV4;
 
     const MEMORY_GRAPH_DISPLAY_STORAGE_KEY = 'saya_memory_graph_display_scales_v1';
 
@@ -3506,7 +4438,7 @@
 
     function loadMemoryGraphDisplayScales() {
         try {
-            const saved = JSON.parse(localStorage.getItem(MEMORY_GRAPH_DISPLAY_STORAGE_KEY) || 'null');
+            const saved = JSON.parse(sayaSettings.getItem(MEMORY_GRAPH_DISPLAY_STORAGE_KEY) || 'null');
             return normalizeMemoryGraphDisplayScales(saved);
         } catch (_) {
             return normalizeMemoryGraphDisplayScales(null);
@@ -3515,7 +4447,7 @@
 
     function saveMemoryGraphDisplayScales() {
         try {
-            localStorage.setItem(MEMORY_GRAPH_DISPLAY_STORAGE_KEY, JSON.stringify(memoryGraphState.displayScales));
+            sayaSettings.setItem(MEMORY_GRAPH_DISPLAY_STORAGE_KEY, JSON.stringify(memoryGraphState.displayScales));
         } catch (_) {
             // Display settings remain usable for this page even when browser
             // storage is unavailable or disabled.
@@ -3559,11 +4491,10 @@
         memoryGraphState.transform = {x: 0, y: 0, scale: 1};
         const displaySettings = getMemoryGraphDisplaySettings();
         body.innerHTML = `
-            <section class="workspace-hero workspace-hero-tools memory-workspace-hero" data-workspace-theme="memory-workspace">
-                <div>
-                    <span class="workspace-kicker">RELATIONSHIP LAYER</span>
-                    <h3>Memory network</h3>
-                    <p>Inspect why memories are connected, focus on one neighborhood, and correct user-defined relationships.</p>
+            <section class="page-intro">
+                <div class="page-intro-copy">
+                    <h3 class="page-intro-title">Memory network</h3>
+                    <p class="page-intro-sub">Inspect why memories are connected, focus on one neighborhood, and correct user-defined relationships.</p>
                 </div>
                 <div class="workspace-mini-metrics">
                     <span><strong id="memory-graph-memory-count">--</strong>memories</span>
@@ -3601,12 +4532,12 @@
                     <option value="150">150 memories</option>
                 </select>
                 <label class="memory-graph-archive-toggle"><input id="memory-graph-archived" type="checkbox" onchange="loadMemoryGraphView({clearCenter:true})"> Archive</label>
-                <div class="memory-graph-view-toggle" role="group" aria-label="Network dimension">
-                    <button id="memory-graph-view-2d" class="active" type="button" aria-pressed="true" onclick="setMemoryGraphViewMode('2d')">2D</button>
-                    <button id="memory-graph-view-3d" type="button" aria-pressed="false" onclick="setMemoryGraphViewMode('3d')">3D</button>
+                <div class="seg memory-graph-view-toggle" role="group" aria-label="Network dimension">
+                    <button id="memory-graph-view-2d" class="seg-btn active" type="button" aria-pressed="true" onclick="setMemoryGraphViewMode('2d')">2D</button>
+                    <button id="memory-graph-view-3d" class="seg-btn" type="button" aria-pressed="false" onclick="setMemoryGraphViewMode('3d')">3D</button>
                 </div>
-                <button onclick="resetMemoryGraphOverview()">Overview</button>
-                <button onclick="rebuildMemoryGraphView()">Rebuild</button>
+                <button onclick="resetMemoryGraphOverview()">${ic('eye', 'icn-sm')}Overview</button>
+                <button onclick="rebuildMemoryGraphView()">${ic('refresh', 'icn-sm')}Rebuild</button>
             </div>
             <div id="memory-graph-focus" class="memory-graph-focus" hidden></div>
             <div class="memory-graph-layout">
@@ -3619,12 +4550,12 @@
                         <span data-type="memory">Memory</span><span data-type="project">Project</span><span data-type="session">Session</span><span data-type="entity">Entity</span><span data-type="tag">Topic</span><span data-type="date">Date</span>
                     </div>
                     <div class="memory-graph-viewport-actions">
-                        <button onclick="resetMemoryGraphViewport()">Reset view</button>
+                        <button onclick="resetMemoryGraphViewport()">${ic('refresh', 'icn-sm')}Reset view</button>
                     </div>
                 </section>
                 <aside id="memory-graph-detail" class="memory-graph-detail">
-                    <section class="memory-graph-display-controls" aria-label="Network display settings">
-                        <div class="memory-graph-display-heading"><strong>Display</strong><span id="memory-graph-display-mode">${memoryGraphState.viewMode.toUpperCase()} settings</span></div>
+                    <details class="memory-graph-display-controls" aria-label="Network display settings">
+                        <summary class="memory-graph-display-heading"><strong>Display settings</strong><span id="memory-graph-display-mode">${memoryGraphState.viewMode.toUpperCase()}</span></summary>
                         <label for="memory-graph-text-scale">
                             <span>Text size</span>
                             <output id="memory-graph-text-scale-value" for="memory-graph-text-scale">${formatMemoryGraphDisplayScale('text', displaySettings.text)}</output>
@@ -3640,7 +4571,7 @@
                             <output id="memory-graph-node-scale-value" for="memory-graph-node-scale">${displaySettings.node.toFixed(1)}×</output>
                             <input id="memory-graph-node-scale" type="range" min="0.6" max="2.4" step="0.1" value="${displaySettings.node}" oninput="setMemoryGraphDisplayScale('node', this.value)" aria-label="Network node size" />
                         </label>
-                    </section>
+                    </details>
                     <div id="memory-graph-detail-content">
                         <div class="memory-graph-detail-empty"><strong>Select a node</strong><span>View its memory, links, source conversation, or create a confirmed relationship.</span></div>
                     </div>
@@ -3797,9 +4728,16 @@
         } catch (error) {
             if (loading) {
                 loading.hidden = false;
-                loading.textContent = `Unable to load network: ${error.message || error}`;
+                loading.innerHTML = `
+                    <div class="st-page-error">
+                        ${ic('alert')}
+                        <strong>The memory network could not be loaded.</strong>
+                        <span>Nothing was changed. Check that the backend is running, then try again.</span>
+                        <button type="button" class="workspace-secondary-action" onclick="loadMemoryGraphView()">${ic('refresh', 'icn-sm')}Retry</button>
+                    </div>`;
             }
             svg.innerHTML = '';
+            console.warn('Memory graph load failed:', error);
         }
     }
 
@@ -3813,6 +4751,23 @@
     }
 
     function renderMemoryGraph(data) {
+        const stageWrap = document.querySelector('.memory-graph-stage-wrap');
+        const nodes = Array.isArray(data?.nodes) ? data.nodes : [];
+        const memoryNodes = nodes.filter(node => !node.kind || node.kind === 'memory');
+        if (!nodes.length || !memoryNodes.length) {
+            if (stageWrap && !stageWrap.querySelector('.memory-graph-empty')) {
+                const empty = document.createElement('div');
+                empty.className = 'memory-graph-empty';
+                empty.innerHTML = `
+                    <div class="st-empty">
+                        ${ic('share-net')}
+                        <span>No connected memories match the current filters. Widen the layer or relationship filters, or add memories first.</span>
+                    </div>`;
+                stageWrap.appendChild(empty);
+            }
+        } else {
+            stageWrap?.querySelector('.memory-graph-empty')?.remove();
+        }
         if (memoryGraphState.viewMode === '3d') {
             renderMemoryGraph3D(data);
             return;
@@ -4487,7 +5442,7 @@
             const otherId = edge.source === node.id ? edge.target : edge.source;
             const other = byId.get(otherId) || {};
             const remove = edge.source_kind === 'manual'
-                ? `<button type="button" onclick="removeMemoryGraphEdge('${escapeJsString(edge.id)}')">Remove</button>`
+                ? `<button type="button" onclick="removeMemoryGraphEdge('${escapeJsString(edge.id)}')">${ic('close', 'icn-sm')}Remove</button>`
                 : '<span class="memory-graph-derived">derived</span>';
             return `<div class="memory-graph-relation-row"><span><strong>${escapeHtml(memoryGraphRelationLabel(edge.relation))}</strong>${escapeHtml(other.label || otherId)}</span>${remove}</div>`;
         }).join('') : '<div class="memory-graph-detail-empty compact"><span>No visible relationships in this filtered view.</span></div>';
@@ -4503,7 +5458,7 @@
 
         const conflict = node.conflict || {};
         const sessionButton = node.session_id
-            ? `<button type="button" onclick="openMemoryGraphSourceSession('${escapeJsString(node.session_id)}')">Open source conversation</button>`
+            ? `<button type="button" onclick="openMemoryGraphSourceSession('${escapeJsString(node.session_id)}')">${ic('chat', 'icn-sm')}Open source conversation</button>`
             : '';
         const conflictLine = conflict.status && conflict.status !== 'clear'
             ? `<div class="memory-graph-detail-warning">Conflict state: ${escapeHtml(conflict.status)}</div>`
@@ -4515,14 +5470,14 @@
             <div class="memory-graph-detail-meta">${escapeHtml(node.project_name || node.source || 'memory')} ${node.locked ? '· locked' : ''} ${node.starred ? '· starred' : ''}</div>
             ${conflictLine}
             <div class="memory-graph-detail-actions">
-                <button type="button" onclick="centerMemoryGraphOn('${escapeJsString(node.ref_id)}')">Focus neighborhood</button>
+                <button type="button" onclick="centerMemoryGraphOn('${escapeJsString(node.ref_id)}')">${ic('share-net', 'icn-sm')}Focus neighborhood</button>
                 ${sessionButton}
             </div>
             <div class="memory-graph-link-editor ${linkActive ? 'active' : ''}">
                 <select id="memory-graph-link-relation-select" onchange="memoryGraphState.linkRelation=this.value" aria-label="New relationship type">
                     <option value="related_to">related to</option><option value="supports">supports</option><option value="caused_by">caused by</option><option value="part_of">part of</option><option value="follows">follows</option>
                 </select>
-                <button type="button" onclick="${linkActive ? 'cancelMemoryGraphLink()' : `beginMemoryGraphLink('${escapeJsString(node.ref_id)}')`}">${linkActive ? 'Cancel linking' : 'Create relationship'}</button>
+                <button type="button" onclick="${linkActive ? 'cancelMemoryGraphLink()' : `beginMemoryGraphLink('${escapeJsString(node.ref_id)}')`}">${linkActive ? ic('close', 'icn-sm') + 'Cancel linking' : ic('branch', 'icn-sm') + 'Create relationship'}</button>
                 ${linkActive ? '<small>Select another memory node on the map to complete the relationship.</small>' : ''}
             </div>
             <h5>Visible relationships</h5>
@@ -4554,42 +5509,51 @@
         const nodes = memoryGraphState.data?.nodes || [];
         const sourceNode = nodes.find(item => item.type === 'memory' && item.ref_id === sourceMemoryId);
         const targetNode = nodes.find(item => item.type === 'memory' && item.ref_id === targetMemoryId);
-        const relationLabel = memoryGraphRelationLabel(memoryGraphState.linkRelation);
-        if (!confirm(`Create relationship?\n\n${sourceNode?.label || 'Source memory'} ${relationLabel} ${targetNode?.label || 'Target memory'}`)) return;
-        try {
-            const response = await fetch('/api/kb/graph/edges', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    source_memory_id: sourceMemoryId,
-                    target_memory_id: targetMemoryId,
-                    relation: memoryGraphState.linkRelation,
-                    confidence: 1
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || 'Unable to create relationship');
-            memoryGraphState.linkSourceId = '';
-            memoryGraphState.centerMemoryId = sourceMemoryId;
-            memoryGraphState.selectedNodeId = `memory:${sourceMemoryId}`;
-            await loadMemoryGraphView();
-        } catch (error) {
-            alert(`Unable to create relationship: ${error.message || error}`);
+        const request = {source_memory_id:sourceMemoryId, target_memory_id:targetMemoryId,
+            relation:memoryGraphState.linkRelation, confidence:1,
+            expected_graph_version:memoryGraphState.data?.graph_version};
+        if (!/^[0-9a-f]{64}$/.test(request.expected_graph_version || '')) {
+            showToast('请重新读取关系图后操作。', {type:'error'}); return;
         }
+        showConfirmDialog({title:'Create this relationship?',
+            message:`${sourceNode?.label || 'Source memory'} ${memoryGraphRelationLabel(request.relation)} ${targetNode?.label || 'Target memory'}`,
+            impact:['The link becomes visible in recall and in this network map'], confirmLabel:'Create link',
+            onConfirm:close => { doCreateMemoryGraphRelationship(request).then(ok => { if (ok) close(); }); }
+        });
+    }
+
+    async function doCreateMemoryGraphRelationship(request) {
+        try {
+            const response = await fetch('/api/kb/graph/edges', {method:'POST',
+                headers:{'Content-Type':'application/json'}, body:JSON.stringify(request)});
+            const data = await response.json();
+            if (!response.ok || data.status !== 'success') throw new Error(data.detail || 'Unable to create relationship');
+            memoryGraphState.linkSourceId = '';
+            memoryGraphState.centerMemoryId = request.source_memory_id;
+            memoryGraphState.selectedNodeId = `memory:${request.source_memory_id}`;
+            await loadMemoryGraphView();
+            return true;
+        } catch(error) { showToast(error.message || String(error), {type:'error',duration:5000}); return false; }
     }
 
     async function removeMemoryGraphEdge(edgeId) {
-        if (!confirm('Remove this user-created relationship?')) return;
-        try {
-            const response = await fetch('/api/kb/graph/edges/remove', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({edge_id: edgeId})
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || 'Unable to remove relationship');
-            await loadMemoryGraphView();
-        } catch (error) {
-            alert(`Unable to remove relationship: ${error.message || error}`);
+        const request = {edge_id:edgeId,expected_graph_version:memoryGraphState.data?.graph_version};
+        if (!/^[0-9a-f]{64}$/.test(request.expected_graph_version || '')) {
+            showToast('请重新读取关系图后操作。', {type:'error'}); return;
         }
+        showConfirmDialog({title:'Remove this relationship?',
+            message:'Only user-created links can be removed; derived links stay.',confirmLabel:'Remove link',danger:true,
+            onConfirm:close => { doRemoveMemoryGraphRelationship(request).then(ok => { if(ok) close(); }); }});
+    }
+
+    async function doRemoveMemoryGraphRelationship(request) {
+        try {
+            const response = await fetch('/api/kb/graph/edges/remove', {method:'POST',
+                headers:{'Content-Type':'application/json'},body:JSON.stringify(request)});
+            const data = await response.json();
+            if (!response.ok || data.status !== 'success') throw new Error(data.detail || 'Unable to remove relationship');
+            await loadMemoryGraphView(); return true;
+        } catch(error) { showToast(error.message || String(error), {type:'error',duration:5000}); return false; }
     }
 
     function centerMemoryGraphOn(memoryId) {
@@ -4607,16 +5571,26 @@
     }
 
     async function rebuildMemoryGraphView() {
-        try {
-            const response = await fetch('/api/kb/graph/rebuild', {method: 'POST'});
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || 'Rebuild failed');
-            memoryGraphState.positions.clear();
-            memoryGraphState.positions3d.clear();
-            await loadMemoryGraphView();
-        } catch (error) {
-            alert(`Memory network rebuild failed: ${error.message || error}`);
-        }
+        showConfirmDialog({
+            title: 'Rebuild the memory network?',
+            message: 'Relationships are recomputed from current memories and sessions. Existing memories are not modified.',
+            confirmLabel: 'Rebuild',
+            onConfirm: async close => {
+                close();
+                try {
+                    const response = await fetch('/api/kb/graph/rebuild', {method: 'POST'});
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.detail || 'Rebuild failed');
+                    memoryGraphState.positions.clear();
+                    memoryGraphState.positions3d.clear();
+                    await loadMemoryGraphView();
+                    showToast('Memory network rebuilt.');
+                } catch (error) {
+                    showToast('Memory network rebuild failed.', { type: 'error', duration: 4200 });
+                    console.warn('Memory graph rebuild failed:', error);
+                }
+            }
+        });
     }
 
     async function openMemoryGraphSourceSession(sessionId) {
@@ -4644,10 +5618,11 @@
             if (active) active.textContent = String(stats.active || 0);
             if (archived) archived.textContent = String(stats.archived || 0);
             if (store) store.textContent = stats.sqlite?.available ? 'SQLite + JSON' : 'JSON';
-            document.querySelectorAll('#memory-layer-overview .memory-layer-stat').forEach(card => {
-                const layer = ['core', 'semantic', 'episodic', 'archive'].find(name => card.classList.contains(name));
-                const count = card.querySelector('em');
-                if (count && layer) count.textContent = String(layers[layer] || 0);
+            const tabsRoot = document.getElementById('memory-layer-overview');
+            const allCount = ['core', 'semantic', 'episodic'].reduce((sum, key) => sum + Number(layers[key] || 0), 0);
+            tabsRoot?.querySelectorAll('.memory-tab-count').forEach(counter => {
+                const key = counter.dataset.countLayer;
+                counter.textContent = key === 'all' ? String(allCount) : String(layers[key] || 0);
             });
         } catch (error) {
             console.warn('Unable to load memory layer counts', error);
@@ -4662,7 +5637,7 @@
         const memoryLayer = document.getElementById('memory-layer-filter')?.value || memoryViewerLayer || '';
         const includeArchived = memoryLayer === 'archive';
         memoryViewerIncludeArchived = includeArchived;
-        list.innerHTML = 'Loading...';
+        renderSurfaceState(list, { kind: 'loading', title: 'Loading memories', message: 'Applying the selected filters…', icon: 'layers' });
         try {
             const res = await fetch('/api/kb/search', {
                 method: 'POST',
@@ -4676,9 +5651,15 @@
                 })
             });
             const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || data.message || `Memory search failed (${res.status})`);
             renderMemoryList(data.memories || []);
         } catch(e) {
-            list.innerHTML = 'Error loading memories.';
+            renderSurfaceState(list, {
+                title: 'Memories could not be loaded',
+                message: 'Your saved memories are unchanged. Check the connection and try again.',
+                retry: () => loadMemoryList(),
+                details: e
+            });
             console.error(e);
         }
     }
@@ -4690,7 +5671,7 @@
         selectedMemoryIds.clear();
 
         if (memories.length === 0) {
-            list.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">No memories found.</div>';
+            list.innerHTML = `<div class="st-empty">${ic('layers')}<span>No memories match the current filters.</span><button type="button" class="workspace-secondary-action" onclick="toggleAddMemoryPanel()">${ic('plus', 'icn-sm')}Add memory</button></div>`;
             return;
         }
 
@@ -4728,7 +5709,7 @@
                     <div class="memory-layer-section-copy"><strong>${layerInfo[layer].label}</strong><span>${layerInfo[layer].description}</span></div>
                     <div class="memory-layer-bulk-actions">
                         <em>${layerMemories.length}</em>
-                        ${deletableCount ? `<button type="button" data-memory-select-layer="${layer}" onclick="toggleMemoryLayerSelection('${layer}')">Select deletable</button><button type="button" class="memory-bulk-delete" data-memory-delete-layer="${layer}" onclick="deleteSelectedMemories('${layer}')" disabled>Delete selected (0)</button>` : '<span class="memory-layer-protected">Protected</span>'}
+                        ${deletableCount ? `<button type="button" data-memory-select-layer="${layer}" onclick="toggleMemoryLayerSelection('${layer}')">${ic('check', 'icn-sm')}Select deletable</button><button type="button" class="memory-bulk-delete" data-memory-delete-layer="${layer}" onclick="deleteSelectedMemories('${layer}')" disabled>${ic('trash', 'icn-sm')}Delete selected (0)</button>` : '<span class="memory-layer-protected">Protected</span>'}
                     </div>
                 </header>
                 <div class="memory-layer-items"></div>
@@ -4743,6 +5724,11 @@
                 ? `<div class="memory-tags">${tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>`
                 : '';
             const confidence = Number(mem.confidence ?? 0.75);
+            const gradeNames={ordinary:'普通',attention:'关注',important:'重要',critical:'关键'};
+            const importanceHtml=`<div class="memory-meta">重要性：${Number(mem.importance_score ?? .4).toFixed(2)} · 重要级：${escapeHtml(gradeNames[mem.importance_grade] || '未分级')}${mem.importance_grade_initialized ? '' : '（现值预览）'} · 重要性锁定：${mem.importance_locked ? '是' : '否'}</div>`;
+            const originLabel = ({qq: 'QQ（已验证）', web: '网页', unknown: '未知'})[mem.origin?.channel] || '未知';
+            const sourceEvents = Array.isArray(mem.context_events) ? mem.context_events.slice(-16) : [];
+            const provenanceHtml = `<details class="memory-source-events"><summary>创建通道：${escapeHtml(originLabel)} · 来源事件 ${sourceEvents.length}</summary><div>记忆 ID：${escapeHtml(mem.id)}<br>最近修改通道：${escapeHtml(mem.last_modified_channel || '未知')}</div>${sourceEvents.map(event => `<p>${escapeHtml(event.summary || event.reason || '')}<br><small>发生时间：${escapeHtml(event.occurred_at || '未知')} · 观测时间：${escapeHtml(event.observed_at || '未知')} · 仅当句证据</small></p>`).join('')}</details>`;
             const score = mem.relevance_score !== undefined
                 ? ` · relevance ${Number(mem.relevance_score).toFixed(2)}`
                 : '';
@@ -4770,17 +5756,17 @@
                 : '';
             const layerBadge = `<span class="memory-badge layer ${layer}">${escapeHtml(layer)}</span>`;
             const restoreButton = mem.is_archived && !mem.managed_slot
-                ? `<button class="btn-mem-action" onclick="restoreMemory('${safeId}', this)" title="Restore archived memory">↩</button>`
+                ? `<button class="btn-mem-action" onclick="restoreMemory('${safeId}', this)" title="Restore archived memory">${ic('archive', 'icn-sm')}</button>`
                 : '';
             const canDelete = canDeleteMemoryRecord(mem);
             const editableAttr = mem.managed_slot ? 'false' : 'true';
             const blurHandler = mem.managed_slot ? '' : ` onblur="updateMemoryContent('${safeId}', this.innerText)"`;
             const deleteButton = canDelete
-                ? `<button class="btn-mem-action" onclick="deleteMemory('${safeId}', this)" title="Delete memory permanently">🗑️</button>`
+                ? `<button class="btn-mem-action" onclick="deleteMemory('${safeId}', this)" title="Delete memory permanently">${ic('trash', 'icn-sm')}</button>`
                 : '';
             const lockButton = mem.managed_slot
-                ? `<button class="btn-mem-action lock active" title="Managed memory is protected">🔒</button>`
-                : `<button class="btn-mem-action lock ${mem.is_locked ? 'active' : ''}" onclick="toggleMemoryLock('${safeId}', this)" title="Lock memory">🔒</button>`;
+                ? `<button class="btn-mem-action lock active" title="Managed memory is protected">${ic('lock', 'icn-sm')}</button>`
+                : `<button class="btn-mem-action lock ${mem.is_locked ? 'active' : ''}" onclick="toggleMemoryLock('${safeId}', this)" title="Lock memory">${ic('lock', 'icn-sm')}</button>`;
 
             div.innerHTML = `
                 <div style="flex:1">
@@ -4798,16 +5784,20 @@
                         ${score}
                     </div>
                     ${tagHtml}
+                    ${importanceHtml}
+                    ${provenanceHtml}
                     <div class="memory-content" contenteditable="${editableAttr}"${blurHandler}>${escapeHtml(mem.content || '')}</div>
                 </div>
                 <div class="memory-actions">
-                    <button class="btn-mem-action star ${mem.is_important ? 'active' : ''}" onclick="toggleMemoryStar('${safeId}', this)" title="Star important memory">★</button>
+                    <button class="btn-mem-action star ${mem.is_important ? 'active' : ''}" onclick="toggleMemoryStar('${safeId}', this)" title="Star important memory">${mem.is_important ? ic('star-fill', 'icn-sm') : ic('star', 'icn-sm')}</button>
                     ${lockButton}
-                    ${restoreButton}
-                    ${deleteButton}
+                    <button type="button" class="row-menu-btn" onclick="showMemoryRowMenu(this, '${safeId}', ${mem.is_archived && !mem.managed_slot ? 'true' : 'false'}, ${canDelete ? 'true' : 'false'})" title="More actions" aria-label="More actions" aria-haspopup="menu">${ic('more', 'icn-sm')}</button>
                 </div>
             `;
                 div.dataset.memoryId = String(mem.id || '');
+                div.dataset.contentVersion = mem.content_version || '';
+                div.dataset.projectId = mem.project_id || '';
+                div.dataset.importanceLocked = String(Boolean(mem.importance_locked));
                 div.dataset.memoryLayer = layer;
                 if (canDelete) {
                     const selector = document.createElement('label');
@@ -4826,6 +5816,79 @@
         });
     }
 
+    function showMemoryRowMenu(anchor, id, canRestore, canDelete) {
+        const items = [];
+        items.push({ label: '初始化重要级（保留分数）', icon: 'star', onClick: () => initializeMemoryImportance(id) });
+        if (canDelete && !canRestore) {
+            items.push({ label: '补充信息（先预览）', icon: 'plus', onClick: () => previewMemoryRevision(id, 'append') });
+            items.push({ label: '更正正文（先预览）', icon: 'edit', onClick: () => previewMemoryRevision(id, 'correct') });
+            items.push({ label: '切换重要性锁定', icon: 'lock', onClick: () => toggleMemoryImportanceLock(id) });
+        }
+        items.push({ label: '修改历史 / 恢复旧版', icon: 'history', onClick: () => showMemoryRevisionHistory(id) });
+        if (canRestore) items.push({ label: 'Restore from archive', icon: 'archive', onClick: () => restoreMemory(id, null) });
+        if (canDelete) items.push({ label: 'Delete permanently', icon: 'trash', danger: true, onClick: () => deleteMemory(id, null) });
+        if (!items.length) items.push({ label: 'Protected record', icon: 'lock', onClick: () => {} });
+        showMenuAt(anchor, items, { align: 'end' });
+    }
+
+    const memoryRevisionDrafts = new Map();
+
+    async function initializeMemoryImportance(id) {
+        try {
+            const response=await fetch('/api/kb/importance/preview');const data=await response.json();
+            if (!response.ok) throw new Error(data.detail || '重要级预览不可用');
+            const item=data.items.find(x=>x.id===id);
+            if (!item || item.expected_version!==memoryVersionFor(id)) throw new Error('条目已变化，请重新读取后预览');
+            if (item.initialized) { showToast('重要级已初始化，当前分数保持。'); return; }
+            if (!window.confirm(`${item.title}\n初始化重要级：${item.grade}\n重要性 ${item.score_before} → ${item.score_after}\n正文和星标/锁定保持；形成新版本，原逐条群授权需重新核对。是否提交？`)) return;
+            await memoryMutationResponse(await fetch('/api/kb/importance/initialize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,expected_version:item.expected_version})}));
+            await loadMemoryList();
+        } catch(error) { showToast(error.message || '初始化未确认'); }
+    }
+
+    async function toggleMemoryImportanceLock(id) {
+        const card=document.querySelector(`.memory-item[data-memory-id="${cssEscapeValue(id)}"]`);
+        try {
+            await memoryMutationResponse(await fetch('/api/kb/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,expected_version:memoryVersionFor(id),updates:{importance_locked:card?.dataset.importanceLocked!=='true'}})}));
+            await loadMemoryList();
+        } catch(error) { showToast(error.message || '重要性锁定未保存'); }
+    }
+
+    async function previewMemoryRevision(id, operation, revision = null) {
+        const card = document.querySelector(`.memory-item[data-memory-id="${cssEscapeValue(id)}"]`);
+        const key = `${id}:${operation}`;
+        const content = operation === 'restore' ? '' : window.prompt(operation === 'append' ? '输入新增细节；原有内容将保留。' : '输入完整的新正文；也可用 旧片段→新片段 更正唯一片段。', memoryRevisionDrafts.get(key) || '');
+        if (content === null) return;
+        memoryRevisionDrafts.set(key, content);
+        try {
+            const expected_version = requireMemoryVersion(card);
+            const project_id = card?.dataset.projectId || '';
+            const response = await fetch('/api/kb/revisions/preview', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({id, operation, content, revision, expected_version, project_id})});
+            const preview = await response.json();
+            if (!response.ok) throw new Error(preview.detail || '无法预览，草稿已保留');
+            if (preview.status === 'noop') { showToast('这些信息已存在，没有重复保存。'); return; }
+            if (preview.status !== 'preview') throw new Error('原修改或投影状态待核对，请勿重复保存');
+            if (!window.confirm(`尚未提交。\n\n原内容：\n${preview.old}\n\n新内容：\n${preview.new}\n\n确认更新同一条记忆？`)) return;
+            const applied = await fetch('/api/kb/revisions/confirm', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({confirmation_token:preview.confirmation_token})});
+            const result = await applied.json();
+            if (!applied.ok || result.status !== 'applied') throw new Error(result.status === 'partial' ? '修改或投影状态待核对，请勿重复保存；草稿已保留' : '预览已失效或结果待核对；草稿已保留，请重新读取');
+            memoryRevisionDrafts.delete(key);
+            showToast('同一条记忆已更新，原创建来源保留。');
+            await loadMemoryList();
+        } catch (error) { showToast(error.message || '修改未确认，草稿已保留'); }
+    }
+
+    async function showMemoryRevisionHistory(id) {
+        const card = document.querySelector(`.memory-item[data-memory-id="${cssEscapeValue(id)}"]`);
+        try {
+            const response = await fetch(`/api/kb/revisions/history?id=${encodeURIComponent(id)}&project_id=${encodeURIComponent(card?.dataset.projectId || '')}`);
+            const history = await response.json();
+            if (!response.ok) throw new Error(history.detail || '历史不可用');
+            const revision = window.prompt('最近修改历史（最多20项）。输入要恢复的版本号，下一步仍会预览；取消仅查看。\n\n' + history.items.map(item => `版本 ${item.revision} · ${item.created_at}\n${item.content}`).join('\n\n'), '');
+            if (revision && /^\d+$/.test(revision)) await previewMemoryRevision(id, 'restore', Number(revision));
+        } catch (error) { showToast(error.message || '历史不可用'); }
+    }
+
     function toggleMemoryBulkSelection(memoryId, selected, layer) {
         if (selected) selectedMemoryIds.add(memoryId);
         else selectedMemoryIds.delete(memoryId);
@@ -4839,10 +5902,10 @@
         const selectedCount = checkboxes.filter(checkbox => checkbox.checked).length;
         const selectButton = section.querySelector(`[data-memory-select-layer="${layer}"]`);
         const deleteButton = section.querySelector(`[data-memory-delete-layer="${layer}"]`);
-        if (selectButton) selectButton.textContent = selectedCount === checkboxes.length && checkboxes.length ? 'Clear selection' : 'Select deletable';
+        if (selectButton) selectButton.innerHTML = `${ic('check', 'icn-sm')}${selectedCount === checkboxes.length && checkboxes.length ? 'Clear selection' : 'Select deletable'}`;
         if (deleteButton) {
             deleteButton.disabled = selectedCount === 0;
-            deleteButton.textContent = `Delete selected (${selectedCount})`;
+            deleteButton.innerHTML = `${ic('trash', 'icn-sm')}Delete selected (${selectedCount})`;
         }
     }
 
@@ -4869,27 +5932,33 @@
             .filter(Boolean);
         if (!ids.length) return;
         try {
+            const expected_versions = Object.fromEntries(ids.map(id => [id, memoryVersionFor(id)]));
             const previewResponse = await fetch('/api/kb/delete/bulk', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ids})
+                body: JSON.stringify({ids, expected_versions})
             });
             const preview = await previewResponse.json();
-            if (!previewResponse.ok) throw new Error(preview.detail || preview.message || 'Unable to review deletion');
+            if (!previewResponse.ok || !preview.confirmation_token) throw new Error(preview.detail || preview.message || 'Unable to review deletion');
             const impact = memoryDeletionImpactText(preview);
-            if (!confirm(`Permanently delete ${preview.delete_count || ids.length} selected ${layer} memories?\n\n${impact}\n\nThis cannot be undone.`)) return;
-            const response = await fetch('/api/kb/delete/bulk', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ids, confirmation_token: preview.confirmation_token})
-            });
-            const data = await response.json();
-            if (!response.ok || data.status !== 'success') throw new Error(data.detail || data.message || 'Bulk deletion failed');
-            ids.forEach(id => selectedMemoryIds.delete(id));
-            await Promise.all([loadMemoryList(), loadMemoryLayerOverview()]);
-            const blockedCount = Array.isArray(data.blocked) ? data.blocked.length : 0;
-            if (blockedCount) alert(`${data.deleted_count || 0} memories deleted. ${blockedCount} protected memories were skipped.`);
-        } catch (error) {
-            alert('Failed to delete selected memories: ' + (error.message || error));
+            confirmAction(`Permanently delete ${preview.delete_count || ids.length} selected ${layer} memories?\n\n${impact}\n\nThis cannot be undone.`, async () => {
+
+                try {
+                const response = await fetch('/api/kb/delete/bulk', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ids, expected_versions, confirmation_token: preview.confirmation_token})
+                });
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') throw new Error(data.detail || data.message || 'Bulk deletion failed');
+                ids.forEach(id => selectedMemoryIds.delete(id));
+                await Promise.all([loadMemoryList(), loadMemoryLayerOverview()]);
+                const blockedCount = Array.isArray(data.blocked) ? data.blocked.length : 0;
+                if (blockedCount) showToast(`${data.deleted_count || 0} memories deleted. ${blockedCount} protected memories were skipped.`, { type: 'error', duration: 3600 });
+                } catch (error) {
+                    showToast(error.message || String(error), {type:'error', duration:5000});
+                }
+        });        } catch (error) {
+            showToast('Failed to delete selected memories: ' + (error.message || error), { type: 'error', duration: 3600 });
         }
     }
 
@@ -4918,13 +5987,15 @@
             const card = document.createElement('section');
             card.className = 'memory-candidate-card';
             card.dataset.candidateId = id;
+            card.dataset.contentVersion = candidate.content_version || '';
+            card.dataset.contentTruncated = candidate.content_truncated ? 'true' : 'false';
             card.innerHTML = `
                 <div class="memory-candidate-topline">
                     <div>
                         <div class="memory-candidate-kicker">Saya noticed a memory candidate</div>
                         <input class="memory-candidate-title" value="${escapeHtml(candidate.title || 'Autonomous memory')}">
                     </div>
-                    <button class="memory-candidate-close" onclick="ignoreAutonomousMemoryCandidate('${escapeJsString(id)}')" title="Ignore">x</button>
+                    <button class="memory-candidate-close" onclick="ignoreAutonomousMemoryCandidate('${escapeJsString(id)}')" title="Ignore">${ic('close', 'icn-sm')}</button>
                 </div>
                 <textarea class="memory-candidate-content" rows="4">${escapeHtml(candidate.content || '')}</textarea>
                 <div class="memory-candidate-grid">
@@ -4946,12 +6017,13 @@
                         <span>confidence ${confidence.toFixed(2)}</span>
                     </div>
                     <div class="memory-candidate-actions">
-                        <button onclick="ignoreAutonomousMemoryCandidate('${escapeJsString(id)}')">Ignore</button>
-                        <button class="primary" onclick="confirmAutonomousMemoryCandidate('${escapeJsString(id)}')">Save</button>
+                        <button onclick="ignoreAutonomousMemoryCandidate('${escapeJsString(id)}')">${ic('close', 'icn-sm')}Ignore</button>
+                        <button class="primary" onclick="confirmAutonomousMemoryCandidate('${escapeJsString(id)}')">${ic('save', 'icn-sm')}Save</button>
                     </div>
                 </div>
             `;
             stack.appendChild(card);
+            if (candidate.confirmation_operation) markCandidatePending(card,id,candidate.confirmation_operation);
         });
     }
 
@@ -4979,69 +6051,579 @@
         renderedMemoryCandidateIds.delete(String(id));
     }
 
+    // --- Chat-area memory confirmation (operation-confirmation style) ---
+    // The confirmation box lives inside Saya's reply like a code block:
+    // explicit "记住" saves render as keep/delete confirmations, autonomous
+    // candidates as save/ignore cards, auto-confirmed memories as done lines.
+    // After every item is resolved (or the block is manually collapsed) the
+    // whole block shrinks to a single summary line. The payload is persisted
+    // on the AI message itself, so it reappears only when that chat is
+    // reopened and never crosses into other sessions or overlays.
+    function renderChatMemoryConfirm(aiDiv, payload, options = {}) {
+        const historyMode = options.history === true;
+        const explicitItems = (payload && Array.isArray(payload.explicit)) ? payload.explicit : [];
+        const pending = (payload && Array.isArray(payload.candidates)) ? payload.candidates.filter(c => c && String(c.id || '').trim()) : [];
+        const autos = (payload && Array.isArray(payload.auto_confirmed)) ? payload.auto_confirmed.filter(c => c && String(c.id || '').trim()) : [];
+        const conflicts = (payload && Array.isArray(payload.conflicts)) ? payload.conflicts.filter(c => c && String(c.id || '').trim()) : [];
+        const operation = payload?.operation;
+        if (!explicitItems.length && !pending.length && !autos.length && !conflicts.length && !operation) return;
+        const bubble = aiDiv && aiDiv.querySelector ? aiDiv.querySelector('.message-bubble.ai') : null;
+        const host = bubble || aiDiv;
+        if (!host) return;
+
+        let container = host.querySelector(':scope > .chat-memory-confirm');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'chat-memory-confirm';
+            container.dataset.collapsed = 'false';
+            container.innerHTML = `
+                <div class="chat-memory-confirm-header">
+                    <span class="chat-memory-confirm-title"></span>
+                    <button type="button" class="chat-memory-collapse-btn" onclick="toggleChatMemoryConfirm(this)">收起</button>
+                </div>
+                <div class="chat-memory-confirm-body"></div>
+            `;
+            host.appendChild(container);
+        }
+        const body = container.querySelector('.chat-memory-confirm-body');
+        if (operation && !body.querySelector('.memory-write-result')) {
+            const line = document.createElement('div');
+            line.className = 'memory-write-result';
+            const describe = result => result.committed ? '本次记忆操作已提交。'
+                : result.items?.some(item => ['unknown', 'pending', 'partial'].includes(item.state)) ? '本次记忆操作结果待核对。' : '本次记忆操作未提交。';
+            const label = document.createElement('span');
+            label.textContent = describe(operation);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = '核对保存结果';
+            button.addEventListener('click', async () => {
+                button.disabled = true;
+                try {
+                    const query = new URLSearchParams({session_id: aiDiv.dataset.sessionId || currentSessionId || '', operation_id: operation.operation_id});
+                    const response = await fetch('/api/kb/write-result?' + query);
+                    const result = await response.json();
+                    label.textContent = response.ok ? describe(result) : result.detail || '当前结果暂不可读。';
+                } catch (_) { label.textContent = '当前结果暂不可读，请稍后核对。'; }
+                finally { button.disabled = false; }
+            });
+            line.append(label, button);
+            body.appendChild(line);
+        }
+
+        explicitItems.forEach(item => {
+            const memoryId = String(item.memory_id || item.id || '').trim();
+            if (!memoryId || container.querySelector(`.chat-memory-explicit[data-memory-id="${cssEscapeValue(memoryId)}"]`)) return;
+            const importance = Number(item.importance_score ?? 0.5);
+            const card = document.createElement('section');
+            card.className = 'memory-candidate-card chat-memory-card chat-memory-explicit';
+            card.dataset.memoryId = memoryId;
+            card.dataset.contentVersion = item.content_version || '';
+            card.dataset.contentTruncated = item.content_truncated ? 'true' : 'false';
+            card.innerHTML = `
+                <div class="memory-candidate-topline">
+                    <div>
+                        <div class="memory-candidate-kicker">已按你的要求保存（可编辑）</div>
+                        <input class="memory-candidate-title" value="${escapeHtml(item.title || 'Explicit memory')}">
+                    </div>
+                </div>
+                <textarea class="memory-candidate-content" rows="3">${escapeHtml(item.content || '')}</textarea>
+                ${chatMemoryImportanceRow(importance)}
+                <div class="memory-candidate-footer">
+                    <div class="memory-candidate-options"><span>显式保存 · 可撤销</span></div>
+                    <div class="memory-candidate-actions">
+                        <button onclick="ignoreExplicitMemory('${escapeJsString(memoryId)}')">忽略（删除）</button>
+                        <button class="primary" onclick="keepExplicitMemory('${escapeJsString(memoryId)}')">确认保留</button>
+                    </div>
+                </div>
+            `;
+            bindChatMemoryImportanceSlider(card);
+            body.appendChild(card);
+        });
+
+        autos.forEach(item => {
+            if (container.querySelector(`.chat-memory-done.auto[data-candidate-id="${cssEscapeValue(String(item.id))}"]`)) return;
+            const line = document.createElement('div');
+            line.className = 'chat-memory-done auto';
+            line.dataset.candidateId = String(item.id);
+            line.textContent = `已自动保存（跨会话重复确认）· ${item.title || item.content || '记忆'}`;
+            body.appendChild(line);
+        });
+
+        conflicts.forEach(conflict => renderMemoryConflictCard(body, conflict));
+
+        pending.forEach(candidate => {
+            const id = String(candidate.id);
+            if (renderedMemoryCandidateIds.has(id)) return;
+            renderedMemoryCandidateIds.add(id);
+            const tags = Array.isArray(candidate.tags) ? candidate.tags.join(', ') : '';
+            const confidence = Number(candidate.confidence ?? 0.7);
+            const card = document.createElement('section');
+            card.className = 'memory-candidate-card chat-memory-card';
+            card.dataset.candidateId = id;
+            card.dataset.contentVersion = candidate.content_version || '';
+            card.dataset.contentTruncated = candidate.content_truncated ? 'true' : 'false';
+            card.innerHTML = `
+                <div class="memory-candidate-topline">
+                    <div>
+                        <div class="memory-candidate-kicker">Saya 想记住这条记忆</div>
+                        <input class="memory-candidate-title" value="${escapeHtml(candidate.title || 'Autonomous memory')}">
+                    </div>
+                </div>
+                <textarea class="memory-candidate-content" rows="3">${escapeHtml(candidate.content || '')}</textarea>
+                <div class="memory-candidate-grid">
+                    <label>
+                        <span>Category</span>
+                        <select class="memory-candidate-category">
+                            ${memoryCandidateCategoryOptions(candidate.category || 'general')}
+                        </select>
+                    </label>
+                    <label>
+                        <span>Tags</span>
+                        <input class="memory-candidate-tags" value="${escapeHtml(tags)}">
+                    </label>
+                </div>
+                ${chatMemoryImportanceRow(Number(candidate.importance_score ?? 0.5))}
+                <div class="memory-candidate-footer">
+                    <div class="memory-candidate-options">
+                        <span>confidence ${confidence.toFixed(2)}</span>
+                        ${Number(candidate.occurrence_count || 1) > 1 ? `<span>出现 ${Number(candidate.occurrence_count)} 次</span>` : ''}
+                    </div>
+                    <div class="memory-candidate-actions">
+                        <button onclick="ignoreAutonomousMemoryCandidate('${escapeJsString(id)}')">取消</button>
+                        <button class="primary" onclick="confirmAutonomousMemoryCandidate('${escapeJsString(id)}')">${ic('save', 'icn-sm')}保存</button>
+                    </div>
+                </div>
+            `;
+            bindChatMemoryImportanceSlider(card);
+            body.appendChild(card);
+            if (candidate.confirmation_operation) markCandidatePending(card,id,candidate.confirmation_operation);
+        });
+
+        updateChatMemoryConfirmTitle(container);
+
+        // When restoring from saved history, resolve each candidate against
+        // its authoritative server-side status instead of re-offering cards
+        // that were already handled.
+        if (historyMode) {
+            fetchCandidateStatusMap().then(statusMap => {
+                pending.forEach(candidate => {
+                    const status = statusMap[String(candidate.id)];
+                    if (!status || status === 'pending') return;
+                    const kind = status === 'ignored' ? 'ignored'
+                        : (status === 'duplicate' ? 'duplicate' : 'saved');
+                    resolveChatMemoryCard(String(candidate.id), kind);
+                });
+            });
+        }
+    }
+
+    let candidateStatusMapPromise = null;
+    function fetchCandidateStatusMap() {
+        if (!candidateStatusMapPromise) {
+            candidateStatusMapPromise = fetch('/api/kb/candidates?status=&limit=100')
+                .then(response => (response.ok ? response.json() : { candidates: [] }))
+                .then(data => {
+                    const map = {};
+                    (data.candidates || []).forEach(candidate => {
+                        if (candidate && candidate.id) map[String(candidate.id)] = candidate.status || 'pending';
+                    });
+                    return map;
+                })
+                .catch(() => ({}));
+        }
+        return candidateStatusMapPromise;
+    }
+
+    function chatMemoryImportanceRow(value) {
+        const clamped = Math.max(0, Math.min(1, Number(value) || 0));
+        return `
+            <div class="chat-memory-importance-row">
+                <span class="chat-memory-importance-label">重要性</span>
+                <input type="range" class="memory-candidate-importance" min="0" max="1" step="0.05"
+                    value="${clamped.toFixed(2)}" aria-label="记忆重要性">
+                <span class="chat-memory-importance-value">${Math.round(clamped * 100)}%</span>
+            </div>
+        `;
+    }
+
+    function bindChatMemoryImportanceSlider(card) {
+        const slider = card.querySelector('.memory-candidate-importance');
+        const display = card.querySelector('.chat-memory-importance-value');
+        if (!slider || !display) return;
+        slider.addEventListener('input', () => {
+            display.textContent = Math.round(Number(slider.value) * 100) + '%';
+        });
+    }
+
+    function readChatMemoryImportance(scope) {
+        const slider = scope?.querySelector?.('.memory-candidate-importance');
+        const value = Number(slider?.value);
+        return Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : null;
+    }
+
+    function toggleChatMemoryConfirm(btn) {
+        const container = btn.closest('.chat-memory-confirm');
+        if (!container) return;
+        const collapsed = container.dataset.collapsed === 'true';
+        container.dataset.collapsed = collapsed ? 'false' : 'true';
+        btn.textContent = collapsed ? '收起' : '展开';
+    }
+
+    function collapseChatMemoryContainer(container, summarize) {
+        if (!container) return;
+        container.dataset.collapsed = 'true';
+        const btn = container.querySelector('.chat-memory-collapse-btn');
+        if (btn) btn.textContent = '展开';
+        if (summarize) {
+            const titleEl = container.querySelector('.chat-memory-confirm-title');
+            if (titleEl) {
+                const saved = container.querySelectorAll('.chat-memory-done.ok').length;
+                const ignored = container.querySelectorAll('.chat-memory-done.muted').length;
+                const auto = container.querySelectorAll('.chat-memory-done.auto').length;
+                const parts = [`保存 ${saved}`, `忽略 ${ignored}`];
+                if (auto) parts.push(`自动保存 ${auto}`);
+                titleEl.textContent = `记忆处理完成：${parts.join(' · ')}`;
+            }
+        }
+    }
+
+    function resolveChatMemoryCard(id, kind) {
+        const card = document.querySelector(`.memory-candidate-card.chat-memory-card[data-candidate-id="${cssEscapeValue(id)}"]`);
+        if (!card) {
+            removeMemoryCandidateCard(id);
+            return;
+        }
+        const title = card.querySelector('.memory-candidate-title')?.value?.trim() || '记忆';
+        renderedMemoryCandidateIds.delete(String(id));
+        const line = document.createElement('div');
+        if (kind === 'saved') {
+            line.className = 'chat-memory-done ok';
+            line.textContent = `已保存记忆 · ${title}`;
+        } else if (kind === 'duplicate') {
+            line.className = 'chat-memory-done ok';
+            line.textContent = `已有相同记忆，未重复保存 · ${title}`;
+        } else {
+            line.className = 'chat-memory-done muted';
+            line.textContent = `已忽略记忆建议 · ${title}`;
+        }
+        card.replaceWith(line);
+        const container = line.closest('.chat-memory-confirm');
+        if (container && !container.querySelector('.memory-candidate-card')) {
+            collapseChatMemoryContainer(container, true);
+        }
+    }
+
+    function resolveExplicitMemoryCard(memoryId, kind, titleOverride) {
+        const card = document.querySelector(`.chat-memory-explicit[data-memory-id="${cssEscapeValue(memoryId)}"]`);
+        if (!card) return;
+        const title = titleOverride
+            || card.querySelector('.memory-candidate-title')?.value?.trim()
+            || '记忆';
+        const line = document.createElement('div');
+        if (kind === 'deleted') {
+            line.className = 'chat-memory-done muted';
+            line.textContent = `已删除记忆 · ${title}`;
+        } else {
+            line.className = 'chat-memory-done ok';
+            line.textContent = `已保存记忆 · ${title}`;
+        }
+        card.replaceWith(line);
+        const container = line.closest('.chat-memory-confirm');
+        if (container && !container.querySelector('.memory-candidate-card')) {
+            collapseChatMemoryContainer(container, true);
+        }
+    }
+
+    async function keepExplicitMemory(memoryId) {
+        const card = document.querySelector(`.chat-memory-explicit[data-memory-id="${cssEscapeValue(memoryId)}"]`);
+        const title = card?.querySelector('.memory-candidate-title')?.value?.trim() || '';
+        const content = card?.querySelector('.memory-candidate-content')?.value?.trim() || '';
+        const importance = readChatMemoryImportance(card);
+        try {
+            // Persist any edits the user made in the card before keeping it.
+            if (title || content || importance !== null) {
+                const updates = {};
+                if (title) updates.title = title.slice(0, 120);
+                if (content) updates.content = content;
+                if (importance !== null) updates.importance_score = importance;
+                const response = await fetch('/api/kb/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: memoryId, updates, expected_version: requireMemoryVersion(card, true) })
+                });
+                await memoryMutationResponse(response);
+                if (typeof loadMemoryList === 'function') loadMemoryList();
+            }
+        } catch (e) {
+            showToast('Failed to save your edits: ' + e, { type: 'error', duration: 5000 });
+            return;
+        }
+        resolveExplicitMemoryCard(memoryId, 'kept', title || undefined);
+    }
+
+    async function ignoreExplicitMemory(memoryId) {
+        try {
+            const card = document.querySelector(`.chat-memory-explicit[data-memory-id="${cssEscapeValue(memoryId)}"]`);
+            const expected_version = requireMemoryVersion(card);
+            const preview = await memoryMutationResponse(await fetch('/api/kb/delete', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({id:memoryId, expected_version})
+            }));
+            if (!preview.confirmation_token) throw new Error('无法确认删除，请重新读取条目。');
+            const data = await memoryMutationResponse(await fetch('/api/kb/delete', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({id:memoryId, expected_version, confirmation_token:preview.confirmation_token})
+            }));
+            if (data.status !== 'success') throw new Error('删除对象已变化，请重新核对。');
+            resolveExplicitMemoryCard(memoryId, 'deleted');
+            loadMemoryList();
+        } catch (e) {
+            showToast(e.message || String(e), {type:'error', duration:5000});
+        }
+    }
+
+    function memoryVersionFor(id, kind = 'memory') {
+        const selector = kind === 'candidate' ? '.memory-candidate-card[data-candidate-id' : '.memory-item[data-memory-id';
+        const card = document.querySelector(`${selector}="${cssEscapeValue(id)}"]`);
+        return requireMemoryVersion(card);
+    }
+
+    function requireMemoryVersion(card, editing = false) {
+        const version = card?.dataset?.contentVersion || '';
+        if (!/^[0-9a-f]{64}$/.test(version)) throw new Error('请重新打开记忆管理，读取完整条目后再操作；当前卡片缺少版本。');
+        if (editing && card.dataset.contentTruncated === 'true') throw new Error('此卡片只显示部分正文，请在记忆管理中读取完整条目后再修改或保存。');
+        return version;
+    }
+
+    async function memoryMutationResponse(response) {
+        const data = await response.json();
+        if (response.status === 409) throw new Error('条目已被另一端修改，请核对最新内容；当前草稿已保留。');
+        if (!response.ok || !['success', 'duplicate', 'confirmation_required'].includes(data.status)) {
+            throw new Error(data.detail || data.message || '操作未完成，请重新读取状态后核对。');
+        }
+        return data;
+    }
+
+    async function updateRenderedMemory(id, updates) {
+        const card = document.querySelector(`.memory-item[data-memory-id="${cssEscapeValue(id)}"]`);
+        const expected_version = requireMemoryVersion(card);
+        const data = await memoryMutationResponse(await fetch('/api/kb/update', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({id, updates, expected_version})
+        }));
+        // The response version is captured under the same write lock as the commit.
+        card.dataset.contentVersion = data.content_version || '';
+        return data;
+    }
+
     function readMemoryCandidateUpdates(id) {
         const card = document.querySelector(`.memory-candidate-card[data-candidate-id="${cssEscapeValue(id)}"]`);
         if (!card) return null;
         const tags = card.querySelector('.memory-candidate-tags')?.value || '';
+        const importance = readChatMemoryImportance(card);
         return {
             title: card.querySelector('.memory-candidate-title')?.value.trim() || 'Autonomous memory',
             content: card.querySelector('.memory-candidate-content')?.value.trim() || '',
             category: card.querySelector('.memory-candidate-category')?.value || 'general',
             tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
+            importance_score: importance !== null ? importance : undefined,
             is_important: card.querySelector('.memory-candidate-star')?.checked === true,
             is_locked: card.querySelector('.memory-candidate-lock')?.checked === true
+        };
+    }
+
+    function markCandidatePending(card, id, operation) {
+        if (!card) return;
+        let line = card.querySelector('.candidate-write-status');
+        if (!line) {
+            line = document.createElement('div');
+            line.className = 'candidate-write-status';
+            card.appendChild(line);
+        }
+        line.textContent = operation.committed ? '长期记忆已保存，候选状态待核对。' : '保存结果待核对，请先核对原操作。';
+        const button = card.querySelector('button.primary');
+        card.querySelectorAll('input,textarea,select,button').forEach(input => { if (input !== button) input.disabled = true; });
+        if (!button) return;
+        button.textContent = operation.committed ? '核对候选状态' : '核对保存结果';
+        button.onclick = async () => {
+            button.disabled = true;
+            try {
+                const response = operation.committed
+                    ? await fetch('/api/kb/candidates/reconcile', {method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({operation_id: operation.operation_id})})
+                    : await fetch('/api/kb/write-result?' + new URLSearchParams({operation_id: operation.operation_id}));
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || '当前操作不可用。');
+                if (data.operation?.committed && !data.candidate_status_pending) {
+                    resolveChatMemoryCard(id, 'saved');
+                    loadMemoryList();
+                } else {
+                    line.textContent = data.committed || data.operation?.committed
+                        ? '原保存已提交，候选状态仍待核对。' : '原保存结果仍待核对，请查看已存记忆清单。';
+                }
+            } catch (error) { line.textContent = error.message || '当前结果暂不可读。'; }
+            finally { button.disabled = false; }
         };
     }
 
     async function confirmAutonomousMemoryCandidate(id) {
         const updates = readMemoryCandidateUpdates(id);
         if (!updates || !updates.content) {
-            alert("Memory content is required.");
+            showToast("Memory content is required.", { type: 'error', duration: 3600 });
             return;
         }
         try {
             const response = await fetch('/api/kb/candidates/confirm', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id, updates})
+                body: JSON.stringify({id, updates, expected_version: requireMemoryVersion(document.querySelector(`.memory-candidate-card[data-candidate-id="${cssEscapeValue(id)}"]`), true)})
             });
-            if (!response.ok) throw new Error("Save candidate failed");
-            const data = await response.json();
+            const outcome = await response.clone().json();
+            if (outcome.operation && (outcome.candidate_status_pending || !response.ok)) {
+                markCandidatePending(document.querySelector(`.memory-candidate-card[data-candidate-id="${cssEscapeValue(id)}"]`), id, outcome.operation);
+            }
+            const data = await memoryMutationResponse(response);
             surfaceMemoryMaintenanceResult(data);
-            removeMemoryCandidateCard(id);
+            if (!data.candidate_status_pending) resolveChatMemoryCard(id, data.status === 'duplicate' ? 'duplicate' : 'saved');
+            if (data.conflict && data.conflict.id) {
+                // The confirmed candidate contradicts an existing memory:
+                // surface the negotiation card on the latest confirm box (or
+                // a fresh one on the last AI bubble).
+                let container = document.querySelector('.chat-memory-confirm:last-of-type');
+                if (!container) {
+                    const bubbles = document.querySelectorAll('.message-bubble.ai');
+                    const lastBubble = bubbles[bubbles.length - 1];
+                    if (lastBubble) renderChatMemoryConfirm(lastBubble.closest('[class*=message]') || lastBubble, { conflicts: [data.conflict] });
+                } else {
+                    renderMemoryConflictCard(container.querySelector('.chat-memory-confirm-body'), data.conflict);
+                    updateChatMemoryConfirmTitle(container);
+                    container.dataset.collapsed = 'false';
+                }
+            }
             if (data.status === 'duplicate') {
-                alert("That memory already exists.");
+                showToast("That memory already exists.", { type: 'info', duration: 3600 });
             }
             loadMemoryList();
         } catch (e) {
-            alert("Failed to save memory candidate: " + e);
+            showToast("Failed to save memory candidate: " + e, { type: 'error', duration: 3600 });
         }
     }
 
     async function ignoreAutonomousMemoryCandidate(id) {
         try {
-            await fetch('/api/kb/candidates/ignore', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id})
+            const response = await fetch('/api/kb/candidates/ignore', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id, expected_version: memoryVersionFor(id, 'candidate')})
             });
+            const data = await memoryMutationResponse(response);
+            if (data.status !== 'success') throw new Error('候选未忽略，请重新读取状态。');
+            resolveChatMemoryCard(id, 'ignored');
         } catch (e) {
-            console.warn("Unable to ignore memory candidate", e);
+            showToast(e.message || String(e), {type:'error', duration:5000});
         }
-        removeMemoryCandidateCard(id);
+    }
+
+    function ensureMemoryAddDialog() {
+        if (document.getElementById('memory-add-panel')) return;
+        const overlay = document.createElement('div');
+        overlay.className = 'st-dialog-overlay';
+        overlay.id = 'memory-add-panel';
+        overlay.dataset.persistent = 'true';
+        overlay.hidden = true;
+        overlay.innerHTML = `
+            <div class="st-dialog st-dialog-wide" role="dialog" aria-modal="true" aria-label="Add memory">
+                <div class="st-dialog-title">Add memory</div>
+                <div class="st-dialog-body">
+                    <div class="form-row stacked" style="margin-bottom:12px;">
+                        <label class="form-label" for="memory-add-title">Title <span class="form-help" style="display:inline;">(optional)</span></label>
+                        <input id="memory-add-title" type="text" placeholder="Title (optional)" />
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                        <div>
+                            <label class="form-label" for="memory-add-category">Category</label>
+                            <select id="memory-add-category">
+                                <option value="">Auto category</option>
+                                <option value="identity">Identity</option>
+                                <option value="preference">Preference</option>
+                                <option value="relationship">Relationship</option>
+                                <option value="project">Project</option>
+                                <option value="goal">Goal</option>
+                                <option value="schedule">Schedule</option>
+                                <option value="health">Health</option>
+                                <option value="emotion">Emotion</option>
+                                <option value="general">General</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label" for="memory-add-layer">Layer</label>
+                            <select id="memory-add-layer">
+                                <option value="">Auto layer</option>
+                                <option value="core">Core</option>
+                                <option value="semantic">Semantic</option>
+                                <option value="episodic">Episodic</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label class="form-label" for="memory-add-content">Content</label>
+                    <textarea id="memory-add-content" rows="4" placeholder="Write the memory to save..."></textarea>
+                    <div class="memory-add-actions">
+                        <label class="switch"><input id="memory-add-important" type="checkbox"><span class="switch-track"></span><span class="switch-label">Star important</span></label>
+                        <label class="switch"><input id="memory-add-locked" type="checkbox"><span class="switch-track"></span><span class="switch-label">Lock</span></label>
+                        <label id="memory-add-project-label" class="switch" style="display:none;"><input id="memory-add-project" type="checkbox"><span class="switch-track"></span><span class="switch-label">Current project only</span></label>
+                    </div>
+                </div>
+                <div class="st-dialog-footer">
+                    <button type="button" class="workspace-secondary-action" onclick="toggleAddMemoryPanel()">${ic('close', 'icn-sm')}Cancel</button>
+                    <button type="button" class="workspace-primary-action" onclick="saveManualMemory()">${ic('save', 'icn-sm')}Save memory</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        const projectLabel = overlay.querySelector('#memory-add-project-label');
+        if (projectLabel && currentProjectId) projectLabel.style.display = 'inline-flex';
     }
 
     function toggleAddMemoryPanel() {
+        ensureMemoryAddDialog();
         const panel = document.getElementById('memory-add-panel');
         if (!panel) return;
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        panel.hidden = !panel.hidden;
     }
 
+    function showMemoryToolsMenu(anchor) {
+        showMenuAt(anchor, [
+            { label: 'Rebuild metadata', icon: 'refresh', onClick: () => rebuildMemoryMetadata() }
+        ], { align: 'end' });
+    }
+
+    function syncMemoryLayerTabs(layer) {
+        document.querySelectorAll('#memory-layer-overview .ws-tab').forEach(tab => {
+            const active = (tab.dataset.memoryLayerTab || '') === (layer || '');
+            tab.classList.toggle('active', active);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+    }
+
+    sayaPageReady( () => {
+        document.getElementById('memory-layer-overview')?.addEventListener?.('click', () => {});
+    });
+    document.addEventListener('click', event => {
+        const tab = event.target.closest('#memory-layer-overview .ws-tab');
+        if (tab) {
+            const layer = tab.dataset.memoryLayerTab || '';
+            const select = document.getElementById('memory-layer-filter');
+            if (select) select.value = layer;
+            setMemoryLayerFilter(layer);
+        }
+    });
+
+    let manualMemorySubmission=null;
+    let manualMemoryBusy=false;
     async function saveManualMemory() {
+        if(manualMemoryBusy)return;
         const contentEl = document.getElementById('memory-add-content');
-        const content = contentEl?.value.trim() || '';
+        const content = manualMemorySubmission?.body.content || contentEl?.value.trim() || '';
         if (!content) {
-            alert("Memory content is required.");
+            showToast('Memory content is required.', { type: 'error' });
             return;
         }
 
@@ -5058,30 +6640,107 @@
             metadata.project_scoped = true;
         }
 
+        const controls=document.querySelectorAll('#memory-add-panel input,#memory-add-panel textarea,#memory-add-panel select');
+        const button=document.querySelector('#memory-add-panel .workspace-primary-action');
+        manualMemoryBusy=true;controls.forEach(control=>{control.disabled=true;});
         try {
+            if(!manualMemorySubmission)manualMemorySubmission={body:{
+                operation_id:crypto.randomUUID().replace(/-/g,''),title:document.getElementById('memory-add-title')?.value.trim()||null,
+                content,source:'manual',is_important:document.getElementById('memory-add-important')?.checked===true,
+                category:document.getElementById('memory-add-category')?.value||null,metadata}};
+            let data;
+            if(manualMemorySubmission.operation){
+                const response=await fetch('/api/kb/manual-result?'+new URLSearchParams({operation_id:manualMemorySubmission.operation}));
+                if(!response.ok)throw new Error('原操作暂时无法核对');
+                const result=await response.json();
+                data={status:result.committed?'success':'unknown',operation:result,memory_id:result.items?.[0]?.memory_id};
+            }else{
             const response = await fetch('/api/kb/add', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    title: document.getElementById('memory-add-title')?.value.trim() || null,
-                    content,
-                    source: 'manual',
-                    is_important: document.getElementById('memory-add-important')?.checked !== false,
-                    category: document.getElementById('memory-add-category')?.value || null,
-                    metadata
-                })
+                body:JSON.stringify(manualMemorySubmission.body)
             });
-            if (!response.ok) throw new Error("Add memory failed");
-            const data = await response.json();
+            data=await response.json();
+            if(!response.ok)throw new Error(data.detail||'保存结果暂时无法核对');
+            }
+            if(data.operation?.operation_id)manualMemorySubmission.operation=data.operation.operation_id;
+            if(data.status!=='success')throw new Error(data.message||'原操作待核对，未再次保存');
             surfaceMemoryMaintenanceResult(data);
             document.getElementById('memory-add-title').value = '';
             contentEl.value = '';
             document.getElementById('memory-add-category').value = '';
             document.getElementById('memory-add-layer').value = '';
+            toggleAddMemoryPanel();
+            showToast(data.content_changed ? '原操作已提交；条目后来已变化，请在列表核对。' : '已确认记忆保存。');
+            manualMemorySubmission=null;
             loadMemoryList();
         } catch(e) {
-            alert("Failed to save memory: " + e);
+            showToast('保存结果待核对：'+(e.message||e)+'。再次点击将核对原请求。', { type: 'error' });
+        }finally{
+            manualMemoryBusy=false;
+            controls.forEach(control=>{control.disabled=Boolean(manualMemorySubmission);});
+            if(button)button.textContent=manualMemorySubmission?'核对原保存结果':'Save memory';
         }
+    }
+
+    async function showMemoryReverseHealth(source, after = '', version = '') {
+        const panel=document.getElementById('memory-health-result');if(!panel)return;
+        panel.textContent='正在只读核对派生记录的事实落点…';
+        try {
+            const query=new URLSearchParams({source,after_id:after,limit:'100'});if(version)query.set('expected_version',version);
+            const response=await fetch('/api/kb/health/reverse?'+query);const data=await response.json();
+            if(!response.ok)throw new Error(data.detail || '检查未完成');
+            panel.textContent=`本页反向检查 ${Number(data.checked)} 条；${data.complete?'已到该索引末页':'尚未完成全量核对'}。原记忆和索引未修改。`;
+            for(const issue of data.issues || []){const line=document.createElement('p');line.textContent=`${issue.id}：${issue.code}（需核对，不自动清理）`;panel.appendChild(line);}
+            if(data.status==='inspection_incomplete'||data.status==='store_absent'){const note=document.createElement('p');note.textContent='存储不可用或检查超出预算，未签为一致。';panel.appendChild(note);}
+            if(data.next_after_id!==null){const next=document.createElement('button');next.type='button';next.textContent='继续核对下一页';
+                next.onclick=()=>showMemoryReverseHealth(source,data.next_after_id,data.inventory_version);panel.appendChild(next);}
+        } catch(error){panel.textContent=String(error)+'；原数据保持，请重新开始检查。';}
+    }
+
+    async function showMemoryHealth(offset = 0) {
+        const panel = document.getElementById('memory-health-result');
+        if (!panel) return;
+        panel.textContent = '正在只读检查当前一页…';
+        try {
+            const response = await fetch(`/api/kb/health?offset=${Number(offset) || 0}&limit=100`);
+            if (!response.ok) throw new Error('检查未完成');
+            const data = await response.json();
+            const labels = {legacy_missing:'旧投影缺失', legacy_payload_mismatch:'旧投影版本不同', lexical_index_mismatch:'全文索引不同',
+                vector_not_generated:'向量尚未生成', vector_content_stale:'向量正文已过时', native_projection_pending:'新版本已提交，旧投影待对账',
+                native_projection_mismatch:'V3/V4需核对', native_missing:'V4条目缺失', native_migration_excluded:'原迁移规则已排除，保留旧记录待人工核对', native_tombstone_conflict:'删除状态需核对'};
+            panel.innerHTML = `<p>本页检查 ${Number(data.checked)} 条 / 共 ${Number(data.total_records)} 条；待对账 ${Number(data.pending_projection_count)} 条。${data.window_complete ? '' : '已达本次预算，可继续检查。'} 检查未调用模型，未修改记忆；未检查反向孤立记录。</p>`;
+            for (const issue of data.issues || []) {
+                const line = document.createElement('p');
+                line.textContent = `${issue.id}：${labels[issue.code] || '检查未完成，需核对存储'}`;
+                const action = ['legacy_missing','legacy_payload_mismatch','lexical_index_mismatch'].includes(issue.code)
+                    ? 'legacy_index' : issue.code === 'native_projection_pending' ? 'native_projection' : '';
+                if (action) {
+                    const button = document.createElement('button'); button.type = 'button'; button.textContent = '预览修复';
+                    button.onclick = async () => {
+                        const accepted = await new Promise(resolve => showConfirmDialog({title:'修复这一条派生投影', message:action === 'legacy_index'
+                            ? '按当前条目版本修复旧投影和全文索引；正文、分数和向量保持。版本变化时拒绝执行。'
+                            : '将已经提交的V4版本同步到原网页投影；版本变化时拒绝执行。请勿另存一条记忆。',
+                            onConfirm:()=>resolve(true),onCancel:()=>resolve(false)}));
+                        if (!accepted) return;
+                        button.disabled = true;
+                        try {
+                            const result = await fetch('/api/kb/health/repair', {method:'POST', headers:{'Content-Type':'application/json'},
+                                body:JSON.stringify({id:issue.id, action, expected_version:action === 'legacy_index' ? issue.content_version : issue.native_version})});
+                            const payload = await result.json();
+                            if (!result.ok || !['success','partial'].includes(payload.status)) throw new Error(payload.detail || '尚未完成');
+                            await showMemoryHealth(offset);
+                        } catch (error) { showToast(String(error), {type:'error'}); button.disabled = false; }
+                    };
+                    line.appendChild(button);
+                }
+                panel.appendChild(line);
+            }
+            if (data.next_offset !== null && data.next_offset !== undefined) {
+                const next = document.createElement('button'); next.type='button'; next.textContent='检查下一页';
+                next.onclick=() => showMemoryHealth(data.next_offset); panel.appendChild(next);
+            }
+        } catch (error) { panel.textContent = '本次检查未完成；原记忆保持。' + String(error); }
     }
 
     async function openMemorySettings() {
@@ -5165,7 +6824,7 @@
         const embeddingState = memoryStats?.embedding || {};
         const embeddingSummary = embeddingState.ready
             ? `Semantic index ready · ${embeddingState.index?.count || 0} vectors · ${embeddingState.missing_count || 0} missing · ${embeddingState.stale_count || 0} stale`
-            : `${embeddingState.enabled ? 'Semantic provider unavailable' : 'Semantic embedding disabled'}${embeddingState.last_error ? ` · ${embeddingState.last_error}` : ''}`;
+            : `${embeddingState.indexing ? '后台正在建立语义索引' : embeddingState.enabled ? '语义索引尚未就绪，全文检索可用' : '语义检索已暂停'}${embeddingState.last_error ? ` · ${embeddingState.last_error}` : ''}`;
         const maintenanceState = memoryStats?.maintenance || {};
         const maintenanceCapacity = maintenanceState.capacity || {};
         const maintenanceEvent = (maintenanceState.pending_events || []).slice(-1)[0] || null;
@@ -5195,127 +6854,192 @@
                 </div>
             </section>`;
 
+        const activeRatio = Math.min(1, activeCapacityCount / Math.max(1, Number(memoryActiveHardLimit)));
         body.innerHTML = `
             <div class="memory-settings-workspace">
-                <section class="workspace-hero workspace-hero-tools compact memory-settings-hero" data-workspace-theme="memory-settings">
-                    <div>
-                        <span class="workspace-kicker">Capacity & retrieval</span>
-                        <h3>Memory 3.0 controls</h3>
-                        <p>${capacitySummary}. Capacity compaction preserves originals in Archive or recoverable cold storage.</p>
-                        <small class="memory-store-summary">${escapeHtml(sqliteSummary)}</small>
+                <section class="page-intro">
+                    <div class="page-intro-copy">
+                        <h3 class="page-intro-title">Memory settings</h3>
+                        <p class="page-intro-sub">${escapeHtml(maintenanceEvent?.message || 'Capacity compaction preserves originals in Archive or recoverable cold storage.')}</p>
                     </div>
-                    <span class="workspace-status-pill">Layered</span>
+                    <span class="st-badge ${maintenanceTone === 'healthy' ? 'success' : maintenanceTone === 'critical' ? 'danger' : 'warning'}">${effectiveMaintenanceStatus === 'normal' ? 'Capacity healthy' : effectiveMaintenanceStatus === 'hard' ? 'Hard limit active' : 'Approaching limit'}</span>
                 </section>
-                ${maintenanceBanner}
-                <div style="margin-bottom:15px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>Auto-Save Memories</span>
-                    <input type="checkbox" id="auto-save-toggle" ${memoryAutoSave ? 'checked' : ''} onchange="memoryAutoSave = this.checked">
-                </div>
-                <div style="font-size:0.75rem; color:#888; margin-top:-10px; margin-bottom:15px;">Automatically saves explicit “remember this” requests; it does not guess personal facts.</div>
-                <div style="margin-bottom:15px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>Autonomous Memory Suggestions</span>
-                    <input type="checkbox" id="autonomous-memory-toggle" ${memoryAutonomousEnabled ? 'checked' : ''} onchange="memoryAutonomousEnabled = this.checked">
-                </div>
-                <div style="font-size:0.75rem; color:#888; margin-top:-10px; margin-bottom:15px;">Uses the Autonomous Memory Model to suggest durable memories after chats. Requires an LLM API key. Suggestions are saved only after confirmation.</div>
-                <div style="margin-bottom:15px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>Memory 2.0 Retrieval</span>
-                    <input type="checkbox" id="memory-2-toggle" ${memory2Enabled ? 'checked' : ''} onchange="memory2Enabled = this.checked">
-                </div>
-                <div style="font-size:0.75rem; color:#888; margin-top:-10px; margin-bottom:15px;">Uses category, confidence, tags, recency, and relevance instead of dumping raw memories into the prompt.</div>
-                <div style="margin-bottom:15px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>Layered Memory 3.0</span>
-                    <input type="checkbox" id="layered-memory-toggle" ${memoryLayeredEnabled ? 'checked' : ''} onchange="memoryLayeredEnabled = this.checked">
-                </div>
-                <div style="font-size:0.75rem; color:#888; margin-top:-10px; margin-bottom:15px;">Orders prompt memory as core → semantic facts → episodic summaries. Locked chat summaries no longer become permanent core memories.</div>
-                <div style="margin-bottom:15px;">
-                    <div style="margin-bottom:5px;">Relevant Memories per Prompt</div>
-                    <input type="number" value="${memoryRelevantCount}" min="1" max="50" style="width:100%; padding:5px; background:#333; color:white; border:1px solid #555;" onchange="memoryRelevantCount = this.value">
-                </div>
-                <details style="margin-bottom:15px; border:1px solid #444; border-radius:6px; padding:10px;">
-                    <summary style="cursor:pointer;">Capacity & prompt budgets</summary>
-                    <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <label>DeepSeek/API context tokens<input type="number" value="${memoryApiContextTokens}" min="8192" max="2000000" style="width:100%;" onchange="memoryApiContextTokens = this.value"></label>
-                        <label>Local context tokens<input type="number" value="${memoryLocalContextTokens}" min="2048" max="262144" style="width:100%;" onchange="memoryLocalContextTokens = this.value"></label>
-                        <label>Memory prompt max tokens<input type="number" value="${memoryPromptBudgetTokens}" min="512" max="200000" style="width:100%;" onchange="memoryPromptBudgetTokens = this.value"></label>
-                        <label>Context budget ratio<input type="number" value="${memoryPromptBudgetRatio}" min="0.001" max="0.5" step="0.01" style="width:100%;" onchange="memoryPromptBudgetRatio = this.value"></label>
-                        <label>Per-memory max tokens<input type="number" value="${memoryItemBudgetTokens}" min="64" max="12000" style="width:100%;" onchange="memoryItemBudgetTokens = this.value"></label>
-                        <label>Core content max chars<input type="number" value="${memoryMaxCharsCore}" min="200" max="12000" style="width:100%;" onchange="memoryMaxCharsCore = this.value"></label>
-                        <label>Semantic content max chars<input type="number" value="${memoryMaxCharsSemantic}" min="400" max="30000" style="width:100%;" onchange="memoryMaxCharsSemantic = this.value"></label>
-                        <label>Episodic content max chars<input type="number" value="${memoryMaxCharsEpisodic}" min="600" max="50000" style="width:100%;" onchange="memoryMaxCharsEpisodic = this.value"></label>
-                        <label>Simple note extraction max chars<input type="number" value="${memoryMaxCharsKnowledgeSimple}" min="400" max="12000" style="width:100%;" onchange="memoryMaxCharsKnowledgeSimple = this.value"></label>
-                        <label>Complex note extraction max chars<input type="number" value="${memoryMaxCharsKnowledgeComplex}" min="800" max="30000" style="width:100%;" onchange="memoryMaxCharsKnowledgeComplex = this.value"></label>
-                        <label>Core layer limit<input type="number" value="${memoryCoreLimit}" min="0" max="100" style="width:100%;" onchange="memoryCoreLimit = this.value"></label>
-                        <label>Candidate pool size<input type="number" value="${memoryCandidatePoolSize}" min="10" max="1000" style="width:100%;" onchange="memoryCandidatePoolSize = this.value"></label>
-                        <label>Retrieval threshold<input type="number" value="${memoryRetrievalThreshold}" min="0" max="1" step="0.01" style="width:100%;" onchange="memoryRetrievalThreshold = this.value"></label>
-                        <label>Active-memory soft limit<input type="number" value="${memoryActiveSoftLimit}" min="100" max="1000000" style="width:100%;" onchange="memoryActiveSoftLimit = this.value"></label>
-                        <label>Archive soft limit<input type="number" value="${memoryArchiveSoftLimit}" min="100" max="5000000" style="width:100%;" onchange="memoryArchiveSoftLimit = this.value"></label>
-                        <label>Active-memory hard limit<input type="number" value="${memoryActiveHardLimit}" min="100" max="1200000" style="width:100%;" onchange="memoryActiveHardLimit = this.value"></label>
-                        <label>Archive hard limit<input type="number" value="${memoryArchiveHardLimit}" min="100" max="6000000" style="width:100%;" onchange="memoryArchiveHardLimit = this.value"></label>
-                        <label>Early warning ratio<input type="number" value="${memoryCapacityWarningRatio}" min="0.5" max="0.95" step="0.05" style="width:100%;" onchange="memoryCapacityWarningRatio = this.value"></label>
-                        <label>Cold archive batch size<input type="number" value="${memoryColdArchiveBatchSize}" min="2" max="2000" style="width:100%;" onchange="memoryColdArchiveBatchSize = this.value"></label>
-                        <label>Access metadata flush (sec)<input type="number" value="${memoryAccessFlushSeconds}" min="10" max="3600" style="width:100%;" onchange="memoryAccessFlushSeconds = this.value"></label>
+                <div class="memory-capacity-line">
+                    <div class="memory-capacity-bar"><span style="width:${Math.round(activeRatio * 100)}%"></span></div>
+                    <div class="memory-capacity-meta">
+                        <span>${Number(memoryStats?.active || 0).toLocaleString()} / ${Number(memoryActiveHardLimit).toLocaleString()} active</span>
+                        <span>${Number(memoryStats?.archived || 0).toLocaleString()} / ${Number(memoryArchiveHardLimit).toLocaleString()} archived</span>
+                        <span>${Number(maintenanceState.cold_archive_count || 0).toLocaleString()} cold</span>
+                        <span class="memory-store-summary">${escapeHtml(sqliteSummary)}</span>
                     </div>
-                    <label style="display:flex; justify-content:space-between; margin-top:12px;">Automatic capacity compaction before the hard limit<input type="checkbox" ${memoryCapacityAutoCompactEnabled ? 'checked' : ''} onchange="memoryCapacityAutoCompactEnabled = this.checked"></label>
-                    <label style="display:flex; justify-content:space-between; margin-top:10px;">Allow cold storage before the hard limit<input type="checkbox" ${memoryColdArchiveEnabled ? 'checked' : ''} onchange="memoryColdArchiveEnabled = this.checked"></label>
-                    <div style="font-size:0.72rem; color:#777; margin-top:10px;">Warnings appear before the soft threshold. At a hard limit, safe deterministic compaction runs even when ordinary scheduled compression is disabled. This engine uses no LLM tokens.</div>
-                </details>
-                <details style="margin-bottom:15px; border:1px solid #444; border-radius:6px; padding:10px;">
-                    <summary style="cursor:pointer;">SQLite & FTS retrieval</summary>
-                    <label style="display:flex; justify-content:space-between; margin-top:12px;">Enable SQLite mirror and recovery store<input type="checkbox" ${memorySqliteEnabled ? 'checked' : ''} onchange="memorySqliteEnabled = this.checked"></label>
-                    <label style="display:flex; justify-content:space-between; margin-top:10px;">Use FTS5 candidate retrieval<input type="checkbox" ${memorySqliteFtsEnabled ? 'checked' : ''} onchange="memorySqliteFtsEnabled = this.checked"></label>
-                    <div style="font-size:0.72rem; color:#777; margin-top:10px;">knowledge.json remains a complete compatibility export. SQLite failures automatically fall back to JSON retrieval.</div>
-                    <button onclick="rebuildMemoryStore()" style="margin-top:10px; padding:5px 12px;">Rebuild SQLite index</button>
-                </details>
-                <details style="margin-bottom:15px; border:1px solid #444; border-radius:6px; padding:10px;">
-                    <summary style="cursor:pointer;">Multilingual semantic embeddings</summary>
-                    <div style="font-size:0.75rem; color:${embeddingState.ready ? '#8bc7a0' : '#d5a36a'}; margin:10px 0;">${escapeHtml(embeddingSummary)}</div>
-                    <label style="display:flex; justify-content:space-between; margin-bottom:10px;">Enable semantic retrieval<input type="checkbox" ${memoryEmbeddingEnabled ? 'checked' : ''} onchange="memoryEmbeddingEnabled = this.checked"></label>
-                    <label style="display:flex; justify-content:space-between; margin-bottom:10px;">Auto-index new/edited memories<input type="checkbox" ${memoryEmbeddingAutoIndexNew ? 'checked' : ''} onchange="memoryEmbeddingAutoIndexNew = this.checked"></label>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <label>Provider<select style="width:100%;" onchange="memoryEmbeddingProvider = this.value">
-                            <option value="sentence_transformers" ${memoryEmbeddingProvider === 'sentence_transformers' ? 'selected' : ''}>Local sentence-transformers</option>
-                            <option value="openai_compatible" ${memoryEmbeddingProvider === 'openai_compatible' ? 'selected' : ''}>OpenAI-compatible API</option>
-                        </select></label>
-                        <label>Model<input type="text" value="${escapeHtml(memoryEmbeddingModel)}" style="width:100%;" onchange="memoryEmbeddingModel = this.value"></label>
-                        <label>Local device<input type="text" value="${escapeHtml(memoryEmbeddingDevice)}" style="width:100%;" onchange="memoryEmbeddingDevice = this.value"></label>
-                        <label>Batch size<input type="number" value="${memoryEmbeddingBatchSize}" min="1" max="256" style="width:100%;" onchange="memoryEmbeddingBatchSize = this.value"></label>
-                        <label>Semantic candidates<input type="number" value="${memoryEmbeddingCandidateCount}" min="5" max="1000" style="width:100%;" onchange="memoryEmbeddingCandidateCount = this.value"></label>
-                        <label>Minimum cosine similarity<input type="number" value="${memoryEmbeddingMinSimilarity}" min="-1" max="1" step="0.01" style="width:100%;" onchange="memoryEmbeddingMinSimilarity = this.value"></label>
-                        <label>Index batch limit<input type="number" value="${memoryEmbeddingIndexBatchLimit}" min="1" max="1000000" style="width:100%;" onchange="memoryEmbeddingIndexBatchLimit = this.value"></label>
-                        <label>Memory text max chars<input type="number" value="${memoryEmbeddingMaxChars}" min="200" max="100000" style="width:100%;" onchange="memoryEmbeddingMaxChars = this.value"></label>
-                        <label style="grid-column:1 / -1;">Embedding API URL<input type="text" value="${escapeHtml(memoryEmbeddingApiUrl)}" placeholder="https://provider.example/v1" style="width:100%;" onchange="memoryEmbeddingApiUrl = this.value"></label>
-                        <label>API key environment variable<input type="text" value="${escapeHtml(memoryEmbeddingApiKeyEnv)}" style="width:100%;" onchange="memoryEmbeddingApiKeyEnv = this.value"></label>
-                        <label>API timeout seconds<input type="number" value="${memoryEmbeddingApiTimeout}" min="10" max="600" style="width:100%;" onchange="memoryEmbeddingApiTimeout = this.value"></label>
+                </div>
+                <div class="form-row"><div><div class="form-label">投影与索引核对</div><p class="form-help">分页只读检查正文版本、来源、分数和索引；修复前逐条预览，不自动生成向量。</p></div><button type="button" onclick="showMemoryHealth()">只读检查</button></div>
+                <div><button type="button" onclick="showMemoryReverseHealth('legacy')">反向核对旧投影</button> <button type="button" onclick="showMemoryReverseHealth('native')">反向核对V4</button> <button type="button" onclick="showMemoryReverseHealth('lexical')">反向核对全文索引</button> <button type="button" onclick="showMemoryReverseHealth('vectors')">反向核对向量</button></div>
+                <div id="memory-health-result" role="status"></div>
+                <div class="ws-tabs" id="memory-settings-tabs" role="tablist">
+                    <button type="button" class="ws-tab active" data-ms-pane="basic" role="tab" aria-selected="true">Basic</button>
+                    <button type="button" class="ws-tab" data-ms-pane="advanced" role="tab" aria-selected="false">Advanced</button>
+                </div>
+                <section data-ms-pane="basic" role="tabpanel">
+                    <div class="form-row">
+                        <div><div class="form-label">Auto-save memories</div><p class="form-help">Automatically saves explicit "remember this" requests; it does not guess personal facts.</p></div>
+                        <span class="st-badge">默认启用</span>
                     </div>
-                    <div style="font-size:0.72rem; color:#777; margin-top:10px;">Local BGE-M3 requires the optional sentence-transformers dependency and a model download. API keys are read only from the named environment variable and are never saved in memory settings.</div>
-                    <button class="workspace-cost-action" onclick="buildEmbeddingIndex(false)" style="margin-top:10px; padding:5px 12px;">Index missing/stale memories</button>
-                    <button class="workspace-cost-action" onclick="buildEmbeddingIndex(true)" style="margin-top:10px; padding:5px 12px;">Force re-index batch</button>
-                </details>
-                <div style="margin-bottom:15px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>Include Metadata in Prompt</span>
-                    <input type="checkbox" id="memory-metadata-toggle" ${memoryIncludeMetadata ? 'checked' : ''} onchange="memoryIncludeMetadata = this.checked">
+                    <div class="form-row">
+                        <div><div class="form-label">Autonomous suggestions</div><p class="form-help">从用户原话整理候选；敏感、临时、矛盾或不确定内容须人工确认。稳定观察需至少三个会话的原话证据。</p></div>
+                        <span class="st-badge">候选整理默认启用</span>
+                    </div>
+                    <div class="form-row">
+                        <div><div class="form-label">Smart retrieval</div><p class="form-help">全文与本地语义混合检索，同时检查作用域、有效期、可信度与来源。</p></div>
+                        <span class="st-badge">默认启用</span>
+                    </div>
+                    <div class="form-row">
+                        <div><div class="form-label">Layered memory</div><p class="form-help">Orders prompt memory as core → semantic facts → episodic summaries.</p></div>
+                        <span class="st-badge">默认启用</span>
+                    </div>
+                    <div class="form-row">
+                        <div><div class="form-label">Relevant memories per prompt</div><p class="form-help">How many matched memories may enter a single prompt.</p></div>
+                        <input class="form-control" style="max-width:140px;" type="number" value="${memoryRelevantCount}" min="1" max="50" onchange="memoryRelevantCount = this.value">
+                    </div>
+                </section>
+                <section data-ms-pane="advanced" role="tabpanel" hidden>
+                    <div class="form-section">
+                        <div class="form-section-title">Capacity</div>
+                        <div class="limits-table">
+                            <div class="limits-table-row"><span>Active soft limit</span><input type="number" value="${memoryActiveSoftLimit}" min="100" max="1000000" onchange="memoryActiveSoftLimit = this.value"></div>
+                            <div class="limits-table-row"><span>Active hard limit</span><input type="number" value="${memoryActiveHardLimit}" min="100" max="1200000" onchange="memoryActiveHardLimit = this.value"></div>
+                            <div class="limits-table-row"><span>Archive soft limit</span><input type="number" value="${memoryArchiveSoftLimit}" min="100" max="5000000" onchange="memoryArchiveSoftLimit = this.value"></div>
+                            <div class="limits-table-row"><span>Archive hard limit</span><input type="number" value="${memoryArchiveHardLimit}" min="100" max="6000000" onchange="memoryArchiveHardLimit = this.value"></div>
+                            <div class="limits-table-row"><span>Early warning ratio</span><input type="number" value="${memoryCapacityWarningRatio}" min="0.5" max="0.95" step="0.05" onchange="memoryCapacityWarningRatio = this.value"></div>
+                            <div class="limits-table-row"><span>Cold archive batch size</span><input type="number" value="${memoryColdArchiveBatchSize}" min="2" max="2000" onchange="memoryColdArchiveBatchSize = this.value"></div>
+                        </div>
+                        <div class="form-row" style="margin-top:10px;">
+                            <div><div class="form-label">Automatic capacity compaction</div><p class="form-help">Runs safe deterministic compaction before the hard limit. No LLM tokens are used.</p></div>
+                            <label class="switch"><input type="checkbox" ${memoryCapacityAutoCompactEnabled ? 'checked' : ''} onchange="memoryCapacityAutoCompactEnabled = this.checked"><span class="switch-track"></span></label>
+                        </div>
+                        <div class="form-row">
+                            <div><div class="form-label">Allow cold storage</div><p class="form-help">Moves full originals out of the active JSON working set before the hard limit.</p></div>
+                            <label class="switch"><input type="checkbox" ${memoryColdArchiveEnabled ? 'checked' : ''} onchange="memoryColdArchiveEnabled = this.checked"><span class="switch-track"></span></label>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Prompt budget</div>
+                        <div class="limits-table">
+                            <div class="limits-table-row"><span>API context tokens</span><input type="number" value="${memoryApiContextTokens}" min="8192" max="2000000" onchange="memoryApiContextTokens = this.value"></div>
+                            <div class="limits-table-row"><span>Local context tokens</span><input type="number" value="${memoryLocalContextTokens}" min="2048" max="262144" onchange="memoryLocalContextTokens = this.value"></div>
+                            <div class="limits-table-row"><span>Memory prompt max tokens</span><input type="number" value="${memoryPromptBudgetTokens}" min="512" max="200000" onchange="memoryPromptBudgetTokens = this.value"></div>
+                            <div class="limits-table-row"><span>Context budget ratio</span><input type="number" value="${memoryPromptBudgetRatio}" min="0.001" max="0.5" step="0.01" onchange="memoryPromptBudgetRatio = this.value"></div>
+                            <div class="limits-table-row"><span>Per-memory max tokens</span><input type="number" value="${memoryItemBudgetTokens}" min="64" max="12000" onchange="memoryItemBudgetTokens = this.value"></div>
+                            <div class="limits-table-row"><span>Core content max chars</span><input type="number" value="${memoryMaxCharsCore}" min="200" max="12000" onchange="memoryMaxCharsCore = this.value"></div>
+                            <div class="limits-table-row"><span>Semantic content max chars</span><input type="number" value="${memoryMaxCharsSemantic}" min="400" max="30000" onchange="memoryMaxCharsSemantic = this.value"></div>
+                            <div class="limits-table-row"><span>Episodic content max chars</span><input type="number" value="${memoryMaxCharsEpisodic}" min="600" max="50000" onchange="memoryMaxCharsEpisodic = this.value"></div>
+                            <div class="limits-table-row"><span>Simple note max chars</span><input type="number" value="${memoryMaxCharsKnowledgeSimple}" min="400" max="12000" onchange="memoryMaxCharsKnowledgeSimple = this.value"></div>
+                            <div class="limits-table-row"><span>Complex note max chars</span><input type="number" value="${memoryMaxCharsKnowledgeComplex}" min="800" max="30000" onchange="memoryMaxCharsKnowledgeComplex = this.value"></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Retrieval</div>
+                        <div class="limits-table">
+                            <div class="limits-table-row"><span>Core layer limit</span><input type="number" value="${memoryCoreLimit}" min="0" max="100" onchange="memoryCoreLimit = this.value"></div>
+                            <div class="limits-table-row"><span>Candidate pool size</span><input type="number" value="${memoryCandidatePoolSize}" min="10" max="1000" onchange="memoryCandidatePoolSize = this.value"></div>
+                            <div class="limits-table-row"><span>Retrieval threshold</span><input type="number" value="${memoryRetrievalThreshold}" min="0" max="1" step="0.01" onchange="memoryRetrievalThreshold = this.value"></div>
+                            <div class="limits-table-row"><span>Access metadata flush (sec)</span><input type="number" value="${memoryAccessFlushSeconds}" min="10" max="3600" onchange="memoryAccessFlushSeconds = this.value"></div>
+                        </div>
+                        <div class="form-row" style="margin-top:10px;">
+                            <div><div class="form-label">Include metadata in prompt</div></div>
+                            <label class="switch"><input type="checkbox" id="memory-metadata-toggle" ${memoryIncludeMetadata ? 'checked' : ''} onchange="memoryIncludeMetadata = this.checked"><span class="switch-track"></span></label>
+                        </div>
+                        <div class="form-row">
+                            <div><div class="form-label">Layered compression</div><p class="form-help">Local summaries stop after ${memoryCompressionMaxGenerations} generations. Dates, entities, decisions and negations are preserved; originals are archived and linked.</p></div>
+                            <label class="switch"><input type="checkbox" id="auto-merge-toggle" ${memoryCompressionEnabled ? 'checked' : ''} onchange="memoryCompressionEnabled = this.checked; memoryAutoMergeEnabled = this.checked"><span class="switch-track"></span></label>
+                        </div>
+                        <div class="limits-table">
+                            <div class="limits-table-row"><span>Compression age (days)</span><input type="number" value="${memoryCompressionAgeDays}" min="1" max="3650" onchange="memoryCompressionAgeDays = this.value; memoryAutoMergeDays = this.value"></div>
+                            <div class="limits-table-row"><span>Minimum group size</span><input type="number" value="${memoryCompressionMinGroup}" min="2" max="100" onchange="memoryCompressionMinGroup = this.value"></div>
+                            <div class="limits-table-row"><span>Maximum group size</span><input type="number" value="${memoryCompressionGroupSize}" min="2" max="500" onchange="memoryCompressionGroupSize = this.value"></div>
+                            <div class="limits-table-row"><span>Summary max characters</span><input type="number" value="${memoryCompressionSummaryChars}" min="300" max="20000" onchange="memoryCompressionSummaryChars = this.value"></div>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Indexing</div>
+                        <div class="form-row">
+                            <div><div class="form-label">SQLite mirror and recovery store</div><p class="form-help">knowledge.json remains a complete compatibility export. SQLite failures automatically fall back to JSON retrieval.</p></div>
+                            <span class="st-badge">默认启用</span>
+                        </div>
+                        <div class="form-row">
+                            <div><div class="form-label">FTS5 candidate retrieval</div></div>
+                            <span class="st-badge">默认启用</span>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-label" style="flex:1;">Rebuild the SQLite index from JSON.</div>
+                            <button type="button" class="workspace-secondary-action" onclick="rebuildMemoryStore()">${ic('database', 'icn-sm')}Rebuild SQLite index</button>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">Semantic embeddings</div>
+                        <p class="form-help" style="margin-bottom:10px;">${escapeHtml(embeddingSummary)}</p>
+                        <div class="form-row">
+                            <div><div class="form-label">语义检索</div><p class="form-help">默认在本地运行，模型不可用时使用全文检索，并显示实际索引状态。</p></div>
+                            <span class="st-badge">默认启用</span>
+                        </div>
+                        <div class="form-row">
+                            <div><div class="form-label">后台自动更新索引</div></div>
+                            <span class="st-badge">默认启用</span>
+                        </div>
+                        <div class="limits-table">
+                            <div class="limits-table-row"><span>Provider</span><select onchange="memoryEmbeddingProvider = this.value">
+                                <option value="sentence_transformers" ${memoryEmbeddingProvider === 'sentence_transformers' ? 'selected' : ''}>Local sentence-transformers</option>
+                                <option value="openai_compatible" ${memoryEmbeddingProvider === 'openai_compatible' ? 'selected' : ''}>OpenAI-compatible API</option>
+                            </select></div>
+                            <div class="limits-table-row"><span>Model</span><input type="text" value="${escapeHtml(memoryEmbeddingModel)}" onchange="memoryEmbeddingModel = this.value"></div>
+                            <div class="limits-table-row"><span>Local device</span><input type="text" value="${escapeHtml(memoryEmbeddingDevice)}" onchange="memoryEmbeddingDevice = this.value"></div>
+                            <div class="limits-table-row"><span>Batch size</span><input type="number" value="${memoryEmbeddingBatchSize}" min="1" max="256" onchange="memoryEmbeddingBatchSize = this.value"></div>
+                            <div class="limits-table-row"><span>Semantic candidates</span><input type="number" value="${memoryEmbeddingCandidateCount}" min="5" max="1000" onchange="memoryEmbeddingCandidateCount = this.value"></div>
+                            <div class="limits-table-row"><span>Minimum cosine similarity</span><input type="number" value="${memoryEmbeddingMinSimilarity}" min="-1" max="1" step="0.01" onchange="memoryEmbeddingMinSimilarity = this.value"></div>
+                            <div class="limits-table-row"><span>Index batch limit</span><input type="number" value="${memoryEmbeddingIndexBatchLimit}" min="1" max="1000000" onchange="memoryEmbeddingIndexBatchLimit = this.value"></div>
+                            <div class="limits-table-row"><span>Memory text max chars</span><input type="number" value="${memoryEmbeddingMaxChars}" min="200" max="100000" onchange="memoryEmbeddingMaxChars = this.value"></div>
+                            <div class="limits-table-row"><span>Embedding API URL</span><input type="text" value="${escapeHtml(memoryEmbeddingApiUrl)}" placeholder="https://provider.example/v1" onchange="memoryEmbeddingApiUrl = this.value"></div>
+                            <div class="limits-table-row"><span>API key environment variable</span><input type="text" value="${escapeHtml(memoryEmbeddingApiKeyEnv)}" onchange="memoryEmbeddingApiKeyEnv = this.value"></div>
+                            <div class="limits-table-row"><span>API timeout seconds</span><input type="number" value="${memoryEmbeddingApiTimeout}" min="10" max="600" onchange="memoryEmbeddingApiTimeout = this.value"></div>
+                        </div>
+                        <p class="form-help" style="margin-top:8px;">默认多语言模型在本地 CPU 运行，长记忆会分段编码。模型与索引故障不会阻断聊天。高级接口配置仍可调整；远程接口仅使用明确配置的凭据。</p>
+                        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                            <button type="button" class="workspace-secondary-action" onclick="buildEmbeddingIndex(false)">${ic('database', 'icn-sm')}Index missing/stale memories</button>
+                            <button type="button" class="workspace-secondary-action" onclick="buildEmbeddingIndex(true)">${ic('refresh', 'icn-sm')}Force re-index batch</button>
+                        </div>
+                    </div>
+                </section>
+                <div class="form-section memory-maintenance-zone">
+                    <div class="form-section-title">Maintenance</div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="workspace-secondary-action" onclick="runMemoryCapacityMaintenanceNow()">${ic('zap', 'icn-sm')}Check capacity</button>
+                        <button type="button" class="workspace-secondary-action" onclick="openColdArchiveViewer()">${ic('archive', 'icn-sm')}Cold archive (${Number(maintenanceState.cold_archive_count || 0)})</button>
+                        <button type="button" class="workspace-secondary-action" onclick="openAiMemoryCompressionPlanner()">${ic('zap', 'icn-sm')}AI compression</button>
+                        <button type="button" class="workspace-secondary-action" onclick="mergeMemoriesNow()">${ic('branch', 'icn-sm')}Merge now</button>
+                    </div>
                 </div>
-                <div style="margin-bottom:15px; display:flex; align-items:center; justify-content:space-between;">
-                    <span>Enable Layered Compression</span>
-                    <input type="checkbox" id="auto-merge-toggle" ${memoryCompressionEnabled ? 'checked' : ''} onchange="memoryCompressionEnabled = this.checked; memoryAutoMergeEnabled = this.checked">
-                </div>
-                <div style="margin-bottom:15px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <label>Compression age (days)<input type="number" value="${memoryCompressionAgeDays}" min="1" max="3650" style="width:100%;" onchange="memoryCompressionAgeDays = this.value; memoryAutoMergeDays = this.value"></label>
-                    <label>Minimum group size<input type="number" value="${memoryCompressionMinGroup}" min="2" max="100" style="width:100%;" onchange="memoryCompressionMinGroup = this.value"></label>
-                    <label>Maximum group size<input type="number" value="${memoryCompressionGroupSize}" min="2" max="500" style="width:100%;" onchange="memoryCompressionGroupSize = this.value"></label>
-                    <label>Summary max characters<input type="number" value="${memoryCompressionSummaryChars}" min="300" max="20000" style="width:100%;" onchange="memoryCompressionSummaryChars = this.value"></label>
-                    <div style="grid-column:1 / -1; font-size:0.75rem; color:#888;">Local summaries stop after ${memoryCompressionMaxGenerations} generations. Dates, entities, decisions, preferences, numbers and negations are preserved as structured facts; grouping remains separated by project, layer and topic. Originals are archived and linked.</div>
-                </div>
-                <div style="margin-top:20px; text-align:right;">
-                    <button class="workspace-cost-action" onclick="runMemoryCapacityMaintenanceNow()" style="padding:5px 15px; margin-right:8px;">Check Capacity</button>
-                    <button class="workspace-cost-action" onclick="openColdArchiveViewer()" style="padding:5px 15px; margin-right:8px;">Cold Archive (${Number(maintenanceState.cold_archive_count || 0)})</button>
-                    <button class="workspace-cost-action" onclick="openAiMemoryCompressionPlanner()" style="padding:5px 15px; margin-right:8px;">AI Compression</button>
-                    <button class="workspace-cost-action" onclick="mergeMemoriesNow()" style="padding:5px 15px; margin-right:8px;">Merge Now</button>
-                    <button class="workspace-primary-action" onclick="saveMemorySettings()" style="padding:5px 15px;">Save & Close</button>
+                <div class="ws-footer memory-settings-footer">
+                    <span class="ws-footer-meta">Maintenance actions run immediately; everything else saves together.</span>
+                    <button type="button" class="workspace-primary-action" onclick="saveMemorySettings()">${ic('save', 'icn-sm')}Save &amp; Close</button>
                 </div>
             </div>
         `;
     }
+
+    document.addEventListener('click', event => {
+        const tab = event.target.closest('#memory-settings-tabs .ws-tab');
+        if (!tab) return;
+        const root = tab.closest('.memory-settings-workspace');
+        if (!root) return;
+        root.querySelectorAll('#memory-settings-tabs .ws-tab').forEach(item => {
+            const active = item === tab;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        root.querySelectorAll('[data-ms-pane]').forEach(pane => {
+            pane.hidden = pane.dataset.msPane !== tab.dataset.msPane;
+        });
+    });
 
     async function saveMemorySettings() {
         try {
@@ -5380,37 +7104,36 @@
             closeModal();
             surfaceMemoryMaintenanceResult(data);
         } catch (e) {
-            alert("Failed to save memory settings: " + e);
+            showToast("Failed to save memory settings: " + e, { type: 'error', duration: 3600 });
         }
     }
 
     async function mergeMemoriesNow() {
-        if (!confirm("Compact eligible old memories now? Originals will remain archived in knowledge.json.")) return;
-        try {
-            const response = await fetch('/api/kb/merge', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({days: Number(memoryCompressionAgeDays || memoryAutoMergeDays)})
-            });
-            const data = await response.json();
-            const aiRecommended = data.all_candidates_at_generation_limit === true
-                || data.maintenance?.ai_compression_recommended === true;
-            if (aiRecommended) {
-                const eventId = data.maintenance?.event?.id || '';
-                if (confirm('The remaining safe memories have reached the local compression-generation limit. Review a scoped DeepSeek estimate now? Cancel skips AI compression.')) {
-                    openAiMemoryCompressionPlanner(eventId);
-                } else if (eventId) {
-                    acknowledgeMemoryMaintenance(eventId);
+        confirmAction("Compact eligible old memories now? Originals will remain archived in knowledge.json.", async () => {
+
+            try {
+                const response = await fetch('/api/kb/merge', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({days: Number(memoryCompressionAgeDays || memoryAutoMergeDays)})
+                });
+                const data = await response.json();
+                const aiRecommended = data.all_candidates_at_generation_limit === true
+                    || data.maintenance?.ai_compression_recommended === true;
+                if (aiRecommended) {
+                    const eventId = data.maintenance?.event?.id || '';
+                    confirmAction('The remaining safe memories have reached the local compression-generation limit. Review a scoped DeepSeek estimate now? Cancel skips AI compression.', () => {
+                        openAiMemoryCompressionPlanner(eventId);
+                    }, { onCancel: () => { if (eventId) acknowledgeMemoryMaintenance(eventId); } });
+                } else {
+                    showToast(data.status === 'success'
+                        ? `Compressed ${data.merged_count} memories into ${data.summary_count || 1} bounded summaries. Token usage: ${Number(data.token_usage || 0)}.`
+                        : "No eligible memories needed merging.", { type: 'info', duration: 3600 });
                 }
-            } else {
-                alert(data.status === 'success'
-                    ? `Compressed ${data.merged_count} memories into ${data.summary_count || 1} bounded summaries. Token usage: ${Number(data.token_usage || 0)}.`
-                    : "No eligible memories needed merging.");
+            } catch (e) {
+                showToast("Memory merge failed: " + e, { type: 'error', duration: 3600 });
             }
-        } catch (e) {
-            alert("Memory merge failed: " + e);
-        }
-    }
+    });    }
 
     async function runMemoryCapacityMaintenanceNow() {
         try {
@@ -5421,17 +7144,16 @@
                 ? 'Memory capacity is healthy. No compaction was needed.'
                 : data.event?.message || `Maintenance status: ${data.status}.`;
             if (data.ai_compression_recommended && data.event?.details?.ai_recommended) {
-                if (confirm(`${summary}\n\nReview a scoped DeepSeek token estimate now? Cancel skips AI compression.`)) {
-                    openAiMemoryCompressionPlanner(data.event.id || '');
-                } else if (data.event.id) {
-                    acknowledgeMemoryMaintenance(data.event.id);
-                }
+                const eventId = data.event.id || '';
+                confirmAction(`${summary}\n\nReview a scoped DeepSeek token estimate now? Cancel skips AI compression.`, () => {
+                    openAiMemoryCompressionPlanner(eventId);
+                }, { onCancel: () => { if (eventId) acknowledgeMemoryMaintenance(eventId); } });
             } else {
-                alert(`${summary}\n\nToken usage: ${Number(data.token_usage || 0)}.`);
+                showToast(`${summary}\n\nToken usage: ${Number(data.token_usage || 0)}.`, { type: 'info', duration: 3600 });
                 openMemorySettings();
             }
         } catch (error) {
-            alert(`Memory capacity check failed: ${error.message || error}`);
+            showToast(`Memory capacity check failed: ${error.message || error}`, { type: 'error', duration: 3600 });
         }
     }
 
@@ -5440,7 +7162,7 @@
         const body = document.getElementById('modal-body');
         setMemoryModalHeader('Cold archive', 'openMemorySettings()');
         modal.style.display = 'flex';
-        body.innerHTML = '<div class="memory-cold-archive-loading">Loading recoverable cold archive...</div>';
+        renderSurfaceState(body, { kind: 'loading', title: 'Loading cold archive', message: 'Checking recoverable originals…', icon: 'archive' });
         try {
             const response = await fetch('/api/kb/cold-archive?limit=200');
             const data = await response.json();
@@ -5448,156 +7170,163 @@
             const memories = Array.isArray(data.memories) ? data.memories : [];
             body.innerHTML = `
                 <div class="memory-cold-archive-workspace">
-                    <section class="workspace-hero workspace-hero-tools compact memory-settings-hero" data-workspace-theme="memory-settings">
-                        <div><span class="workspace-kicker">RECOVERABLE STORAGE</span><h3>Cold archive</h3><p>Full originals moved out of the active JSON working set by capacity maintenance. Restore only when you need to inspect or reuse one.</p></div>
+                    <section class="page-intro">
+                        <div class="page-intro-copy"><h3 class="page-intro-title">Cold archive</h3><p class="page-intro-sub">Full originals moved out of the active JSON working set by capacity maintenance. Restore only when you need to inspect or reuse one.</p></div>
                         <span class="workspace-status-pill">${Number(data.count || 0).toLocaleString()}</span>
                     </section>
                     <div class="memory-cold-archive-list">
                         ${memories.length ? memories.map(memory => `
                             <article class="memory-cold-archive-item">
                                 <div><strong>${escapeHtml(memory.title || 'Untitled')}</strong><span>${escapeHtml(memory.date || '')} · ${escapeHtml(memory.layer || 'memory')} · ${escapeHtml(memory.reason || '')}</span></div>
-                                <button type="button" onclick="restoreColdArchiveMemory('${escapeJsString(memory.id)}')">Restore to Archive</button>
+                                <button type="button" onclick="restoreColdArchiveMemory('${escapeJsString(memory.id)}')">${ic('archive', 'icn-sm')}Restore to Archive</button>
                             </article>`).join('') : '<div class="memory-cold-archive-empty">No memories are currently in cold storage.</div>'}
                     </div>
                 </div>`;
         } catch (error) {
-            body.innerHTML = `<div class="memory-cold-archive-empty">${escapeHtml(error.message || error)}</div>`;
+            renderSurfaceState(body, {
+                title: 'Cold archive could not be opened',
+                message: 'The archived originals are safe. Try again when the backend is available.',
+                retry: () => openColdArchiveViewer(),
+                details: error,
+                icon: 'archive'
+            });
         }
     }
 
     async function restoreColdArchiveMemory(memoryId) {
-        if (!confirm('Restore this full original to the searchable Archive layer? Capacity governance may move another old record to cold storage if the hard limit is still full.')) return;
-        try {
-            const response = await fetch('/api/kb/cold-archive/restore', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: memoryId})
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || 'Restore failed');
-            surfaceMemoryMaintenanceResult(data);
-            await openColdArchiveViewer();
-        } catch (error) {
-            alert(`Cold archive restore failed: ${error.message || error}`);
-        }
-    }
+        confirmAction('Restore this full original to the searchable Archive layer? Capacity governance may move another old record to cold storage if the hard limit is still full.', async () => {
+
+            try {
+                const response = await fetch('/api/kb/cold-archive/restore', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id: memoryId})
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Restore failed');
+                surfaceMemoryMaintenanceResult(data);
+                await openColdArchiveViewer();
+            } catch (error) {
+                showToast(`Cold archive restore failed: ${error.message || error}`, { type: 'error', duration: 3600 });
+            }
+    });    }
 
     async function rebuildMemoryStore() {
-        if (!confirm("Rebuild the SQLite search index from current memories? No memories will be deleted.")) return;
-        try {
-            const response = await fetch('/api/kb/store/rebuild', {method: 'POST'});
-            const data = await response.json();
-            if (!response.ok || !['success', 'disabled'].includes(data.status)) {
-                throw new Error(data.error || data.message || 'Rebuild failed');
+        confirmAction("Rebuild the SQLite search index from current memories? No memories will be deleted.", async () => {
+
+            try {
+                const response = await fetch('/api/kb/store/rebuild', {method: 'POST'});
+                const data = await response.json();
+                if (!response.ok || !['success', 'disabled'].includes(data.status)) {
+                    throw new Error(data.error || data.message || 'Rebuild failed');
+                }
+                showToast(data.status === 'success'
+                    ? `SQLite index rebuilt from ${data.count || 0} memories. knowledge.json was preserved.`
+                    : 'SQLite memory storage is disabled.', { type: 'info', duration: 3600 });
+                openMemorySettings();
+            } catch (e) {
+                showToast("SQLite index rebuild failed; JSON memory remains available. " + e, { type: 'error', duration: 3600 });
             }
-            alert(data.status === 'success'
-                ? `SQLite index rebuilt from ${data.count || 0} memories. knowledge.json was preserved.`
-                : 'SQLite memory storage is disabled.');
-            openMemorySettings();
-        } catch (e) {
-            alert("SQLite index rebuild failed; JSON memory remains available. " + e);
-        }
-    }
+    });    }
 
     async function buildEmbeddingIndex(force = false) {
         const localWarning = memoryEmbeddingProvider === 'sentence_transformers'
             ? ' The local provider may download and load a large model if it is not already cached.'
             : ' The configured embedding API may incur usage charges.';
-        if (!confirm(`Build semantic vectors for up to ${Number(memoryEmbeddingIndexBatchLimit)} memories?${localWarning} Existing memories and knowledge.json will not be deleted.`)) return;
-        try {
-            const settingsResponse = await fetch('/api/kb/settings', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    sqlite_memory_enabled: true,
-                    embedding_enabled: true,
-                    embedding_provider: memoryEmbeddingProvider,
-                    embedding_model: memoryEmbeddingModel,
-                    embedding_device: memoryEmbeddingDevice,
-                    embedding_api_url: memoryEmbeddingApiUrl,
-                    embedding_api_key_env: memoryEmbeddingApiKeyEnv,
-                    embedding_batch_size: Number(memoryEmbeddingBatchSize),
-                    embedding_candidate_count: Number(memoryEmbeddingCandidateCount),
-                    embedding_min_similarity: Number(memoryEmbeddingMinSimilarity),
-                    embedding_index_batch_limit: Number(memoryEmbeddingIndexBatchLimit),
-                    embedding_api_timeout_seconds: Number(memoryEmbeddingApiTimeout),
-                    embedding_max_chars: Number(memoryEmbeddingMaxChars),
-                    embedding_auto_index_new: memoryEmbeddingAutoIndexNew
-                })
-            });
-            if (!settingsResponse.ok) throw new Error('Unable to save embedding settings');
-            memoryEmbeddingEnabled = true;
-            const response = await fetch('/api/kb/embeddings/index', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({force, limit: Number(memoryEmbeddingIndexBatchLimit)})
-            });
-            const data = await response.json();
-            if (!response.ok || data.status !== 'success') {
-                throw new Error(data.error || data.last_error || data.status || 'Embedding index failed');
+        confirmAction(`Build semantic vectors for up to ${Number(memoryEmbeddingIndexBatchLimit)} memories?${localWarning} Existing memories and knowledge.json will not be deleted.`, async () => {
+
+            try {
+                const settingsResponse = await fetch('/api/kb/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        sqlite_memory_enabled: true,
+                        embedding_enabled: true,
+                        embedding_provider: memoryEmbeddingProvider,
+                        embedding_model: memoryEmbeddingModel,
+                        embedding_device: memoryEmbeddingDevice,
+                        embedding_api_url: memoryEmbeddingApiUrl,
+                        embedding_api_key_env: memoryEmbeddingApiKeyEnv,
+                        embedding_batch_size: Number(memoryEmbeddingBatchSize),
+                        embedding_candidate_count: Number(memoryEmbeddingCandidateCount),
+                        embedding_min_similarity: Number(memoryEmbeddingMinSimilarity),
+                        embedding_index_batch_limit: Number(memoryEmbeddingIndexBatchLimit),
+                        embedding_api_timeout_seconds: Number(memoryEmbeddingApiTimeout),
+                        embedding_max_chars: Number(memoryEmbeddingMaxChars),
+                        embedding_auto_index_new: memoryEmbeddingAutoIndexNew
+                    })
+                });
+                if (!settingsResponse.ok) throw new Error('Unable to save embedding settings');
+                memoryEmbeddingEnabled = true;
+                const response = await fetch('/api/kb/embeddings/index', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({force, limit: Number(memoryEmbeddingIndexBatchLimit)})
+                });
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.error || data.last_error || data.status || 'Embedding index failed');
+                }
+                showToast(`Semantic index updated: ${data.indexed_count || 0} vectors, ${data.remaining_count || 0} remaining.`, { type: 'info', duration: 3600 });
+                openMemorySettings();
+            } catch (e) {
+                showToast('Semantic indexing was not completed. FTS and JSON retrieval remain active. ' + e, { type: 'error', duration: 3600 });
             }
-            alert(`Semantic index updated: ${data.indexed_count || 0} vectors, ${data.remaining_count || 0} remaining.`);
-            openMemorySettings();
-        } catch (e) {
-            alert('Semantic indexing was not completed. FTS and JSON retrieval remain active. ' + e);
-        }
-    }
+    });    }
 
     async function toggleMemoryStar(id, btn) {
         const isActive = btn.classList.contains('active');
         try {
-            await fetch('/api/kb/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id, updates: {is_important: !isActive}})
-            });
+            await updateRenderedMemory(id, {is_important: !isActive});
             btn.classList.toggle('active');
-        } catch(e) { alert("Failed to update"); }
+        } catch(e) { showToast(e.message || String(e), {type:'error', duration:5000}); }
     }
 
     async function toggleMemoryLock(id, btn) {
         const isActive = btn.classList.contains('active');
         try {
-            const response = await fetch('/api/kb/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id, updates: {is_locked: !isActive}})
-            });
-            if (!response.ok) throw new Error('Update rejected');
+            await updateRenderedMemory(id, {is_locked: !isActive});
             await loadMemoryList();
-        } catch(e) { alert("Failed to update: " + (e.message || e)); }
+        } catch(e) { showToast(e.message || String(e), {type:'error', duration:5000}); }
     }
 
     async function updateMemoryContent(id, newContent) {
-        try {
-            await fetch('/api/kb/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id, updates: {content: newContent}})
-            });
-        } catch(e) { console.error("Update failed", e); }
+        try { await updateRenderedMemory(id, {content:newContent}); }
+        catch(e) { showToast(e.message || String(e), {type:'error', duration:5000}); }
     }
 
     async function deleteMemory(id, btn) {
         try {
+            const expected_version = memoryVersionFor(id);
             const previewResponse = await fetch('/api/kb/delete', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id})
+                body: JSON.stringify({id: id, expected_version})
             });
             const preview = await previewResponse.json();
-            if (!previewResponse.ok) throw new Error(preview.detail || preview.message || 'Unable to review deletion');
-            if (!confirm(`Delete this memory permanently?\n\n${memoryDeletionImpactText(preview)}\n\nThis cannot be undone.`)) return;
+            if (!previewResponse.ok || !preview.confirmation_token) throw new Error(preview.detail || preview.message || 'Unable to review deletion');
+            const proceed = await new Promise(resolve => {
+                showConfirmDialog({
+                    title: 'Delete this memory permanently?',
+                    message: 'The memory and its child links will be removed from every layer.',
+                    impact: memoryDeletionImpactText(preview).split('\n').filter(Boolean),
+                    confirmLabel: 'Delete',
+                    danger: true,
+                    onConfirm: close => { close(); resolve(true); },
+                    onCancel: () => resolve(false)
+                });
+            });
+            if (!proceed) return;
             const response = await fetch('/api/kb/delete', {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id, confirmation_token: preview.confirmation_token})
+                body: JSON.stringify({id, expected_version, confirmation_token: preview.confirmation_token})
             });
             const data = await response.json();
             if (!response.ok || data.status !== 'success') {
                 throw new Error(data.message || data.detail || 'Memory is protected');
             }
             await Promise.all([loadMemoryList(), loadMemoryLayerOverview()]);
-        } catch(e) { alert("Failed to delete: " + (e.message || e)); }
+        } catch(e) { showToast("Failed to delete: " + (e.message || e), { type: 'error', duration: 3600 }); }
     }
 
     function memoryDeletionImpactText(preview = {}) {
@@ -5618,23 +7347,30 @@
 
     async function restoreMemory(id, btn) {
         try {
-            await fetch('/api/kb/update', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: id, updates: {is_archived: false}})
-            });
-            loadMemoryList();
-        } catch(e) { alert("Failed to restore"); }
+            await updateRenderedMemory(id, {is_archived:false});
+            await loadMemoryList();
+            showToast('Memory restored from archive.');
+        } catch(e) { showToast(e.message || String(e), {type:'error', duration:5000}); }
     }
 
     async function rebuildMemoryMetadata() {
-        if(!confirm("Rebuild Memory 2.0 metadata for existing memories? Existing content will be preserved.")) return;
-        try {
-            const response = await fetch('/api/kb/rebuild_metadata', {method: 'POST'});
-            const data = await response.json();
-            alert(`Metadata rebuilt for ${data.count || 0} memories.`);
-            loadMemoryList();
-        } catch(e) { alert("Failed to rebuild metadata: " + e); }
+        showConfirmDialog({
+            title: 'Rebuild memory metadata?',
+            message: 'Existing content is preserved; layers and retrieval metadata are recomputed.',
+            confirmLabel: 'Rebuild',
+            onConfirm: async close => {
+                close();
+                try {
+                    const response = await fetch('/api/kb/rebuild_metadata', {method: 'POST'});
+                    const data = await response.json();
+                    showToast(`Metadata rebuilt for ${data.count || 0} memories.`);
+                    loadMemoryList();
+                } catch(e) {
+                    showToast('Metadata rebuild failed.', { type: 'error' });
+                    console.warn(e);
+                }
+            }
+        });
     }
 
     function collectArchiveGenerationSettings() {
@@ -5652,7 +7388,13 @@
     const archiveSelectionState = {
         sessionId: null,
         exchanges: [],
-        selectedIds: new Set()
+        selectedIds: new Set(),
+        snapshot: '',
+        operationId: '',
+        resultSession: '',
+        resultOperation: '',
+        resultInvalid: false,
+        submitting: false
     };
 
     function closeArchiveSelectionModal() {
@@ -5661,14 +7403,19 @@
     }
 
     async function openArchiveSelection(sessionId = null) {
+        if (archiveSelectionState.submitting) return;
         archiveSelectionState.sessionId = sessionId || null;
         archiveSelectionState.exchanges = [];
         archiveSelectionState.selectedIds = new Set();
+        archiveSelectionState.snapshot = '';
+        archiveSelectionState.operationId = crypto.randomUUID().replace(/-/g, '');
+        archiveSelectionState.resultOperation = '';
+        archiveSelectionState.resultInvalid = false;
         const modal = document.getElementById('archive-selection-modal');
         const list = document.getElementById('archive-selection-list');
         const status = document.getElementById('archive-selection-status');
         if (modal) modal.style.display = 'flex';
-        if (list) list.innerHTML = '<div class="about-you-empty">Loading conversation...</div>';
+        if (list) renderSurfaceState(list, { kind: 'loading', title: 'Loading conversation', message: 'Preparing completed exchanges…', icon: 'archive' });
         if (status) status.textContent = '';
         updateArchiveSelectionCount();
         try {
@@ -5681,11 +7428,19 @@
             const data = await response.json();
             if (!response.ok) throw new Error(data.detail || data.message || 'Unable to read conversation');
             archiveSelectionState.exchanges = Array.isArray(data.exchanges) ? data.exchanges : [];
+            archiveSelectionState.snapshot = data.snapshot || '';
+            archiveSelectionState.resultSession = data.session_id || '';
             archiveSelectionState.selectedIds = new Set(archiveSelectionState.exchanges.map(item => String(item.id)));
             renderArchiveSelection();
         } catch (error) {
-            if (list) list.innerHTML = '<div class="about-you-empty">Unable to load completed exchanges.</div>';
-            if (status) status.textContent = error.message || String(error);
+            renderSurfaceState(list, {
+                title: 'Conversation could not be loaded',
+                message: 'No data was changed. Try loading the completed exchanges again.',
+                retry: () => openArchiveSelection(archiveSelectionState.sessionId),
+                details: error,
+                icon: 'archive'
+            });
+            if (status) status.textContent = 'Unable to load the conversation. Use Retry to try again.';
         }
     }
 
@@ -5711,12 +7466,14 @@
     }
 
     function toggleArchiveExchange(exchangeId, checked) {
+        if (archiveSelectionState.submitting || archiveSelectionState.resultOperation) return;
         if (checked) archiveSelectionState.selectedIds.add(String(exchangeId));
         else archiveSelectionState.selectedIds.delete(String(exchangeId));
         updateArchiveSelectionCount();
     }
 
     function setAllArchiveExchanges(selected) {
+        if (archiveSelectionState.submitting || archiveSelectionState.resultOperation) return;
         archiveSelectionState.selectedIds = selected
             ? new Set(archiveSelectionState.exchanges.map(item => String(item.id)))
             : new Set();
@@ -5732,10 +7489,15 @@
         const label = document.getElementById('archive-selection-count');
         const submit = document.getElementById('archive-selection-submit');
         if (label) label.textContent = `${count} of ${total} selected`;
-        if (submit) submit.disabled = count === 0;
+        if (submit) submit.disabled = count === 0 || archiveSelectionState.submitting || Boolean(archiveSelectionState.resultOperation);
+        document.querySelectorAll('#archive-selection-list input[type="checkbox"]').forEach(input => {
+            input.disabled = archiveSelectionState.submitting || Boolean(archiveSelectionState.resultOperation);
+        });
     }
 
     async function submitArchiveSelection() {
+        if (archiveSelectionState.submitting) return;
+        archiveSelectionState.submitting = true;
         const selectedIds = archiveSelectionState.exchanges
             .map(item => String(item.id))
             .filter(id => archiveSelectionState.selectedIds.has(id));
@@ -5743,9 +7505,11 @@
         const submit = document.getElementById('archive-selection-submit');
         if (!selectedIds.length) {
             if (status) status.textContent = 'Select at least one exchange.';
+            archiveSelectionState.submitting = false;
             return;
         }
         if (submit) submit.disabled = true;
+        updateArchiveSelectionCount();
         if (status) status.textContent = `Summarizing ${selectedIds.length} selected exchange${selectedIds.length === 1 ? '' : 's'}...`;
         try {
             saveCurrentApiSettings();
@@ -5757,18 +7521,54 @@
                 body: JSON.stringify({
                     ...collectArchiveGenerationSettings(),
                     ...(isSavedSession ? {session_id: archiveSelectionState.sessionId} : {}),
-                    selected_exchange_ids: selectedIds
+                    selected_exchange_ids: selectedIds,
+                    expected_snapshot: archiveSelectionState.snapshot,
+                    operation_id: archiveSelectionState.operationId
                 })
             });
             const data = await response.json();
+            if (data.operation?.operation_id) {
+                archiveSelectionState.resultOperation = data.operation.operation_id;
+            }
+            archiveSelectionState.resultInvalid = data.status === 'invalid';
             if (!response.ok || data.status !== 'success') {
                 throw new Error(data.detail || data.message || data.status || 'Conversation summary failed');
             }
             closeArchiveSelectionModal();
-            alert(`Saved ${Number(data.selected_exchange_count || selectedIds.length)} selected exchange(s) as an active Episodic memory.\n\n${data.summary || data.title || ''}`);
+            showToast(`Saved ${Number(data.selected_exchange_count || selectedIds.length)} selected exchange(s) as an active Episodic memory.\n\n${data.summary || data.title || ''}`, { type: 'info', duration: 3600 });
         } catch (error) {
             if (status) status.textContent = error.message || String(error);
+            if (status && archiveSelectionState.resultInvalid) {
+                const reload = document.createElement('button');
+                reload.type = 'button';
+                reload.textContent = '重新读取归档预览';
+                reload.onclick = () => openArchiveSelection(archiveSelectionState.sessionId);
+                status.appendChild(reload);
+            }
+            if (status && archiveSelectionState.resultOperation) {
+                const query = document.createElement('button');
+                query.type = 'button';
+                query.textContent = '核对原归档结果';
+                query.onclick = async () => {
+                    const params = new URLSearchParams({session_id: archiveSelectionState.resultSession,
+                        operation_id: archiveSelectionState.resultOperation});
+                    try {
+                        const response = await fetch('/api/kb/write-result?' + params);
+                        if (!response.ok) throw new Error('unavailable');
+                        const result = await response.json();
+                        status.textContent = result.committed
+                            ? '已保存归档。记忆编号：' + result.items.map(item => item.memory_id || '').join('、')
+                            : '原归档状态：' + result.items.map(item => item.state).join('、') + '。请勿重复新建归档。';
+                        if (!result.committed) status.appendChild(query);
+                    } catch (error) {
+                        status.textContent = '暂时无法核对原归档，请稍后重试。';
+                        status.appendChild(query);
+                    }
+                };
+                status.appendChild(query);
+            }
         } finally {
+            archiveSelectionState.submitting = false;
             updateArchiveSelectionCount();
         }
     }
@@ -5842,13 +7642,13 @@
                     document.getElementById('user-input').focus();
                     
                 } else {
-                    alert("Upload failed: " + (data.message || data.detail || "Unknown error"));
+                    showToast("Upload failed: " + (data.message || data.detail || "Unknown error"), { type: 'error', duration: 3600 });
                     clearAttachment();
                 }
             } catch (e) {
                 // loadingMsg.innerText = "Error uploading file.";
                 console.error(e);
-                alert("Error uploading file");
+                showToast("Error uploading file", { type: 'error', duration: 3600 });
                 clearAttachment();
             }
         }
@@ -5891,7 +7691,7 @@
             hideOverlay();
             if (!files.length) return;
             if (files.length > 1) {
-                alert('One attachment can be sent per message. The first dropped file will be attached.');
+                showToast('One attachment can be sent per message. The first dropped file will be attached.', { type: 'info', duration: 3600 });
             }
             uploadFile(files[0]);
         });
@@ -5910,6 +7710,9 @@
     let animationBindingPose = null;
     let activeShoeDiagnostics = null;
     let lastShoeDiagnosticSampleAt = 0;
+    let genogeTieMode = 'stable';
+    let mmdPhysicsStepper = null;
+    let activeTiePhysicsDiagnostics = null;
     let scene, camera, renderer, controls, loader;
     let mixer = null;
     let initialPosition = null;
@@ -5936,10 +7739,8 @@
     
     const vmdCache = new Map();
     
-    const FIXED_STEP = 1 / 60;
     let motionSpeed = 1.0;
     const clock = new THREE.Clock();
-    let accumulator = 0;
 
     let motionCategories = {};
     let currentMotionState = 'normal_idle';
@@ -6068,7 +7869,7 @@
                 preserveAuthoredParameters: true,
                 skirt: { disableAllCollisions: true },
                 breast: { forceKinematic: true, disableAllCollisions: true },
-                tie: { highDamping: true },
+                tie: { enabled: true },
             },
             // A subset of shoe-tip vertices is bound to the normal toe chain while
             // the rest of this model's legs use its D/deformation chain. Once those
@@ -6090,6 +7891,7 @@
     // [ADDED] User-adjustable lighting state (persisted)
     const MMD_SETTINGS_KEY = 'saya_mmd_3d_settings';
     const MMD_LIGHT_DEFAULTS_KEY = 'saya_mmd_light_defaults';
+    let mmdPersistReady = false;
     let mmdLight = {
         ambient: 1, dir: 1, top: 1, ambientColor: '#aaaaaa', dirColor: '#ffffff', topColor: '#ffffff', bg: 'transparent',
         // Advanced lighting (coexists with the 3 basic lights above)
@@ -6102,7 +7904,7 @@
         skyboxEnabled: false, skyboxUrl: '', skyboxRotation: 0, skyboxEnv: false,
     };
 
-    document.addEventListener('DOMContentLoaded', () => {
+    sayaPageReady( () => {
         // [ADDED] Initialize Draggable & Resizable Logic
         initDraggableModel();
         initializeFileDropUpload();
@@ -6111,15 +7913,46 @@
     // --- DRAGGABLE & RESIZABLE LOGIC ---
     function initDraggableModel() {
         const container = document.getElementById('draggable-model');
+        if (!container) return;
+
+        function chatBounds() {
+            const panel = document.querySelector('.model-panel');
+            const header = document.querySelector('.panel-header');
+            const sidebarWidth = panel && !panel.classList.contains('collapsed')
+                ? Math.round(panel.getBoundingClientRect().width)
+                : 0;
+            const headerBottom = header ? Math.round(header.getBoundingClientRect().bottom) : 52;
+            const width = container.offsetWidth || 300;
+            const height = container.offsetHeight || 350;
+            return {
+                minLeft: sidebarWidth,
+                minTop: headerBottom,
+                maxLeft: Math.max(sidebarWidth, window.innerWidth - width - 8),
+                maxTop: Math.max(headerBottom, window.innerHeight - height - 8),
+            };
+        }
+
+        function clampMmdPosition() {
+            const bounds = chatBounds();
+            const currentLeft = Number.parseFloat(container.style.left) || container.offsetLeft || bounds.minLeft;
+            const currentTop = Number.parseFloat(container.style.top) || container.offsetTop || bounds.minTop;
+            container.style.left = `${Math.min(bounds.maxLeft, Math.max(bounds.minLeft, currentLeft))}px`;
+            container.style.top = `${Math.min(bounds.maxTop, Math.max(bounds.minTop, currentTop))}px`;
+        }
+
+        // Dock the initial frame to the chat boundary and keep it there if the
+        // sidebar is toggled or the window is resized.
+        clampMmdPosition();
+        window.addEventListener('resize', clampMmdPosition);
         
         // [ADDED] Right-click to Reload Model
         container.addEventListener('contextmenu', (e) => {
             // Ignore right-clicks that originate from the settings panel or trigger
             if (e.target.closest('.mmd-settings-panel') || e.target.closest('.mmd-settings-trigger')) return;
             e.preventDefault();
-            if(confirm("Reload model?")) {
+            confirmAction("Reload model?", () => {
                 reloadModel();
-            }
+            });
         });
 
         const dragBar = container.querySelector('.drag-bar');
@@ -6143,6 +7976,7 @@
             if (!isDragging) return;
             container.style.left = (e.clientX - dragOffsetX) + 'px';
             container.style.top = (e.clientY - dragOffsetY) + 'px';
+            clampMmdPosition();
         }
 
         function stopDrag() {
@@ -6150,6 +7984,7 @@
             document.body.style.userSelect = '';
             document.removeEventListener('mousemove', onDrag);
             document.removeEventListener('mouseup', stopDrag);
+            window.SayaSettingsStore?.markViewDirty();
         }
 
         // --- RESIZING ---
@@ -6214,12 +8049,20 @@
                 newTop = startTop + (startHeight - newHeight);
             }
 
-            // Min size limit
+            // Keep the frame inside the chat region and prevent it from
+            // expanding back over the sidebar or beyond the viewport.
+            const bounds = chatBounds();
+            const minWidth = 160;
+            const maxWidth = Math.max(minWidth, window.innerWidth - bounds.minLeft - 8);
+            newWidth = Math.min(maxWidth, Math.max(minWidth, newWidth));
+            newHeight = newWidth / aspectRatio;
+
             if (newWidth > 100) {
                 container.style.width = newWidth + 'px';
                 container.style.height = newHeight + 'px';
                 if (newLeft !== startLeft) container.style.left = newLeft + 'px';
                 if (newTop !== startTop) container.style.top = newTop + 'px';
+                clampMmdPosition();
                 
                 // Update 3D Renderer
                 if (renderer && camera) {
@@ -6236,6 +8079,7 @@
             document.body.style.userSelect = '';
             document.removeEventListener('mousemove', onResize);
             document.removeEventListener('mouseup', stopResize);
+            window.SayaSettingsStore?.markViewDirty();
         }
     }
 
@@ -6901,7 +8745,7 @@
         }
     }
 
-    window.addEventListener('load', function() {
+    sayaPageLoaded( function() {
         recordDailyAppEntry();
         fetchMotionConfig();
         fetchSessionList(); // Initial session list
@@ -6929,12 +8773,12 @@
             previousModelValue = select.value;
         }
     }
-    window.addEventListener('load', initModelSelect);
+    sayaPageLoaded( initModelSelect);
 
     async function handleModelChange(selectElement) {
         const newValue = selectElement.value;
         if (newValue === 'api' && !getSavedApiSettings().api_key) {
-            alert("Please configure LLM API first.");
+            showToast("Please configure LLM API first.", { type: 'info', duration: 3600 });
             openApiSettingsModal();
             selectElement.value = previousModelValue;
             return;
@@ -6948,13 +8792,9 @@
                            "- This may take a few moments.\n\n" +
                            "Continue?";
                            
-        if (!confirm(confirmMsg)) {
-            selectElement.value = previousModelValue;
-            return;
-        }
-        
-        // 1. Disable UI
-        setChatDisabled(true);
+        confirmAction(confirmMsg, async () => {
+            // 1. Disable UI
+            setChatDisabled(true);
         
         try {
             // 2. Call Backend
@@ -6966,7 +8806,7 @@
             const data = await res.json();
             
             if (data.status === 'success') {
-                alert("Model switched to: " + (data.model || newValue));
+                showToast("Model switched to: " + (data.model || newValue), { type: 'info', duration: 3600 });
                 previousModelValue = newValue;
                 saveApiSettings({selected_model: newValue});
                 toggleApiInput(); 
@@ -6974,14 +8814,15 @@
                 throw new Error(data.detail || data.message || "Unknown error");
             }
         } catch (e) {
-            alert("Model switch failed: " + e.message);
+            showToast("Model switch failed: " + e.message, { type: 'error', duration: 3600 });
             selectElement.value = previousModelValue; // Revert
         } finally {
             // 3. Re-enable UI
             setChatDisabled(false);
         }
+        }, { onCancel: () => { selectElement.value = previousModelValue; } });
     }
-    
+
     function setChatDisabled(disabled) {
         const sendBtn = document.querySelector('.btn-send'); 
         const input = document.getElementById('user-input');
@@ -7086,9 +8927,9 @@
             const list = document.getElementById('session-list');
             list.innerHTML = '';
 
-            list.appendChild(createSidebarActionButton('New Project', createProject));
+            list.appendChild(createSidebarActionButton('New project', createProject));
             list.appendChild(await createProjectSection(allSessions));
-            list.appendChild(createSidebarActionButton('New Chat', createNewSession));
+            list.appendChild(createSidebarActionButton('New chat', createNewSession));
 
             const globalSessions = allSessions.filter(s => !s.project_id && s.role_mode !== 'assistant');
             const pinnedSessions = globalSessions.filter(s => s.pinned);
@@ -7096,13 +8937,13 @@
 
             // PINNED Section
             if (pinnedSessions.length > 0) {
-                const pinnedSection = createSessionSection('PINNED', pinnedSessions, true);
+                const pinnedSection = createSessionSection('Pinned', pinnedSessions, true);
                 list.appendChild(pinnedSection);
             }
 
             // HISTORY Section
             if (historySessions.length > 0) {
-                const historySection = createSessionSection('HISTORY', historySessions, false);
+                const historySection = createSessionSection('Your chats', historySessions, false);
                 list.appendChild(historySection);
             }
             
@@ -7113,25 +8954,32 @@
     }
 
     function createSidebarActionButton(label, handler) {
-        const button = document.createElement('div');
-        button.className = 'btn-new-chat';
-        button.innerHTML = `<span>+</span> ${escapeHtml(label)}`;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn-new-chat sidebar-action-btn';
+        button.innerHTML = `<span class="sidebar-action-plus" aria-hidden="true">+</span><span>${escapeHtml(label)}</span>`;
         button.onclick = handler;
+        button.onkeydown = event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                handler(event);
+            }
+        };
         return button;
     }
 
     async function createProjectSection(allSessions = []) {
-        await loadProjects();
+        const projectsVerified=await loadProjects();
         const validProjectIds = new Set(projectsCache.map(project => project.id));
-        if (currentProjectId && !validProjectIds.has(currentProjectId)) {
+        if (projectsVerified && currentProjectId && !validProjectIds.has(currentProjectId)) {
             setCurrentProject("", {refresh: false});
         }
-        if (projectSidebarViewId && !validProjectIds.has(projectSidebarViewId)) {
+        if (projectsVerified && projectSidebarViewId && !validProjectIds.has(projectSidebarViewId)) {
             projectSidebarViewId = "";
         }
         const section = document.createElement('div');
         section.className = 'session-section project-section';
-        const title = 'PROJECT';
+        const title = 'Projects';
         const projectSessionsById = new Map();
         allSessions.forEach(session => {
             if (!session.project_id) return;
@@ -7143,10 +8991,10 @@
 
         const header = document.createElement('div');
         header.className = 'session-section-header';
-        header.innerHTML = '<span class="icon">鈻?/span> PROJECT';
-        section.appendChild(header);
-
-        header.innerHTML = '<span class="icon">▾</span> PROJECT';
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        header.setAttribute('aria-expanded', 'true');
+        header.innerHTML = `<span class="icon session-section-chevron icn icn-chevron-down icn-sm" aria-hidden="true"></span><span>${title}</span>`;
 
         const container = document.createElement('div');
         container.className = 'session-list-container';
@@ -7162,17 +9010,24 @@
         } else if (projectsCache.length) {
             projectsCache.forEach(project => container.appendChild(createProjectItem(project)));
         } else {
-            container.appendChild(createDisabledProjectItem('No Project'));
+            // Keep the empty project rail visually minimal: the ellipsis is
+            // enough; the old empty-state label added noise to the sidebar.
+            container.appendChild(createDisabledProjectItem(''));
         }
         section.appendChild(container);
 
-        header.innerHTML = `<span class="icon">▾</span> ${title}`;
-        header.innerHTML = '<span class="icon">▾</span> PROJECT';
-        header.innerHTML = '<span class="icon">v</span> PROJECT';
         header.onclick = () => {
-            header.classList.toggle('collapsed');
-            container.classList.toggle('collapsed');
+            const collapsed = header.classList.toggle('collapsed');
+            container.classList.toggle('collapsed', collapsed);
+            header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
         };
+        header.onkeydown = event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                header.click();
+            }
+        };
+        section.insertBefore(header, container);
 
         return section;
     }
@@ -7200,7 +9055,8 @@
     function createProjectMenuButton(project) {
         const menuBtn = document.createElement('button');
         menuBtn.className = 'session-menu-btn';
-        menuBtn.innerHTML = '⋮';
+        menuBtn.innerHTML = ic('more', 'icn-sm');
+        menuBtn.title = 'Project actions';
         menuBtn.setAttribute('aria-label', 'Project actions');
         menuBtn.onclick = (e) => {
             e.stopPropagation();
@@ -7266,35 +9122,36 @@
             const sessionNote = preview.session_count
                 ? `\n\nThis will permanently delete the project and its ${preview.session_count} conversation${preview.session_count === 1 ? '' : 's'}.`
                 : '\n\nThis will permanently delete the project.';
-            if (!confirm(`Delete "${projectName}"?${sessionNote}\n${preview.auto_memory_count || 0} linked automatic memories will also be deleted.\n${memoryDeletionImpactText(preview.memory_preview || {})}\n\nThis cannot be undone.`)) return;
-            const response = await fetch('/api/projects/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    id: projectId,
-                    project_confirmation_token: preview.project_confirmation_token,
-                    memory_confirmation_token: preview.memory_confirmation_token
-                })
-            });
-            if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
-            const data = await response.json();
-            if (data.status !== 'success') throw new Error('Server returned failure');
+            confirmAction(`Delete "${projectName}"?${sessionNote}\n${preview.auto_memory_count || 0} linked automatic memories will also be deleted.\n${memoryDeletionImpactText(preview.memory_preview || {})}\n\nThis cannot be undone.`, async () => {
 
-            if (currentProjectId === projectId) setCurrentProject("", {refresh: false});
-            if (projectSidebarViewId === projectId) projectSidebarViewId = "";
+                const response = await fetch('/api/projects/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        id: projectId,
+                        project_confirmation_token: preview.project_confirmation_token,
+                        memory_confirmation_token: preview.memory_confirmation_token
+                    })
+                });
+                if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
+                const data = await response.json();
+                if (data.status !== 'success') throw new Error('Server returned failure');
 
-            if (data.was_active_session && currentRoleMode !== 'assistant') {
-                const chatContent = document.getElementById('chat-content');
-                if (chatContent) chatContent.innerHTML = '';
-                currentHistoryLength = 0;
-                currentSessionId = null;
-                await startNewSessionSilently("");
-            } else {
-                fetchSessionList();
-            }
-        } catch (e) {
+                if (currentProjectId === projectId) setCurrentProject("", {refresh: false});
+                if (projectSidebarViewId === projectId) projectSidebarViewId = "";
+
+                if (data.was_active_session && currentRoleMode !== 'assistant') {
+                    const chatContent = document.getElementById('chat-content');
+                    if (chatContent) chatContent.innerHTML = '';
+                    currentHistoryLength = 0;
+                    currentSessionId = null;
+                    await startNewSessionSilently("");
+                } else {
+                    fetchSessionList();
+                }
+        });        } catch (e) {
             console.error("Delete project failed", e);
-            alert("Failed to delete project: " + e.message);
+            showToast("Failed to delete project: " + e.message, { type: 'error', duration: 3600 });
         }
     }
 
@@ -7307,8 +9164,8 @@
         };
 
         const back = document.createElement('span');
-        back.className = 'project-back-symbol';
-        back.textContent = '<';
+        back.className = 'project-back-symbol icn icn-arrow-left icn-sm';
+        back.setAttribute('aria-hidden', 'true');
         div.appendChild(back);
 
         const content = document.createElement('div');
@@ -7329,10 +9186,14 @@
 
         const content = document.createElement('div');
         content.className = 'session-content';
-        content.innerHTML = `
-            <div class="session-preview">${escapeHtml(label)}</div>
-            <div class="session-date">Project</div>
-        `;
+        const safeLabel = String(label || '').trim();
+        div.setAttribute('aria-label', safeLabel || 'Projects');
+        content.innerHTML = safeLabel
+            ? `
+                <div class="session-preview project-empty-label"><span class="project-empty-ellipsis icn icn-more icn-sm" aria-hidden="true"></span><span>${escapeHtml(safeLabel)}</span></div>
+                <div class="session-date">Project</div>
+            `
+            : '<div class="session-preview project-empty-label"><span class="project-empty-ellipsis icn icn-more icn-sm" aria-hidden="true"></span></div>';
         div.appendChild(content);
         return div;
     }
@@ -7346,16 +9207,19 @@
     async function loadProjects() {
         try {
             const res = await fetch('/api/projects');
+            if(!res.ok)throw new Error('Projects unavailable');
             const data = await res.json();
-            projectsCache = data.projects || [];
+            if(!Array.isArray(data.projects))throw new Error('Invalid projects');
+            projectsCache = data.projects;
+            return true;
         } catch (e) {
-            projectsCache = [];
+            return false; // A failed read does not prove the saved project was deleted.
         }
     }
 
     function setCurrentProject(projectId, options = {}) {
         currentProjectId = projectId || "";
-        localStorage.setItem('saya_current_project_id', currentProjectId);
+        sayaSettings.setItem('saya_current_project_id', currentProjectId);
         if (options.refresh) fetchSessionList();
     }
 
@@ -7371,8 +9235,19 @@
     }
 
     async function createProject() {
-        const name = prompt("Project name:");
-        if (!name || !name.trim()) return;
+        showPromptDialog({
+            title: 'New project',
+            label: 'Project name',
+            placeholder: 'e.g. Saya refactor',
+            confirmLabel: 'Create',
+            onConfirm: async (name, close) => {
+                close();
+                await doCreateProject(name);
+            }
+        });
+    }
+
+    async function doCreateProject(name) {
         const response = await fetch('/api/projects/add', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -7382,14 +9257,148 @@
         if (data.project?.id) {
             currentProjectId = data.project.id;
             projectSidebarViewId = data.project.id;
-            localStorage.setItem('saya_current_project_id', currentProjectId);
+            sayaSettings.setItem('saya_current_project_id', currentProjectId);
             await startNewSessionSilently(data.project.id);
         }
         fetchSessionList();
     }
 
     function showUnderDevelopment(name) {
-        alert(`${name} is still under development.`);
+        showToast(`${name} is still under development.`, { type: 'info', duration: 3600 });
+    }
+
+    // --- ROOMS (local conversation spaces) ---
+    const ROOMS_STORAGE_KEY = 'saya_rooms_v1';
+    const CURRENT_ROOM_STORAGE_KEY = 'saya_current_room_v1';
+
+    function getRooms() {
+        try {
+            const saved = JSON.parse(sayaSettings.getItem(ROOMS_STORAGE_KEY) || '[]');
+            const rooms = Array.isArray(saved) ? saved.map(value => String(value || '').trim()).filter(Boolean) : [];
+            return rooms.length ? Array.from(new Set(['General', ...rooms])) : ['General'];
+        } catch (error) {
+            return ['General'];
+        }
+    }
+
+    function getCurrentRoom() {
+        const rooms = getRooms();
+        const saved = String(sayaSettings.getItem(CURRENT_ROOM_STORAGE_KEY) || 'General').trim();
+        return rooms.includes(saved) ? saved : 'General';
+    }
+
+    function saveRooms(rooms) {
+        sayaSettings.setItem(ROOMS_STORAGE_KEY, JSON.stringify(Array.from(new Set(rooms))));
+    }
+
+    function syncCurrentRoomLabel() {
+        const label = document.getElementById('rooms-current-label');
+        if (label) label.textContent = getCurrentRoom();
+    }
+
+    function renderRooms() {
+        const list = document.getElementById('rooms-list');
+        if (!list) return;
+        const current = getCurrentRoom();
+        syncCurrentRoomLabel();
+        list.innerHTML = '';
+        getRooms().forEach(room => {
+            const item = document.createElement('div');
+            item.className = `room-item${room === current ? ' active' : ''}`;
+            item.innerHTML = `
+                <button type="button" class="room-item-open" onclick="selectRoom('${escapeJsString(room)}')">
+                    <span class="room-item-icon"><span class="icn icn-home icn-sm" aria-hidden="true"></span></span>
+                    <span class="room-item-copy"><strong>${escapeHtml(room)}</strong><small>${room === current ? 'Current room' : 'Conversation space'}</small></span>
+                    ${room === current ? '<span class="icn icn-check icn-sm room-item-check" aria-hidden="true"></span>' : ''}
+                </button>
+                <button type="button" class="row-menu-btn" onclick="showRoomMenu(this, '${escapeJsString(room)}')" title="More actions" aria-label="More actions" aria-haspopup="menu"><span class="icn icn-more icn-sm" aria-hidden="true"></span></button>`;
+            list.appendChild(item);
+        });
+    }
+
+    function showRoomMenu(anchor, room) {
+        const current = getCurrentRoom();
+        const items = [
+            { label: 'Rename room', icon: 'edit', onClick: () => renameRoom(room) },
+        ];
+        if (room !== 'General') {
+            items.push({ label: 'Delete room', icon: 'trash', danger: true, onClick: () => deleteRoom(room) });
+        }
+        showMenuAt(anchor, items, { align: 'end' });
+    }
+    window.showRoomMenu = showRoomMenu;
+
+    function renameRoom(room) {
+        showPromptDialog({
+            title: 'Rename room',
+            label: 'Room name',
+            value: room,
+            confirmLabel: 'Rename',
+            onConfirm: (name, close) => {
+                close();
+                const rooms = getRooms().filter(item => item !== room);
+                if (!rooms.includes(name)) rooms.push(name);
+                saveRooms(rooms);
+                if (getCurrentRoom() === room) selectRoom(name);
+                renderRooms();
+                showToast('Room renamed.');
+            }
+        });
+    }
+
+    function deleteRoom(room) {
+        showConfirmDialog({
+            title: 'Delete this room?',
+            message: `The room "${room}" is removed from the list. Conversations are not deleted.`,
+            impact: ['If it was the current room, you return to General'],
+            confirmLabel: 'Delete room',
+            danger: true,
+            onConfirm: close => {
+                close();
+                const rooms = getRooms().filter(item => item !== room);
+                saveRooms(rooms);
+                if (getCurrentRoom() === room) selectRoom(rooms[0] || 'General');
+                renderRooms();
+                showToast('Room deleted.');
+            }
+        });
+    }
+
+    function createRoom() {
+        showPromptDialog({
+            title: 'New room',
+            label: 'Room name',
+            placeholder: 'e.g. Study notes',
+            confirmLabel: 'Create',
+            onConfirm: (name, close) => {
+                close();
+                const rooms = getRooms();
+                if (!rooms.includes(name)) rooms.push(name);
+                saveRooms(rooms);
+                selectRoom(name);
+                showToast('Room created.');
+            }
+        });
+    }
+
+    function openRoomsModal() {
+        const modal = document.getElementById('rooms-modal');
+        if (!modal) return;
+        renderRooms();
+        modal.style.display = 'flex';
+    }
+
+    function closeRoomsModal() {
+        const modal = document.getElementById('rooms-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function selectRoom(room) {
+        const name = String(room || '').trim();
+        if (!name) return;
+        sayaSettings.setItem(CURRENT_ROOM_STORAGE_KEY, name);
+        syncCurrentRoomLabel();
+        renderRooms();
     }
 
     function openToolsModal() {
@@ -7400,6 +9409,21 @@
     function closeToolsModal() {
         const modal = document.getElementById('tools-modal');
         if (modal) modal.style.display = 'none';
+    }
+
+    function openMoreModal(anchor) {
+        const button = anchor instanceof Element ? anchor : document.querySelector('[onclick*="openMoreModal"]');
+        if (!button) return;
+        showMenuAt(button, [
+            { label: 'Search', icon: 'search', onClick: () => openChatSearch() },
+            { label: 'Backup & Restore', icon: 'save', onClick: () => openBackupRestoreModal() },
+            { label: 'Mode Settings', icon: 'sliders', onClick: () => openModeSettingModal() },
+            { label: 'Token Limits', icon: 'note', onClick: () => openTokenLimitsModal() }
+        ]);
+    }
+
+    function closeMoreModal() {
+        document.querySelectorAll('.uni-popover').forEach(p => p.remove());
     }
 
     function openRolesModal() {
@@ -7424,6 +9448,8 @@
             // their output budget without returning visible report content.
             api_model_name: settings.api_model_name || settings.memory_strong_model_name || '',
             brave_search_api_key: settings.brave_search_api_key || '',
+            deepseek_search_api_key: settings.deepseek_search_api_key || '',
+            search_provider: window.SayaLocalProfile?.status()?.search_provider || 'brave',
             response_language: style.response_language || 'auto'
         };
     }
@@ -7508,7 +9534,20 @@
         const modal = document.getElementById('learner-role-modal');
         if (modal) modal.style.display = 'flex';
         setLearnerDefaultRunAt();
-        try { await fetchLearnerState(); } catch (error) { setLearnerEditorStatus(error.message, true); }
+        try { await fetchLearnerState(); }
+        catch (error) {
+            console.warn('Learner state unavailable:', error);
+            const taskList = document.getElementById('learner-task-list');
+            if (taskList) {
+                taskList.innerHTML = `
+                    <div class="st-page-error">
+                        ${ic('alert')}
+                        <strong>Learner could not be loaded.</strong>
+                        <span>Your tasks and memory are safe. Check that the backend is running, then try again.</span>
+                        <button type="button" class="workspace-secondary-action" onclick="retryLearnerState()">${ic('refresh', 'icn-sm')}Retry</button>
+                    </div>`;
+            }
+        }
         renderLearnerSourceFields();
         renderLearnerScheduleFields();
         renderLearnerRole();
@@ -7518,6 +9557,18 @@
         const modal = document.getElementById('learner-role-modal');
         if (modal) modal.style.display = 'none';
     }
+
+    async function retryLearnerState() {
+        try {
+            await fetchLearnerState();
+            renderLearnerRole();
+            showToast('Learner reconnected.');
+        } catch (error) {
+            showToast('Learner is still unavailable.', { type: 'error' });
+            console.warn('Learner retry failed:', error);
+        }
+    }
+    window.retryLearnerState = retryLearnerState;
 
     function backToRolesFromLearner() {
         closeLearnerRoleModal();
@@ -7697,14 +9748,15 @@
         const time = run.status === 'running'
             ? `${run.stage || 'working'} · ${run.progress || 0}%`
             : `${formatVideoDate(run.finished_at || run.created_at)}${run.status === 'completed_caution' ? ' · wider source tier used' : ''}`;
+        const badgeClass = {queued: '', running: 'running', completed: 'success', completed_caution: 'warning', failed: 'danger', interrupted: 'danger'}[run.status] || '';
         return `<article class="learner-run-card ${escapeHtml(run.status || '')} ${readClass}">
             <button class="learner-run-open" onclick="openLearnerRun('${escapeJsString(run.id)}')">
-                <span class="learner-run-state">${terminal && !run.is_read ? '<i aria-hidden="true"></i>' : ''}${escapeHtml(learnerRunLabel(run))}</span>
+                <span class="st-badge ${badgeClass}">${terminal && !run.is_read ? '<i aria-hidden="true" class="learner-unread-dot"></i>' : ''}${escapeHtml(learnerRunLabel(run))}</span>
                 <strong>${escapeHtml(run.task_title || 'Learning run')}</strong><small>${escapeHtml(time)}</small>
             </button>
             ${terminal ? `<div class="learner-run-actions">
-                <button onclick="setLearnerRunRead('${escapeJsString(run.id)}', ${run.is_read ? 'false' : 'true'})">${run.is_read ? 'Mark unread' : 'Mark read'}</button>
-                <button class="danger" onclick="deleteLearnerRun('${escapeJsString(run.id)}')">Delete</button>
+                <button onclick="setLearnerRunRead('${escapeJsString(run.id)}', ${run.is_read ? 'false' : 'true'})">${run.is_read ? ic('eye', 'icn-sm') + 'Mark unread' : ic('check', 'icn-sm') + 'Mark read'}</button>
+                <button class="danger" onclick="deleteLearnerRun('${escapeJsString(run.id)}')">${ic('trash', 'icn-sm')}Delete</button>
             </div>` : ''}
         </article>`;
     }
@@ -7720,16 +9772,20 @@
         const orphanCount = Number(learnerState.counts?.orphaned_memories || 0);
         if (orphanNotice) {
             orphanNotice.hidden = orphanCount === 0;
-            orphanNotice.innerHTML = orphanCount ? `<div><strong>Memory cleanup available</strong><span>${orphanCount} older Learner memor${orphanCount === 1 ? 'y no longer has' : 'ies no longer have'} a matching task or activity record. Review before removing.</span></div><button onclick="cleanupOrphanedLearnerMemories()">Review cleanup</button>` : '';
+            orphanNotice.innerHTML = orphanCount ? `<div><strong>Memory cleanup available</strong><span>${orphanCount} older Learner memor${orphanCount === 1 ? 'y no longer has' : 'ies no longer have'} a matching task or activity record. Review before removing.</span></div><button onclick="cleanupOrphanedLearnerMemories()">${ic('trash', 'icn-sm')}Review cleanup</button>` : '';
         }
         renderLearnerCreatorOptions();
         const taskList = document.getElementById('learner-task-list');
-        if (taskList) taskList.innerHTML = tasks.length ? tasks.map(task => `
+        if (taskList) taskList.innerHTML = tasks.length ? tasks.map(task => {
+            const taskBadge = task.enabled
+                ? '<span class="st-badge running">Active</span>'
+                : '<span class="st-badge">Paused</span>';
+            return `
             <article class="learner-task-card ${task.enabled ? '' : 'disabled'}">
-                <div class="learner-card-main"><strong>${escapeHtml(task.title)}</strong><small>${escapeHtml(task.source_type === 'web' ? task.topic : `${(task.creator_ids || []).length} selected creator(s) · ${learnerVideoStrategyText(task)}`)}</small><div class="learner-card-meta"><span>${escapeHtml(learnerScheduleText(task))}</span>${task.read_memory ? '<span>reads memory</span>' : ''}${task.manage_memory ? '<span>manages memory</span>' : ''}</div></div>
-                <div class="learner-card-actions"><button onclick="editLearnerTask('${escapeJsString(task.id)}')">Edit</button><button onclick="runLearnerTask('${escapeJsString(task.id)}')">Run now</button><button onclick="toggleLearnerTask('${escapeJsString(task.id)}', ${task.enabled ? 'false' : 'true'})">${task.enabled ? 'Pause' : 'Enable'}</button><button class="danger" onclick="deleteLearnerTask('${escapeJsString(task.id)}')">Delete</button></div>
-            </article>
-        `).join('') : '<div class="learner-empty">No learning tasks yet.</div>';
+                <div class="learner-card-main"><div class="learner-card-title-row"><strong>${escapeHtml(task.title)}</strong>${taskBadge}</div><small>${escapeHtml(task.source_type === 'web' ? task.topic : `${(task.creator_ids || []).length} selected creator(s) · ${learnerVideoStrategyText(task)}`)}</small><div class="learner-card-meta"><span>${escapeHtml(learnerScheduleText(task))}</span>${task.read_memory ? '<span>reads memory</span>' : ''}${task.manage_memory ? '<span>manages memory</span>' : ''}</div></div>
+                <div class="learner-card-actions"><button onclick="editLearnerTask('${escapeJsString(task.id)}')">${ic('edit', 'icn-sm')}Edit</button><button onclick="runLearnerTask('${escapeJsString(task.id)}')">${ic('play', 'icn-sm')}Run now</button><button onclick="toggleLearnerTask('${escapeJsString(task.id)}', ${task.enabled ? 'false' : 'true'})">${task.enabled ? ic('stop', 'icn-sm') + 'Pause' : ic('play', 'icn-sm') + 'Enable'}</button><button class="danger" onclick="deleteLearnerTask('${escapeJsString(task.id)}')">${ic('trash', 'icn-sm')}Delete</button></div>
+            </article>`;
+        }).join('') : '<div class="learner-empty">No learning tasks yet.</div>';
         const runList = document.getElementById('learner-run-list');
         if (runList) runList.innerHTML = runs.length ? runs.slice(0, 20).map(run => learnerRunCard(run, true)).join('') : '<div class="learner-empty">No activity yet.</div>';
     }
@@ -7737,17 +9793,27 @@
     async function cleanupOrphanedLearnerMemories() {
         const previewResponse = await fetch('/api/learner/memories/orphans/delete-preview', {method: 'POST'});
         const preview = await previewResponse.json();
-        if (!previewResponse.ok) { alert(preview.detail || 'Unable to review memory cleanup'); return; }
+        if (!previewResponse.ok) { showToast(preview.detail || 'Unable to review memory cleanup.', { type: 'error' }); return; }
         if (!preview.memory_count) { await fetchLearnerState(); return; }
         if ((preview.memory_preview?.blocked || []).length) {
-            alert('Some orphaned memories are protected. Unlock them before cleanup.');
+            showToast('Some orphaned memories are protected. Unlock them before cleanup.', { type: 'error' });
             return;
         }
-        if (!confirm(`Delete ${preview.memory_count} orphaned Learner memor${preview.memory_count === 1 ? 'y' : 'ies'}?\n\n${memoryDeletionImpactText(preview.memory_preview || {})}\n\nThis cannot be undone.`)) return;
-        const response = await fetch(`/api/learner/memories/orphans?confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
-        const data = await response.json();
-        if (!response.ok || data.status !== 'success') { alert(data.detail || data.message || 'Unable to clean up memories'); return; }
-        await fetchLearnerState();
+        showConfirmDialog({
+            title: `Delete ${preview.memory_count} orphaned Learner memor${preview.memory_count === 1 ? 'y' : 'ies'}?`,
+            message: 'These memories no longer belong to any task or activity record.',
+            impact: memoryDeletionImpactText(preview.memory_preview || {}).split('\n').filter(Boolean),
+            confirmLabel: 'Delete',
+            danger: true,
+            onConfirm: async close => {
+                close();
+                const response = await fetch(`/api/learner/memories/orphans?confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
+                const data = await response.json();
+                if (!response.ok || data.status !== 'success') { showToast(data.detail || data.message || 'Unable to clean up memories.', { type: 'error' }); return; }
+                showToast('Orphaned Learner memories deleted.');
+                await fetchLearnerState();
+            }
+        });
     }
 
     function setLearnerEditorStatus(message, error = false) {
@@ -7891,7 +9957,7 @@
             if (!response.ok) throw new Error(data.detail || 'Unable to start task');
             await fetchLearnerState();
             scheduleLearnerHeartbeat(3000);
-        } catch (error) { alert(error.message || error); }
+        } catch (error) { showToast(error.message || error, { type: 'error', duration: 3600 }); }
     }
 
     async function startLearnerDueTasks(showNotice = false) {
@@ -7901,8 +9967,8 @@
             if (!response.ok) throw new Error(data.detail || 'Unable to start due tasks');
             learnerState = data;
             renderLearnerRole(); renderLearnerActivityBadge();
-            if (showNotice && !(data.started || []).length) alert('No due learning task is waiting.');
-        } catch (error) { if (showNotice) alert(error.message || error); }
+            if (showNotice && !(data.started || []).length) showToast('No due learning task is waiting.', { type: 'info', duration: 3600 });
+        } catch (error) { if (showNotice) showToast(error.message || error, { type: 'error', duration: 3600 }); }
     }
 
     async function toggleLearnerTask(taskId, enabled) {
@@ -7913,17 +9979,18 @@
     async function deleteLearnerTask(taskId) {
         const previewResponse = await fetch(`/api/learner/tasks/${encodeURIComponent(taskId)}/delete-preview`, {method: 'POST'});
         const preview = await previewResponse.json();
-        if (!previewResponse.ok) { alert(preview.detail || 'Unable to review task deletion'); return; }
+        if (!previewResponse.ok) { showToast(preview.detail || 'Unable to review task deletion', { type: 'error', duration: 3600 }); return; }
         if ((preview.memory_preview?.blocked || []).length) {
-            alert('This task has protected memories. Unlock them before deleting the task and its history.');
+            showToast('This task has protected memories. Unlock them before deleting the task and its history.', { type: 'error', duration: 3600 });
             return;
         }
-        if (!confirm(`Delete this learning task?\n\n${preview.run_count || 0} activity record(s) and ${preview.memory_count || 0} memories created by this task will also be permanently deleted.\n${memoryDeletionImpactText(preview.memory_preview || {})}\n\nThis cannot be undone.`)) return;
-        const response = await fetch(`/api/learner/tasks/${encodeURIComponent(taskId)}?confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
-        const data = await response.json();
-        if (!response.ok || data.status !== 'success') { alert(data.detail || data.memory_result?.message || 'Unable to delete task'); return; }
-        await fetchLearnerState();
-    }
+        confirmAction(`Delete this learning task?\n\n${preview.run_count || 0} activity record(s) and ${preview.memory_count || 0} memories created by this task will also be permanently deleted.\n${memoryDeletionImpactText(preview.memory_preview || {})}\n\nThis cannot be undone.`, async () => {
+
+            const response = await fetch(`/api/learner/tasks/${encodeURIComponent(taskId)}?confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
+            const data = await response.json();
+            if (!response.ok || data.status !== 'success') { showToast(data.detail || data.memory_result?.message || 'Unable to delete task', { type: 'error', duration: 3600 }); return; }
+            await fetchLearnerState();
+    });    }
 
     async function openLearnerActivityModal() {
         const modal = document.getElementById('learner-activity-modal');
@@ -7944,21 +10011,47 @@
         const unread = Number(learnerState.counts?.unread || 0);
         const readTerminal = runs.some(run => !['queued', 'running'].includes(run.status) && run.is_read);
         body.innerHTML = `<div class="learner-activity-toolbar">
-            <button onclick="closeLearnerActivityModal(); openLearnerRoleModal();">Open Learner</button>
-            <div class="learner-activity-toolbar-actions">
-                <span>${Number(learnerState.counts?.running || 0)} running · ${unread} unread · ${runs.length} retained</span>
-                <button onclick="markAllLearnerRunsRead()" ${unread ? '' : 'disabled'}>Mark all read</button>
-                <button class="danger" onclick="clearReadLearnerRuns()" ${readTerminal ? '' : 'disabled'}>Clear read</button>
+            <div class="learner-activity-counts">
+                <span class="st-badge running">${Number(learnerState.counts?.running || 0)} running</span>
+                <span class="st-badge ${unread ? 'warning' : ''}">${unread} unread</span>
+                <span class="st-badge">${runs.length} retained</span>
             </div>
-        </div><div class="learner-list">${runs.length ? runs.map(run => learnerRunCard(run)).join('') : '<div class="learner-empty">No learning activity yet.</div>'}</div>`;
+            <div class="learner-activity-toolbar-actions">
+                <button type="button" class="row-menu-btn" onclick="showLearnerActivityMenu(this, ${unread ? 'true' : 'false'}, ${readTerminal ? 'true' : 'false'})" title="More actions" aria-label="More actions" aria-haspopup="menu">${ic('more', 'icn-sm')}</button>
+                <button class="workspace-primary-action" onclick="closeLearnerActivityModal(); openLearnerRoleModal();">${ic('book-open', 'icn-sm')}Open Learner</button>
+            </div>
+        </div><div class="learner-list">${runs.length ? runs.map(run => learnerRunCard(run)).join('') : `<div class="st-empty">${ic('book-open')}<span>No learning activity yet.</span></div>`}</div>`;
     }
+
+    document.addEventListener('click', event => {
+        const tab = event.target.closest('.learner-mobile-tabs .ws-tab');
+        if (!tab) return;
+        const root = tab.closest('.learner-role-body');
+        if (!root) return;
+        root.querySelectorAll('.learner-mobile-tabs .ws-tab').forEach(item => {
+            const active = item === tab;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+        root.querySelectorAll('[data-learner-col]').forEach(col => {
+            col.hidden = col.dataset.learnerCol !== tab.dataset.learnerTab;
+        });
+    });
+
+    function showLearnerActivityMenu(anchor, canMarkAll, canClear) {
+        showMenuAt(anchor, [
+            { label: 'Mark all read', icon: 'check', onClick: () => { if (canMarkAll) markAllLearnerRunsRead(); } },
+            { label: 'Clear read activities', icon: 'trash', danger: true, onClick: () => { if (canClear) clearReadLearnerRuns(); } }
+        ], { align: 'end' });
+    }
+    window.showLearnerActivityMenu = showLearnerActivityMenu;
 
     async function setLearnerRunRead(runId, isRead, rerender = true) {
         const response = await fetch(`/api/learner/runs/${encodeURIComponent(runId)}/read`, {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({is_read: isRead})
         });
         const data = await response.json();
-        if (!response.ok) { alert(data.detail || 'Unable to update activity'); return; }
+        if (!response.ok) { showToast(data.detail || 'Unable to update activity.', { type: 'error' }); return; }
         const run = (learnerState.runs || []).find(item => item.id === runId);
         if (run) Object.assign(run, data.run || {is_read: isRead});
         await fetchLearnerState();
@@ -7968,24 +10061,34 @@
     async function markAllLearnerRunsRead() {
         const response = await fetch('/api/learner/runs/read-all', {method: 'POST'});
         const data = await response.json();
-        if (!response.ok) { alert(data.detail || 'Unable to mark activity as read'); return; }
+        if (!response.ok) { showToast(data.detail || 'Unable to mark activity as read.', { type: 'error' }); return; }
         await fetchLearnerState(); renderLearnerActivityList();
     }
 
     async function deleteLearnerRun(runId, fromDetail = false) {
         const previewResponse = await fetch(`/api/learner/runs/${encodeURIComponent(runId)}/delete-preview`, {method: 'POST'});
         const preview = await previewResponse.json();
-        if (!previewResponse.ok) { alert(preview.detail || 'Unable to review activity deletion'); return; }
+        if (!previewResponse.ok) { showToast(preview.detail || 'Unable to review activity deletion.', { type: 'error' }); return; }
         if ((preview.memory_preview?.blocked || []).length) {
-            alert('This activity has protected memories. Unlock them before deleting the activity.');
+            showToast('This activity has protected memories. Unlock them before deleting the activity.', { type: 'error' });
             return;
         }
-        if (!confirm(`Delete this activity record?\n\n${preview.memory_count || 0} memories created by this run will also be permanently deleted.\n${memoryDeletionImpactText(preview.memory_preview || {})}\n\nThis cannot be undone.`)) return;
-        const response = await fetch(`/api/learner/runs/${encodeURIComponent(runId)}?confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
-        const data = await response.json();
-        if (!response.ok) { alert(data.detail || 'Unable to delete activity'); return; }
-        await fetchLearnerState();
-        renderLearnerActivityList();
+        showConfirmDialog({
+            title: 'Delete this activity record?',
+            message: `${preview.memory_count || 0} memories created by this run will also be permanently deleted.`,
+            impact: memoryDeletionImpactText(preview.memory_preview || {}).split('\n').filter(Boolean),
+            confirmLabel: 'Delete activity',
+            danger: true,
+            onConfirm: async close => {
+                close();
+                const response = await fetch(`/api/learner/runs/${encodeURIComponent(runId)}?confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
+                const data = await response.json();
+                if (!response.ok) { showToast(data.detail || 'Unable to delete activity.', { type: 'error' }); return; }
+                showToast('Activity deleted.');
+                await fetchLearnerState();
+                renderLearnerActivityList();
+            }
+        });
     }
 
     async function clearReadLearnerRuns() {
@@ -7993,17 +10096,27 @@
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({scope: 'read'})
         });
         const preview = await previewResponse.json();
-        if (!previewResponse.ok) { alert(preview.detail || 'Unable to review activity cleanup'); return; }
+        if (!previewResponse.ok) { showToast(preview.detail || 'Unable to review activity cleanup.', { type: 'error' }); return; }
         if (!preview.run_count) return;
         if ((preview.memory_preview?.blocked || []).length) {
-            alert('Some selected activities have protected memories. Unlock them before clearing the activity history.');
+            showToast('Some selected activities have protected memories. Unlock them before clearing the history.', { type: 'error' });
             return;
         }
-        if (!confirm(`Clear ${preview.run_count} read Learner activities?\n\n${preview.memory_count || 0} memories created by those runs will also be permanently deleted.\n${memoryDeletionImpactText(preview.memory_preview || {})}\n\nThis cannot be undone.`)) return;
-        const response = await fetch(`/api/learner/runs?scope=read&confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
-        const data = await response.json();
-        if (!response.ok) { alert(data.detail || 'Unable to clear activity'); return; }
-        await fetchLearnerState(); renderLearnerActivityList();
+        showConfirmDialog({
+            title: `Clear ${preview.run_count} read activities?`,
+            message: `${preview.memory_count || 0} memories created by those runs will also be permanently deleted.`,
+            impact: memoryDeletionImpactText(preview.memory_preview || {}).split('\n').filter(Boolean),
+            confirmLabel: 'Clear read',
+            danger: true,
+            onConfirm: async close => {
+                close();
+                const response = await fetch(`/api/learner/runs?scope=read&confirmation_token=${encodeURIComponent(preview.confirmation_token || '')}`, {method: 'DELETE'});
+                const data = await response.json();
+                if (!response.ok) { showToast(data.detail || 'Unable to clear activity.', { type: 'error' }); return; }
+                showToast('Read activities cleared.');
+                await fetchLearnerState(); renderLearnerActivityList();
+            }
+        });
     }
 
     async function openLearnerRun(runId) {
@@ -8021,8 +10134,10 @@
             }
             const sources = (run.sources || []).map(source => `<a href="${escapeHtml(source.url || '#')}" target="_blank" rel="noopener noreferrer"><strong>${escapeHtml(source.title || source.creator || 'Source')}</strong><small>${escapeHtml([source.domain || source.creator, source.source_type || source.transcript_status, source.acceptance === 'cross_checked' ? 'independently cross-checked' : source.acceptance === 'flexible_readable' ? 'broader trusted source' : source.acceptance === 'trusted_snippet' ? 'trusted search snippet' : '', source.published_at ? formatVideoDate(source.published_at) : ''].filter(Boolean).join(' · '))}</small></a>`).join('');
             const memory = run.memory_result || {};
+            const memoryNotice = memory.status && memory.status !== 'success' && !memory.skipped
+                ? `<div class="learner-caution-box">Memory result: ${escapeHtml(memory.status)}. ${escapeHtml(memory.reason || '')} ${escapeHtml(memory.operation?.operation_id || '')}</div>` : '';
             const terminal = !['queued', 'running'].includes(run.status);
-            body.innerHTML = `<div class="learner-result-head ${escapeHtml(run.status || '')}"><button onclick="renderLearnerActivityList()">Back</button><div><span>${escapeHtml(learnerRunLabel(run))}</span><h3>${escapeHtml(run.task_title || 'Learning report')}</h3><small>${escapeHtml(run.finished_at ? formatVideoDate(run.finished_at) : `${run.stage || ''} · ${run.progress || 0}%`)}</small></div>${terminal ? `<div class="learner-result-actions"><button onclick="setLearnerRunRead('${escapeJsString(run.id)}', false)">Mark unread</button><button class="danger" onclick="deleteLearnerRun('${escapeJsString(run.id)}', true)">Delete</button></div>` : ''}</div>${run.quality_notice ? `<div class="learner-caution-box"><strong>Source quality notice</strong><span>${escapeHtml(run.quality_notice)}</span></div>` : ''}${run.error ? `<div class="learner-error-box">${escapeHtml(run.error)}</div>` : ''}${run.summary ? `<article class="learner-report">${renderMarkdownSafe(run.summary)}</article>` : '<div class="learner-empty">This run has not produced a report yet.</div>'}<section class="learner-result-section"><strong>Sources</strong><div class="learner-source-list">${sources || '<div class="learner-empty">No source metadata.</div>'}</div></section>${run.memory_result ? `<section class="learner-result-section"><strong>Memory management</strong><p>${memory.skipped ? escapeHtml(memory.reason || 'Skipped') : `${(memory.created_ids || []).length} created · ${(memory.merged_ids || []).length} merged · ${(memory.archived_duplicate_ids || []).length} duplicates archived · ${(memory.preserved_important_ids || []).length} important memories preserved · graph ${memory.graph_rebuilt ? 'rebuilt' : 'unchanged'}`}</p></section>` : ''}`;
+            body.innerHTML = `<div class="learner-result-head ${escapeHtml(run.status || '')}"><button onclick="renderLearnerActivityList()">${ic('arrow-left', 'icn-sm')}Back</button><div><span>${escapeHtml(learnerRunLabel(run))}</span><h3>${escapeHtml(run.task_title || 'Learning report')}</h3><small>${escapeHtml(run.finished_at ? formatVideoDate(run.finished_at) : `${run.stage || ''} · ${run.progress || 0}%`)}</small></div>${terminal ? `<div class="learner-result-actions"><button onclick="setLearnerRunRead('${escapeJsString(run.id)}', false)">${ic('eye', 'icn-sm')}Mark unread</button><button class="danger" onclick="deleteLearnerRun('${escapeJsString(run.id)}', true)">${ic('trash', 'icn-sm')}Delete</button></div>` : ''}</div>${run.quality_notice ? `<div class="learner-caution-box"><strong>Source quality notice</strong><span>${escapeHtml(run.quality_notice)}</span></div>` : ''}${run.error ? `<div class="learner-error-box">${escapeHtml(run.error)}</div>` : ''}${run.summary ? `<article class="learner-report">${renderMarkdownSafe(run.summary)}</article>` : '<div class="learner-empty">This run has not produced a report yet.</div>'}<section class="learner-result-section"><strong>Sources</strong><div class="learner-source-list">${sources || '<div class="learner-empty">No source metadata.</div>'}</div></section>${memoryNotice}${run.memory_result ? `<section class="learner-result-section"><strong>Memory management</strong><p>${memory.skipped ? escapeHtml(memory.reason || 'Skipped') : `${(memory.created_ids || []).length} created · ${(memory.merged_ids || []).length} merged · ${(memory.archived_duplicate_ids || []).length} duplicates archived · ${(memory.preserved_important_ids || []).length} important memories preserved · graph ${memory.graph_rebuilt ? 'rebuilt' : 'unchanged'}`}</p></section>` : ''}`;
         } catch (error) { if (body) body.innerHTML = `<div class="learner-error-box">${escapeHtml(error.message || error)}</div>`; }
     }
 
@@ -8041,10 +10156,22 @@
         return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleString();
     }
 
+    function ankiFriendlyError(response, data) {
+        const detail = data?.detail || '';
+        if (response.status === 404) return { message: 'The Anki service is not available on the backend.', detail };
+        if (response.status >= 500) return { message: 'The backend could not read the Anki data.', detail };
+        return { message: 'Anki could not be reached.', detail: detail || `HTTP ${response.status}` };
+    }
+
     async function ankiResponse(response) {
         let data = {};
         try { data = await response.json(); } catch (_) {}
-        if (!response.ok) throw new Error(data.detail || `Anki request failed: ${response.status}`);
+        if (!response.ok) {
+            const friendly = ankiFriendlyError(response, data);
+            const error = new Error(friendly.message);
+            error.detail = friendly.detail;
+            throw error;
+        }
         return data;
     }
 
@@ -8160,26 +10287,38 @@
                     </div>
                 </section>`;
         } else if (state.configured && state.error) {
-            dashboard = `<div class="anki-error-box">No usable Anki statistics are available yet. ${escapeHtml(state.error)}</div>`;
+            dashboard = `
+                <div class="st-page-error">
+                    ${ic('alert')}
+                    <strong>No usable Anki statistics are available yet.</strong>
+                    <span>${escapeHtml(String(state.error).replace(/Anki request failed: \d+/g, 'Anki could not be reached.'))}</span>
+                    <button type="button" class="workspace-secondary-action" onclick="refreshAnkiState()">${ic('refresh', 'icn-sm')}Retry</button>
+                </div>`;
         } else {
             dashboard = '<div class="anki-empty-state">Set the folder that contains your Anki profiles. On Windows, the recommended location is usually <strong>%APPDATA%\\Anki2</strong>.</div>';
         }
 
         body.innerHTML = `
-            <section class="workspace-hero workspace-hero-roles anki-role-hero">
-                <div class="anki-role-hero-copy"><span class="workspace-kicker">ANKI STUDY STATUS</span><h3>Review rhythm</h3><p>Read deck and review history directly from your Anki profile without changing the collection.</p><div class="anki-role-hero-meta">${sourceMeta}</div></div>
+            <section class="page-intro">
+                <div class="page-intro-copy"><h3 class="page-intro-title">Review rhythm</h3><p class="page-intro-sub">Read deck and review history directly from your Anki profile without changing the collection.</p><div class="anki-role-hero-meta">${sourceMeta}</div></div>
                 <div class="anki-checkin-badge${summary?.checked_in_today ? ' checked' : ''}"><strong>${summary?.checked_in_today ? 'Checked in today' : 'Not checked in'}</strong><span>${summary ? `${Number(summary.today_reviews || 0)} review(s)` : 'No data yet'}</span></div>
             </section>
             <section class="anki-panel">
-                <div class="anki-panel-head"><div><strong>Anki data source</strong><small>Select the Anki2 root, a profile folder, or collection.anki2 itself.</small></div><div class="anki-panel-actions">${state.configured ? '<button onclick="refreshAnkiState()">Refresh</button><button class="danger" onclick="disconnectAnki()">Disconnect</button>' : ''}</div></div>
+                <div class="anki-panel-head"><div><strong>Anki data source</strong><small>Select the Anki2 root, a profile folder, or collection.anki2 itself.</small></div><div class="anki-panel-actions">${state.configured ? `<button onclick="refreshAnkiState()">${ic('refresh', 'icn-sm')}Refresh</button>` : ''}</div></div>
                 <div class="anki-settings-grid">
                     <label><span>Data folder or collection file</span><input id="anki-data-path" type="text" value="${escapeHtml(pathValue)}" placeholder="${escapeHtml(settings.default_data_path || '%APPDATA%\\Anki2')}" oninput="ankiDraftPath=this.value"></label>
                     <label><span>Profile</span><select id="anki-profile-select"${profiles.length ? '' : ' disabled'}>${profileOptions}</select></label>
                 </div>
-                <div class="anki-settings-actions"><div><button onclick="useDefaultAnkiPath()">Use recommended</button><button onclick="discoverAnkiProfiles()">Detect profiles</button></div><button class="primary" onclick="saveAnkiSettings()">Connect and refresh</button></div>
+                <div class="anki-settings-actions"><div><button onclick="useDefaultAnkiPath()">${ic('check', 'icn-sm')}Use recommended</button><button onclick="discoverAnkiProfiles()">${ic('search', 'icn-sm')}Detect profiles</button></div><button class="primary" onclick="saveAnkiSettings()">${ic('key', 'icn-sm')}Connect and refresh</button></div>
                 <div id="anki-connection-status" class="anki-connection-status ${statusClass}">${statusText}</div>
                 <p class="anki-safe-note">Only aggregate study statistics are kept in Saya's running state. Card contents and the temporary database snapshot are not retained.</p>
             </section>
+            ${state.configured ? `
+            <div class="danger-zone">
+                <div class="danger-zone-title">${ic('alert', 'icn-sm')}Danger zone</div>
+                <p class="danger-zone-desc">Disconnecting removes the saved Anki folder and profile from Saya. Your Anki collection itself is never changed.</p>
+                <button type="button" class="workspace-secondary-action" style="color:var(--color-danger); border-color:rgba(248,113,113,.4);" onclick="disconnectAnki()">${ic('close', 'icn-sm')}Disconnect Anki</button>
+            </div>` : ''}
             ${dashboard}`;
     }
 
@@ -8261,7 +10400,8 @@
     }
 
     async function disconnectAnki() {
-        if (ankiBusy || !confirm('Disconnect this Anki profile? The Anki collection itself will not be changed.')) return;
+        if (ankiBusy) return;
+        confirmAction('Disconnect this Anki profile? The Anki collection itself will not be changed.', async () => {
         ankiBusy = true;
         try {
             const response = await fetch('/api/anki/settings', {method: 'DELETE'});
@@ -8271,6 +10411,7 @@
         } catch (error) {
             setAnkiStatus(error.message || error, 'error');
         } finally { ankiBusy = false; }
+        });
     }
 
     function closeAssistantRoleModal() {
@@ -8296,7 +10437,7 @@
 
     function markAssistantMemoryChangedThisEntry() {
         assistantMemoryChangedSinceEntry = true;
-        localStorage.setItem('saya_assistant_role_memory_changed', 'true');
+        sayaSettings.setItem('saya_assistant_role_memory_changed', 'true');
     }
 
     async function assistantMemoryChangedThisEntry() {
@@ -8320,12 +10461,27 @@
         const body = document.getElementById('assistant-role-body');
         if (!modal || !body) return;
         modal.style.display = 'flex';
-        body.innerHTML = '<div class="about-you-empty">Loading Assistant role...</div>';
+        syncAssistantStrongLogicToggle();
+        body.innerHTML = `
+            <div class="assistant-role-loading">
+                <div class="st-skeleton st-skeleton-title"></div>
+                <div class="st-skeleton st-skeleton-text" style="width:88%"></div>
+                <div class="st-skeleton st-skeleton-text" style="width:64%"></div>
+                <div class="st-skeleton st-skeleton-row"><span class="st-skeleton st-skeleton-avatar"></span><span class="st-skeleton st-skeleton-body"><span class="st-skeleton st-skeleton-text" style="width:70%"></span></span></div>
+                <div class="st-skeleton st-skeleton-row"><span class="st-skeleton st-skeleton-avatar"></span><span class="st-skeleton st-skeleton-body"><span class="st-skeleton st-skeleton-text" style="width:52%"></span></span></div>
+            </div>`;
         try {
             await fetchAssistantRoleState();
             renderAssistantRoleModal();
         } catch (e) {
-            body.innerHTML = `<div class="about-you-empty">Unable to load Assistant role: ${escapeHtml(e.message || e)}</div>`;
+            console.warn('Assistant role unavailable:', e);
+            body.innerHTML = `
+                <div class="st-page-error">
+                    ${ic('alert')}
+                    <strong>Assistant could not be loaded.</strong>
+                    <span>Nothing was changed. Check that the backend is running, then try again.</span>
+                    <button type="button" class="workspace-secondary-action" onclick="openAssistantRoleModal()">${ic('refresh', 'icn-sm')}Retry</button>
+                </div>`;
         }
     }
 
@@ -8346,10 +10502,10 @@
                         <small>${escapeHtml(item.path || '')}${item.chapter ? ` · ${escapeHtml(item.chapter)}` : ''}</small>
                         <small>${escapeHtml(item.mode || 'simple')} extraction · ${Number(item.content_chars || 0).toLocaleString()} characters</small>
                     </div>
-                    <button class="assistant-memory-remove" onclick="removeAssistantExtractedMemory('${escapeJsString(item.memory_id)}')">Remove</button>
+                    <button class="assistant-memory-remove" onclick="removeAssistantExtractedMemory('${escapeJsString(item.memory_id)}')">${ic('trash', 'icn-sm')}Remove</button>
                 </article>
             `).join('')
-            : '<div class="assistant-role-empty">No note has been marked important yet.</div>';
+            : `<div class="st-empty">${ic('star')}<span>No note has been marked important yet.</span></div>`;
         const pathMemoryHtml = pathMemories.length
             ? pathMemories.map(item => `
                 <div class="assistant-memory-item description">
@@ -8364,17 +10520,17 @@
                         <strong>${escapeHtml(session.preview || session.name || session.id)}</strong>
                         <small>${escapeHtml(sessionLastQaTime(session) || 'No completed exchange')}</small>
                     </div>
-                    <button onclick="openAssistantRoleSession('${escapeJsString(session.id)}')">Open</button>
+                    <button onclick="openAssistantRoleSession('${escapeJsString(session.id)}')">${ic('chat', 'icn-sm')}Open</button>
                 </div>
             `).join('')
-            : '<div class="about-you-empty">No Assistant chats yet.</div>';
+            : `<div class="st-empty">${ic('chat')}<span>No Assistant chats yet.</span></div>`;
         const activeHtml = currentRoleMode === 'assistant'
             ? '<div class="about-you-warning">Assistant role is active. Ordinary long-term memory is disabled for Assistant chats.</div>'
             : '<div class="assistant-role-hint">Start or open an Assistant chat to use this role. Assistant chats use only Assistant role memory plus the current conversation.</div>';
 
         body.innerHTML = `
-            <section class="assistant-role-hero workspace-customizable-hero workspace-hero-roles" data-workspace-theme="assistant-knowledge">
-                <div><span class="assistant-role-kicker">Knowledge workspace</span><h3>Assistant</h3><p>Browse the vault broadly, then promote only valuable notes or chapters into long-term memory.</p></div>
+            <section class="page-intro">
+                <div class="page-intro-copy"><h3 class="page-intro-title">Assistant</h3><p class="page-intro-sub">Browse the vault broadly, then promote only valuable notes or chapters into long-term memory.</p></div>
                 <div class="assistant-role-metrics"><span><strong>${Number(state.file_count || 0)}</strong>notes scanned</span><span><strong>${curatedExtractions.length}</strong>important memories</span></div>
             </section>
             ${activeHtml}
@@ -8385,15 +10541,15 @@
                 </div>
                 <div class="assistant-role-hint">Batch reading builds the Assistant-only outline and one short Learning Map. It does not automatically turn every note into long-term memory.</div>
                 <div class="assistant-role-actions">
-                    <button onclick="readAssistantVault('rough')">Rough batch read</button>
-                    <button onclick="readAssistantVault('detailed')">Detailed batch read</button>
+                    <button onclick="readAssistantVault('rough')">${ic('book-open', 'icn-sm')}Rough batch read</button>
+                    <button onclick="readAssistantVault('detailed')">${ic('book-open', 'icn-sm')}Detailed batch read</button>
                 </div>
                 <div id="assistant-role-status" class="assistant-role-hint">${lastRead}${state.file_count ? ` · ${Number(state.file_count)} notes` : ''}</div>
             </section>
             <section class="assistant-role-panel">
                 <div class="assistant-dedicated-memory-header">
                     <div><div class="assistant-role-section-title">Important Obsidian memory</div><div class="assistant-role-hint">Select a note or chapter and extract one bounded memory into the curated high-priority pool.</div></div>
-                    <button class="primary" onclick="openAssistantMemoryPicker()">Curate note</button>
+                    <button class="primary" onclick="openAssistantMemoryPicker()">${ic('folder', 'icn-sm')}Curate note</button>
                 </div>
                 <div class="assistant-role-list">${curatedHtml}</div>
             </section>
@@ -8406,7 +10562,7 @@
             <section class="assistant-role-panel">
                 <div class="assistant-role-section-title">Dedicated chats</div>
                 <div class="assistant-role-actions">
-                    <button class="primary" onclick="startAssistantRoleSession()">New Assistant chat</button>
+                    <button class="primary" onclick="startAssistantRoleSession()">${ic('message-plus', 'icn-sm')}New Assistant chat</button>
                 </div>
                 <div class="assistant-role-list">${chatHtml}</div>
             </section>
@@ -8449,7 +10605,7 @@
         const selected = document.getElementById('assistant-memory-picker-selected');
         if (selected) selected.textContent = 'Nothing selected';
         const extractionOptions = document.getElementById('assistant-note-extraction-options');
-        if (extractionOptions) extractionOptions.style.display = 'none';
+        if (extractionOptions) extractionOptions.hidden = true;
         const descriptionField = document.getElementById('assistant-memory-description-field');
         if (descriptionField) descriptionField.style.display = 'flex';
         const saveDescription = document.getElementById('assistant-save-description-button');
@@ -8462,7 +10618,7 @@
     async function browseAssistantMemoryFolder(relativePath) {
         const list = document.getElementById('assistant-memory-picker-list');
         const status = document.getElementById('assistant-memory-picker-status');
-        if (list) list.innerHTML = '<div class="about-you-empty">Loading library...</div>';
+        if (list) renderSurfaceState(list, { kind: 'loading', title: 'Loading library', message: 'Reading available folders and notes…', icon: 'folder' });
         if (status) status.textContent = '';
         try {
             const response = await fetch('/api/kb/roles/assistant/browse', {
@@ -8486,8 +10642,14 @@
             const up = document.getElementById('assistant-memory-picker-up');
             if (up) up.disabled = data.parent_path === null || data.parent_path === undefined;
         } catch (e) {
-            if (list) list.innerHTML = '<div class="about-you-empty">Unable to open library.</div>';
-            if (status) status.textContent = e.message || String(e);
+            renderSurfaceState(list, {
+                title: 'Library could not be opened',
+                message: 'Check the Obsidian connection and try again.',
+                retry: () => browseAssistantMemoryFolder(assistantMemoryPickerState.currentPath || ''),
+                details: e,
+                icon: 'folder'
+            });
+            if (status) status.textContent = 'Library request failed. Use Retry to try again.';
         }
     }
 
@@ -8558,7 +10720,7 @@
         const descriptionField = document.getElementById('assistant-memory-description-field');
         const saveDescription = document.getElementById('assistant-save-description-button');
         if (type === 'file') {
-            if (extractionOptions) extractionOptions.style.display = 'block';
+            if (extractionOptions) extractionOptions.hidden = false;
             if (descriptionField) descriptionField.style.display = 'none';
             if (saveDescription) saveDescription.style.display = 'none';
             await loadAssistantNoteOutline(path || '');
@@ -8638,52 +10800,54 @@
         const mode = assistantMemoryPickerState.extractionMode;
         const chapterSelector = document.getElementById('assistant-note-chapter-select')?.value || '';
         const scope = chapterSelector ? 'selected chapter' : 'entire note';
-        if (!confirm(`Use the configured ${mode === 'complex' ? 'strong memory' : 'memory'} model to read the ${scope} and save one important memory?`)) return;
-        if (button) button.disabled = true;
-        if (status) status.textContent = `Reading the ${scope} and generating a ${mode} memory...`;
-        try {
-            saveCurrentApiSettings();
-            const response = await fetch('/api/kb/roles/assistant/extract', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    ...collectArchiveGenerationSettings(),
-                    vault_path: assistantMemoryPickerState.vaultPath,
-                    relative_path: assistantMemoryPickerState.selectedPath,
-                    chapter_selector: chapterSelector,
-                    mode
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || data.message || 'Extraction failed');
-            assistantRoleState = data.assistant_state || assistantRoleState;
-            markAssistantMemoryChangedThisEntry();
-            closeAssistantMemoryPicker();
-            renderAssistantRoleModal();
-        } catch (error) {
-            if (status) status.textContent = error.message || String(error);
-        } finally {
-            if (button) button.disabled = false;
-        }
-    }
+        confirmAction(`Use the configured ${mode === 'complex' ? 'strong memory' : 'memory'} model to read the ${scope} and save one important memory?`, async () => {
+
+            if (button) button.disabled = true;
+            if (status) status.textContent = `Reading the ${scope} and generating a ${mode} memory...`;
+            try {
+                saveCurrentApiSettings();
+                const response = await fetch('/api/kb/roles/assistant/extract', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        ...collectArchiveGenerationSettings(),
+                        vault_path: assistantMemoryPickerState.vaultPath,
+                        relative_path: assistantMemoryPickerState.selectedPath,
+                        chapter_selector: chapterSelector,
+                        mode
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || data.message || 'Extraction failed');
+                assistantRoleState = data.assistant_state || assistantRoleState;
+                markAssistantMemoryChangedThisEntry();
+                closeAssistantMemoryPicker();
+                renderAssistantRoleModal();
+            } catch (error) {
+                if (status) status.textContent = error.message || String(error);
+            } finally {
+                if (button) button.disabled = false;
+            }
+    });    }
 
     async function removeAssistantExtractedMemory(memoryId) {
-        if (!confirm('Remove this important Obsidian memory from active recall? It will be archived, not destroyed.')) return;
-        try {
-            const response = await fetch('/api/kb/roles/assistant/extraction/remove', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({memory_id: memoryId})
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || 'Unable to remove memory');
-            assistantRoleState = data;
-            markAssistantMemoryChangedThisEntry();
-            renderAssistantRoleModal();
-        } catch (error) {
-            alert(error.message || String(error));
-        }
-    }
+        confirmAction('Remove this important Obsidian memory from active recall? It will be archived, not destroyed.', async () => {
+
+            try {
+                const response = await fetch('/api/kb/roles/assistant/extraction/remove', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({memory_id: memoryId})
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || 'Unable to remove memory');
+                assistantRoleState = data;
+                markAssistantMemoryChangedThisEntry();
+                renderAssistantRoleModal();
+            } catch (error) {
+                showToast(error.message || String(error), { type: 'error', duration: 3600 });
+            }
+    });    }
 
     async function saveAssistantPathMemory() {
         const status = document.getElementById('assistant-memory-picker-status');
@@ -8720,27 +10884,28 @@
 
     async function readAssistantVault(detail) {
         const label = detail === 'detailed' ? 'Detailed batch read' : 'Rough batch read';
-        if (!confirm(`${label} will refresh the Assistant outline and short Learning Map. Your curated important-note memories will remain. Continue?`)) return;
-        const status = document.getElementById('assistant-role-status');
-        if (status) status.innerText = detail === 'detailed' ? 'Reading vault in detailed mode...' : 'Reading vault in rough mode...';
-        try {
-            const response = await fetch('/api/kb/roles/assistant/read', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    vault_path: document.getElementById('assistant-vault-path')?.value || '',
-                    detail
-                })
-            });
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.detail || data.message || "Read failed");
-            assistantRoleState = data;
-            markAssistantMemoryChangedThisEntry();
-            renderAssistantRoleModal();
-        } catch (e) {
-            if (status) status.innerText = `Read failed: ${e.message || e}`;
-        }
-    }
+        confirmAction(`${label} will refresh the Assistant outline and short Learning Map. Your curated important-note memories will remain. Continue?`, async () => {
+
+            const status = document.getElementById('assistant-role-status');
+            if (status) status.innerText = detail === 'detailed' ? 'Reading vault in detailed mode...' : 'Reading vault in rough mode...';
+            try {
+                const response = await fetch('/api/kb/roles/assistant/read', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        vault_path: document.getElementById('assistant-vault-path')?.value || '',
+                        detail
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || data.message || "Read failed");
+                assistantRoleState = data;
+                markAssistantMemoryChangedThisEntry();
+                renderAssistantRoleModal();
+            } catch (e) {
+                if (status) status.innerText = `Read failed: ${e.message || e}`;
+            }
+    });    }
 
     async function startAssistantRoleSession() {
         try {
@@ -8749,7 +10914,7 @@
             closeAssistantRoleModal();
             collapseSidebarForAssistantChat();
         } catch (e) {
-            alert("Failed to start Assistant chat: " + (e.message || e));
+            showToast("Failed to start Assistant chat: " + (e.message || e), { type: 'error', duration: 3600 });
         }
     }
 
@@ -8770,12 +10935,19 @@
             const memoryChanged = await assistantMemoryChangedThisEntry();
             let updated = false;
             if (memoryChanged) {
-                const shouldUpdate = options.autoUpdate === true || confirm("Assistant dedicated memory changed during this role session. Update the locked normal-mode learning memory now?");
-                if (shouldUpdate) {
+                const syncAssistantExitMemory = async () => {
                     const response = await fetch('/api/kb/roles/assistant/exit', {method: 'POST'});
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.detail || data.message || "Exit failed");
-                    updated = Boolean(data.updated);
+                    return Boolean(data.updated);
+                };
+                if (options.autoUpdate === true) {
+                    updated = await syncAssistantExitMemory();
+                } else {
+                    confirmAction("Assistant dedicated memory changed during this role session. Update the locked normal-mode learning memory now?", async () => {
+                        await syncAssistantExitMemory();
+                        showToast('Learning memory updated.');
+                    }, { title: 'Update the learning memory?', confirmLabel: 'Update' });
                 }
             }
             setCurrentRoleMode('');
@@ -8785,7 +10957,7 @@
                 fetchSessionList();
             }
             if (!options.silent && memoryChanged && updated) {
-                alert("Assistant role exited. Normal-mode learning memory updated.");
+                showToast("Assistant role exited. Normal-mode learning memory updated.", { type: 'info', duration: 3600 });
             }
             if (options.openRoles) {
                 closeAssistantRoleModal();
@@ -8795,7 +10967,7 @@
             }
             return true;
         } catch (e) {
-            if (!options.silent) alert("Failed to exit Assistant role: " + (e.message || e));
+            if (!options.silent) showToast("Failed to exit Assistant role: " + (e.message || e), { type: 'error', duration: 3600 });
             return false;
         }
     }
@@ -9173,27 +11345,51 @@
         const body = document.getElementById('modal-body');
         setMemoryModalHeader("About you", "backToToolsFromAboutYou()");
         body.innerHTML = `
-            <div class="about-you-grid">
-                <button class="about-you-card" onclick="openMemoryViewer()">
-                    <span>Memories</span>
-                    <small>View, edit, and explore the relationship network</small>
-                </button>
-                <button class="about-you-card" onclick="openAboutYouPersonality()">
-                    <span>User personality</span>
-                    <small>Dated self-assessment bound to protected memory</small>
-                </button>
-                <button class="about-you-card" onclick="openAboutYouPossessions()">
-                    <span>Important possessions</span>
-                    <small>Protected slots for meaningful belongings or objects</small>
-                </button>
-                <button class="about-you-card" onclick="openQuestModal()">
-                    <span>Life quests</span>
-                    <small>Personal goals and completed quest memory</small>
-                </button>
-                <button class="about-you-card" onclick="openMemorySettings()">
-                    <span>Settings</span>
-                    <small>Retrieval, metadata, and merge behavior</small>
-                </button>
+            <div class="page-intro">
+                <div class="page-intro-copy">
+                    <h3 class="page-intro-title">About you</h3>
+                    <p class="page-intro-sub">The personal context Saya remembers and how she uses it.</p>
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">Memory</div>
+                <div class="nav-list">
+                    <button class="nav-list-row" onclick="openMemoryViewer()">
+                        <span class="nav-row-ic"><span class="icn icn-layers" aria-hidden="true"></span></span>
+                        <span class="nav-row-copy"><span class="nav-row-title">Memories</span><span class="nav-row-sub">View, edit, and explore the relationship network</span></span>
+                        <span class="icn icn-chevron-right icn-sm nav-row-chevron" aria-hidden="true"></span>
+                    </button>
+                    <button class="nav-list-row" onclick="openMemorySettings()">
+                        <span class="nav-row-ic"><span class="icn icn-sliders" aria-hidden="true"></span></span>
+                        <span class="nav-row-copy"><span class="nav-row-title">Memory settings</span><span class="nav-row-sub">Retrieval, metadata, and merge behavior</span></span>
+                        <span class="icn icn-chevron-right icn-sm nav-row-chevron" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">Personal profile</div>
+                <div class="nav-list">
+                    <button class="nav-list-row" onclick="openAboutYouPersonality()">
+                        <span class="nav-row-ic"><span class="icn icn-user" aria-hidden="true"></span></span>
+                        <span class="nav-row-copy"><span class="nav-row-title">Personality</span><span class="nav-row-sub">Dated self-assessment bound to protected memory</span></span>
+                        <span class="icn icn-chevron-right icn-sm nav-row-chevron" aria-hidden="true"></span>
+                    </button>
+                    <button class="nav-list-row" onclick="openAboutYouPossessions()">
+                        <span class="nav-row-ic"><span class="icn icn-star" aria-hidden="true"></span></span>
+                        <span class="nav-row-copy"><span class="nav-row-title">Important possessions</span><span class="nav-row-sub">Protected slots for meaningful belongings or objects</span></span>
+                        <span class="icn icn-chevron-right icn-sm nav-row-chevron" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="form-section">
+                <div class="form-section-title">Goals</div>
+                <div class="nav-list">
+                    <button class="nav-list-row" onclick="openQuestModal()">
+                        <span class="nav-row-ic"><span class="icn icn-zap" aria-hidden="true"></span></span>
+                        <span class="nav-row-copy"><span class="nav-row-title">Life quests</span><span class="nav-row-sub">Personal goals and completed quest memory</span></span>
+                        <span class="icn icn-chevron-right icn-sm nav-row-chevron" aria-hidden="true"></span>
+                    </button>
+                </div>
             </div>
         `;
         modal.style.display = 'flex';
@@ -9203,7 +11399,7 @@
         const modal = document.getElementById('memory-modal');
         const body = document.getElementById('modal-body');
         setMemoryModalHeader("About you · User personality", "openAboutYouModal()");
-        body.innerHTML = 'Loading...';
+        renderSurfaceState(body, { kind: 'loading', title: 'Loading personality profile', message: 'Reading the protected profile slot…', icon: 'user' });
         modal.style.display = 'flex';
         try {
             const response = await fetch('/api/kb/about_you/personality');
@@ -9213,7 +11409,13 @@
             aboutYouPersonalityFullEntry = data.full_entry || null;
             renderAboutYouPersonality();
         } catch (e) {
-            body.innerHTML = 'Unable to load personality profile.';
+            renderSurfaceState(body, {
+                title: 'Personality profile could not be loaded',
+                message: 'Your existing profile is unchanged. Try again when the backend is available.',
+                retry: () => openAboutYouPersonality(),
+                details: e,
+                icon: 'user'
+            });
         }
     }
 
@@ -9342,7 +11544,7 @@
 
     async function saveAboutYouDetailedPersonality() {
         const hasExisting = aboutYouPersonalityMode === 'full' || aboutYouPersonalityEntries.length > 0;
-        if (hasExisting && !confirm("This will rewrite the protected personality memory slot and replace previous personality versions. Continue?")) return;
+        const doSaveDetailed = async () => {
         const answers = {};
         ABOUT_YOU_PERSONALITY_DETAILED_QUESTIONS.forEach(question => {
             answers[question.key] = document.getElementById(`about-personality-full-${question.key}`)?.value || '';
@@ -9366,7 +11568,13 @@
             aboutYouPersonalityFullEntry = data.full_entry || null;
             renderAboutYouPersonalityFullSummary();
         } catch (e) {
-            alert("Failed to save detailed personality memory: " + e);
+            showToast("Failed to save detailed personality memory: " + e, { type: 'error', duration: 3600 });
+        }
+        };
+        if (hasExisting) {
+            confirmAction("This will rewrite the protected personality memory slot and replace previous personality versions. Continue?", doSaveDetailed, { confirmLabel: 'Save anyway', danger: true });
+        } else {
+            await doSaveDetailed();
         }
     }
 
@@ -9395,11 +11603,12 @@
 
     async function saveAboutYouPersonality() {
         const activeId = document.getElementById('about-personality-id')?.value || '';
-        if (aboutYouPersonalityMode === 'full') {
-            if (!confirm("This will replace the existing detailed personality profile with a simple dated version. Continue?")) return;
-        } else if (!activeId && aboutYouPersonalityEntries.length >= 2) {
-            if (!confirm("Only two dated simple personality versions are kept. Saving this will overwrite the oldest version. Continue?")) return;
-        }
+        const personalityWarning = aboutYouPersonalityMode === 'full'
+            ? 'This will replace the existing detailed personality profile with a simple dated version.'
+            : (!activeId && aboutYouPersonalityEntries.length >= 2)
+                ? 'Only two dated simple personality versions are kept. Saving will overwrite the oldest version.'
+                : '';
+        const doSaveAboutYouPersonality = async () => {
         const answers = {};
         ABOUT_YOU_PERSONALITY_QUESTIONS.forEach(question => {
             answers[question.key] = document.getElementById(`about-personality-${question.key}`)?.value || '';
@@ -9423,41 +11632,54 @@
             aboutYouPersonalityFullEntry = data.full_entry || null;
             renderAboutYouPersonality();
         } catch (e) {
-            alert("Failed to save personality memory: " + e);
+            showToast("Failed to save personality memory: " + e, { type: 'error', duration: 3600 });
+        }
+        };
+        if (personalityWarning) {
+            confirmAction(personalityWarning + ' Continue?', doSaveAboutYouPersonality, { confirmLabel: 'Save anyway', danger: true });
+        } else {
+            await doSaveAboutYouPersonality();
         }
     }
 
     async function deleteAboutYouPersonality(id) {
-        if (!confirm("Delete this dated assessment? The protected memory slot will be rewritten.")) return;
-        try {
-            const response = await fetch('/api/kb/about_you/personality/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id})
-            });
-            if (!response.ok) throw new Error("Delete failed");
-            const data = await response.json();
-            aboutYouPersonalityMode = data.mode || 'simple';
-            aboutYouPersonalityEntries = data.entries || [];
-            aboutYouPersonalityFullEntry = data.full_entry || null;
-            renderAboutYouPersonality();
-        } catch (e) {
-            alert("Failed to delete personality entry: " + e);
-        }
-    }
+        confirmAction("Delete this dated assessment? The protected memory slot will be rewritten.", async () => {
+
+            try {
+                const response = await fetch('/api/kb/about_you/personality/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id})
+                });
+                if (!response.ok) throw new Error("Delete failed");
+                const data = await response.json();
+                aboutYouPersonalityMode = data.mode || 'simple';
+                aboutYouPersonalityEntries = data.entries || [];
+                aboutYouPersonalityFullEntry = data.full_entry || null;
+                renderAboutYouPersonality();
+            } catch (e) {
+                showToast("Failed to delete personality entry: " + e, { type: 'error', duration: 3600 });
+            }
+    });    }
 
     async function openAboutYouPossessions() {
         const modal = document.getElementById('memory-modal');
         const body = document.getElementById('modal-body');
         setMemoryModalHeader("About you · Important possessions", "openAboutYouModal()");
-        body.innerHTML = 'Loading...';
+        renderSurfaceState(body, { kind: 'loading', title: 'Loading important possessions', message: 'Reading protected slots…', icon: 'star' });
         modal.style.display = 'flex';
         try {
             const response = await fetch('/api/kb/about_you/possessions');
             aboutYouPossessionState = await response.json();
             renderAboutYouPossessions();
         } catch (e) {
-            body.innerHTML = 'Unable to load important possessions.';
+            renderSurfaceState(body, {
+                title: 'Important possessions could not be loaded',
+                message: 'Your protected slots are unchanged. Try again to refresh this view.',
+                retry: () => openAboutYouPossessions(),
+                details: e,
+                icon: 'star'
+            });
         }
     }
 
@@ -9547,7 +11769,7 @@
         const slot = document.getElementById('about-possession-slot')?.value || '1';
         const content = document.getElementById('about-possession-content')?.value.trim() || '';
         if (!content) {
-            alert("Details are required. Use Delete to clear an existing slot.");
+            showToast("Details are required. Use Delete to clear an existing slot.", { type: 'error', duration: 3600 });
             return;
         }
         try {
@@ -9565,25 +11787,26 @@
             renderAboutYouPossessions();
             loadAboutYouPossessionSlot(slot);
         } catch (e) {
-            alert("Failed to save possession memory: " + e);
+            showToast("Failed to save possession memory: " + e, { type: 'error', duration: 3600 });
         }
     }
 
     async function deleteAboutYouPossession(slot) {
-        if (!confirm("Clear this possession slot? Its protected memory content will be rewritten and archived.")) return;
-        try {
-            const response = await fetch('/api/kb/about_you/possessions/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({slot})
-            });
-            if (!response.ok) throw new Error("Delete failed");
-            aboutYouPossessionState = await response.json();
-            renderAboutYouPossessions();
-        } catch (e) {
-            alert("Failed to delete possession slot: " + e);
-        }
-    }
+        confirmAction("Clear this possession slot? Its protected memory content will be rewritten and archived.", async () => {
+
+            try {
+                const response = await fetch('/api/kb/about_you/possessions/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({slot})
+                });
+                if (!response.ok) throw new Error("Delete failed");
+                aboutYouPossessionState = await response.json();
+                renderAboutYouPossessions();
+            } catch (e) {
+                showToast("Failed to delete possession slot: " + e, { type: 'error', duration: 3600 });
+            }
+    });    }
 
     async function initializeVideoRecommendations() {
         try {
@@ -9702,7 +11925,7 @@
 
     function getDailyBriefCardSettings() {
         try {
-            const saved = JSON.parse(localStorage.getItem(DAILY_BRIEF_CARD_SETTINGS_KEY) || '{}');
+            const saved = JSON.parse(sayaSettings.getItem(DAILY_BRIEF_CARD_SETTINGS_KEY) || '{}');
             return {
                 order: Array.isArray(saved.order) ? saved.order.map(String) : [],
                 edits: saved.edits && typeof saved.edits === 'object' ? saved.edits : {},
@@ -9720,7 +11943,7 @@
             edits: settings.edits && typeof settings.edits === 'object' ? settings.edits : {},
             custom: Array.isArray(settings.custom) ? settings.custom : []
         };
-        localStorage.setItem(DAILY_BRIEF_CARD_SETTINGS_KEY, JSON.stringify(clean));
+        sayaSettings.setItem(DAILY_BRIEF_CARD_SETTINGS_KEY, JSON.stringify(clean));
         return clean;
     }
 
@@ -9982,11 +12205,12 @@
     }
 
     function resetDailyBriefCardSettings() {
-        if (!confirm("Reset Daily Brief card layout?")) return;
-        localStorage.removeItem(DAILY_BRIEF_CARD_SETTINGS_KEY);
-        renderDailyBrief();
-        renderDailyBriefCardSettings();
-    }
+        confirmAction("Reset Daily Brief card layout?", async () => {
+
+            sayaSettings.removeItem(DAILY_BRIEF_CARD_SETTINGS_KEY);
+            renderDailyBrief();
+            renderDailyBriefCardSettings();
+    });    }
 
     function renderDailyBrief() {
         const brief = dailyBriefState || {};
@@ -10078,9 +12302,9 @@
                     </div>
                     <div class="video-digest-reason">${escapeHtml(reasons)}</div>
                     <div class="video-card-actions">
-                        <button class="video-discuss-btn" onclick="discussVideo('${safeId}', 'digest')">Discuss</button>
-                        <button class="video-caption-discuss-btn" onclick="discussVideoWithCaptions('${safeId}', 'digest')">Discuss with captions</button>
-                        <button class="video-watch-btn" onclick="markVideoWatched('${safeId}', true, 'digest')">Mark watched</button>
+                        <button class="video-discuss-btn" onclick="discussVideo('${safeId}', 'digest')">${ic('chat', 'icn-sm')}Discuss</button>
+                        <button class="video-caption-discuss-btn" onclick="discussVideoWithCaptions('${safeId}', 'digest')">${ic('note', 'icn-sm')}Discuss with captions</button>
+                        <button class="video-watch-btn" onclick="markVideoWatched('${safeId}', true, 'digest')">${ic('check', 'icn-sm')}Mark watched</button>
                     </div>
                 </div>
             `;
@@ -10113,7 +12337,7 @@
         if (creatorCount) creatorCount.textContent = String(creators.length);
         list.innerHTML = '';
         if (!creators.length) {
-            list.innerHTML = '<div class="video-empty">No creators yet.</div>';
+            list.innerHTML = `<div class="st-empty">${ic('video')}<span>No creators yet.</span></div>`;
             return;
         }
         creators.forEach(creator => {
@@ -10123,7 +12347,7 @@
             const status = creator.status || 'pending';
             const errorLine = creator.last_error ? `<div class="video-meta">${escapeHtml(creator.last_error)}</div>` : '';
             div.innerHTML = `
-                <div>
+                <div class="video-creator-copy">
                     <div class="video-creator-title">
                         <span class="video-platform-badge">${escapeHtml(creator.platform || '')}</span>
                         ${escapeHtml(creator.display_name || creator.name || '')}
@@ -10131,18 +12355,26 @@
                     <div class="video-meta">${escapeHtml(status)}${creator.source_id ? ' · ' + escapeHtml(creator.source_id) : ''}</div>
                     ${errorLine}
                 </div>
-                <button class="video-delete-btn" onclick="deleteVideoCreator('${safeId}')">Delete</button>
+                <button type="button" class="row-menu-btn" onclick="showVideoCreatorMenu(this, '${safeId}')" title="More actions" aria-label="More actions" aria-haspopup="menu">${ic('more', 'icn-sm')}</button>
             `;
             list.appendChild(div);
         });
     }
+
+    function showVideoCreatorMenu(anchor, creatorId) {
+        showMenuAt(anchor, [
+            { label: 'Refresh now', icon: 'refresh', onClick: () => refreshVideoRecommendations() },
+            { label: 'Remove creator', icon: 'trash', danger: true, onClick: () => deleteVideoCreator(creatorId) }
+        ], { align: 'end' });
+    }
+    window.showVideoCreatorMenu = showVideoCreatorMenu;
 
     function renderVideoRecommendationList(videos) {
         const list = document.getElementById('video-recommendation-list');
         if (!list) return;
         list.innerHTML = '';
         if (!videos.length) {
-            list.innerHTML = '<div class="video-empty">No videos from the last 3 days.</div>';
+            list.innerHTML = `<div class="st-empty">${ic('film')}<span>No videos from the last 3 days.</span></div>`;
             return;
         }
         videos.forEach(video => {
@@ -10166,9 +12398,9 @@
                 </div>
                 <div class="video-reason">${escapeHtml(reasons)}</div>
                 <div class="video-card-actions">
-                    <button class="video-discuss-btn" onclick="discussVideo('${safeId}', 'recommendations')">Discuss</button>
-                    <button class="video-caption-discuss-btn" onclick="discussVideoWithCaptions('${safeId}', 'recommendations')">Discuss with captions</button>
-                    <button class="video-watch-btn ${video.watched ? 'is-watched' : ''}" onclick="markVideoWatched('${safeId}', ${watchTarget}, 'recommendations')">${watchLabel}</button>
+                    <button class="video-discuss-btn" onclick="discussVideo('${safeId}', 'recommendations')">${ic('chat', 'icn-sm')}Discuss</button>
+                    <button class="video-caption-discuss-btn" onclick="discussVideoWithCaptions('${safeId}', 'recommendations')">${ic('note', 'icn-sm')}Discuss with captions</button>
+                    <button class="video-watch-btn ${video.watched ? 'is-watched' : ''}" onclick="markVideoWatched('${safeId}', ${watchTarget}, 'recommendations')">${video.watched ? ic('close', 'icn-sm') : ic('check', 'icn-sm')}${watchLabel}</button>
                 </div>
             `;
             list.appendChild(div);
@@ -10320,22 +12552,23 @@
     }
 
     async function deleteVideoCreator(id) {
-        if (!confirm("Delete this creator?")) return;
-        setVideoRecommendationStatus("Deleting creator...");
-        try {
-            const response = await fetch('/api/video_recommendations/creators/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id})
-            });
-            if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
-            await fetchVideoRecommendationState(true);
-            renderVideoRecommendations();
-        } catch (e) {
-            console.error(e);
-            setVideoRecommendationStatus("Delete failed.");
-        }
-    }
+        confirmAction("Delete this creator?", async () => {
+
+            setVideoRecommendationStatus("Deleting creator...");
+            try {
+                const response = await fetch('/api/video_recommendations/creators/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id})
+                });
+                if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
+                await fetchVideoRecommendationState(true);
+                renderVideoRecommendations();
+            } catch (e) {
+                console.error(e);
+                setVideoRecommendationStatus("Delete failed.");
+            }
+    });    }
 
     async function refreshVideoRecommendations() {
         setVideoRecommendationStatus("Refreshing...");
@@ -10377,22 +12610,41 @@
     }
 
     async function openChatSearch() {
-        const query = prompt("Search conversation history:");
-        if (!query || !query.trim()) return;
-        const response = await fetch('/api/sessions/search', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({query: query.trim(), limit: 50})
+        showPromptDialog({
+            title: 'Search conversations',
+            label: 'Find a conversation or message',
+            placeholder: 'Search conversation history',
+            confirmLabel: 'Search',
+            onConfirm: async (query, close) => {
+                close();
+                await doChatSearch(query);
+            }
         });
-        const data = await response.json();
+    }
+
+    async function doChatSearch(query) {
         const modal = document.getElementById('memory-modal');
         const body = document.getElementById('modal-body');
         setMemoryModalHeader("Search Results");
         body.innerHTML = '';
         modal.style.display = 'flex';
+        renderSurfaceState(body, { kind: 'loading', title: 'Searching conversations', message: 'Looking through your local history…', icon: 'search' });
+        try {
+            const response = await fetch('/api/sessions/search', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({query: query.trim(), limit: 50})
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.detail || data.message || `Search failed (${response.status})`);
         const results = data.results || [];
         if (!results.length) {
-            body.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">No matching conversations found.</div>';
+            renderSurfaceState(body, {
+                kind: 'empty',
+                title: 'No matching conversations',
+                message: 'Try a shorter phrase or search for a distinctive word.',
+                icon: 'search'
+            });
             return;
         }
         results.forEach(result => {
@@ -10411,6 +12663,15 @@
             `;
             body.appendChild(div);
         });
+        } catch (error) {
+            renderSurfaceState(body, {
+                title: 'Search could not be completed',
+                message: 'Your conversation history is unchanged. Try again in a moment.',
+                retry: () => doChatSearch(query),
+                details: error,
+                icon: 'search'
+            });
+        }
     }
 
     function createSessionSection(title, sessions, isPinned) {
@@ -10419,12 +12680,10 @@
 
         const header = document.createElement('div');
         header.className = 'session-section-header';
-        header.innerHTML = `<span class="icon">▼</span> ${title}`;
-        header.onclick = () => {
-            header.classList.toggle('collapsed');
-            container.classList.toggle('collapsed');
-        };
-        header.innerHTML = `<span class="icon">v</span> ${title}`;
+        header.setAttribute('role', 'button');
+        header.setAttribute('tabindex', '0');
+        header.setAttribute('aria-expanded', 'true');
+        header.innerHTML = `<span class="icon session-section-chevron icn icn-chevron-down icn-sm" aria-hidden="true"></span><span>${escapeHtml(title)}</span>`;
         section.appendChild(header);
 
         const container = document.createElement('div');
@@ -10434,6 +12693,18 @@
             container.appendChild(createSessionItem(s));
         });
         section.appendChild(container);
+
+        header.onclick = () => {
+            const collapsed = header.classList.toggle('collapsed');
+            container.classList.toggle('collapsed', collapsed);
+            header.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        };
+        header.onkeydown = event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                header.click();
+            }
+        };
 
         return section;
     }
@@ -10465,7 +12736,9 @@
         // Menu Button (Vertical Ellipsis)
         const menuBtn = document.createElement('button');
         menuBtn.className = 'session-menu-btn';
-        menuBtn.innerHTML = '⋮';
+        menuBtn.title = 'Conversation options';
+        menuBtn.setAttribute('aria-label', 'Conversation options');
+        menuBtn.innerHTML = ic('more', 'icn-sm');
         menuBtn.onclick = (e) => {
             e.stopPropagation();
             toggleSessionMenu(e, s, div);
@@ -10490,7 +12763,7 @@
             // Pin/Unpin Option
             const pinOption = document.createElement('div');
             pinOption.className = 'menu-option';
-            pinOption.innerHTML = s.pinned ? '<span>Unpin</span>' : '<span>Pin</span>';
+            pinOption.innerHTML = s.pinned ? `<span>${ic('pin', 'icn-sm')}Unpin</span>` : `<span>${ic('pin', 'icn-sm')}Pin</span>`;
             pinOption.onclick = (ev) => {
                 ev.stopPropagation();
                 s.pinned ? unpinSession(s.id) : pinSession(s.id);
@@ -10502,7 +12775,7 @@
         // Summarize selected exchanges into active Episodic memory.
         const archiveOption = document.createElement('div');
         archiveOption.className = 'menu-option';
-        archiveOption.innerHTML = '<span>Summarize to Episodic</span>';
+        archiveOption.innerHTML = `<span>${ic('archive', 'icn-sm')}Summarize to Episodic</span>`;
         archiveOption.onclick = (ev) => {
             ev.stopPropagation();
             archiveSession(s.id);
@@ -10516,7 +12789,7 @@
         if (s.project_id && !s.legacy) {
             const moveOption = document.createElement('div');
             moveOption.className = 'menu-option';
-            moveOption.innerHTML = '<span>Detach</span>';
+            moveOption.innerHTML = `<span>${ic('external', 'icn-sm')}Detach</span>`;
             moveOption.onclick = (ev) => {
                 ev.stopPropagation();
                 moveSessionToGlobal(s.id, s.preview);
@@ -10529,7 +12802,7 @@
             // Delete Option
             const delOption = document.createElement('div');
             delOption.className = 'menu-option delete';
-            delOption.innerHTML = '<span>Delete</span>';
+            delOption.innerHTML = `<span>${ic('trash', 'icn-sm')}Delete</span>`;
             delOption.onclick = (ev) => {
                 ev.stopPropagation();
                 deleteSession(s.id);
@@ -10571,7 +12844,7 @@
             fetchSessionList();
         } catch(e) { 
             console.error("Pin failed", e);
-            alert("Failed to pin session. Please ensure server is restarted to apply new changes.");
+            showToast("Failed to pin session. Please ensure server is restarted to apply new changes.", { type: 'error', duration: 3600 });
         }
     }
 
@@ -10586,28 +12859,209 @@
             fetchSessionList();
         } catch(e) { 
             console.error("Unpin failed", e);
-            alert("Failed to unpin session. Please ensure server is restarted.");
+            showToast("Failed to unpin session. Please ensure server is restarted.", { type: 'error', duration: 3600 });
         }
     }
 
+    const proactiveClientId = crypto.randomUUID().replaceAll('-', '');
+    let proactivePolling = false;
+    const proactiveShown = new Set();
+    async function proactivePost(path, body) {
+        const res = await fetch('/api/companion/echo/' + path, {method:'POST',headers:{'Content-Type':'application/json','X-Saya-Proactive':'1'},body:JSON.stringify(body)});
+        if (!res.ok) throw new Error('主动互动状态已变化');
+        return res.json();
+    }
+    function proactivePageReady() {
+        return !!currentSessionId && !temporaryChatEnabled && currentRoleMode !== 'assistant' && !isWaitingForResponse
+            && document.visibilityState === 'visible' && !document.getElementById?.('user-input')?.value?.trim();
+    }
     async function fetchStatus() {
-        // [MODIFIED] Emotion system is now autonomous via model tags. 
-        // We no longer fetch numeric status from backend for UI bars.
+        // Revived (2026-10-07): the 5s poll now drives the proactive echo
+        // (Saya speaking first) and the mood chip. Never polls mid-reply so
+        // an echo never interrupts a streaming answer.
         try {
-            // Keep fetching status if there are other things (like server health), 
-            // but for now, we just ignore the old emotion bars.
-            // const res = await fetch('/api/status');
-            // const data = await res.json();
-            // ...
+            if (currentSessionId) await proactivePost('presence',{client_id:proactiveClientId,session_id:currentSessionId,
+                visible:document.visibilityState === 'visible',busy:!proactivePageReady()});
+            if (!proactivePolling && proactivePageReady()) {
+                proactivePolling = true;
+                const session = currentSessionId;
+                try {
+                    const identity = {client_id:proactiveClientId,session_id:session};
+                    const data = await proactivePost('poll', {...identity,visible:true,busy:false});
+                    if (data.offer_id && session === currentSessionId && proactivePageReady()) {
+                        const receipt = {...identity,offer_id:data.offer_id,token:data.token};
+                        const committed = await proactivePost('commit',receipt);
+                        if (session === currentSessionId && proactivePageReady()) {
+                            if (!proactiveShown.has(data.offer_id)) {appendSayaEcho(committed.message);proactiveShown.add(data.offer_id);}
+                            await proactivePost('ack',receipt);
+                        }
+                    }
+                } finally {proactivePolling = false;}
+            }
         } catch(e) {}
+        updateMoodChip();
     }
 
-    // [REMOVED] toggleEmotionLock (Emotion system is autonomous)
-    /*
-    async function toggleEmotionLock() {
-       ...
+    function appendSayaEcho(text) {
+        if (!text) return;
+        const row = appendMessage('ai', String(text), { proactive: true });
+        const bubble = row && row.querySelector ? row.querySelector('.message-bubble.ai') : null;
+        if (bubble) {
+            const tag = document.createElement('div');
+            tag.className = 'saya-echo-tag';
+            tag.textContent = 'Saya 主动想起';
+            bubble.insertBefore(tag, bubble.firstChild);
+        }
     }
-    */
+    window.appendSayaEcho = appendSayaEcho;
+
+    const MOOD_CHIP_LABELS = {
+        happy: '开心', excited: '兴奋', hyper: '雀跃', sad: '低落',
+        stressed: '紧张', depressed: '疲惫', tired: '倦怠', neutral: '平静',
+    };
+
+    let moodRefreshSequence = 0;
+    async function updateMoodChip() {
+        const sequence = ++moodRefreshSequence;
+        const chip = document.getElementById('mood-chip');
+        if (!chip) return;
+        try {
+            const requestedSession = currentSessionId || '';
+            const requestedRole = currentRoleMode;
+            const res = await fetch('/api/companion/mood?session_id=' + encodeURIComponent(requestedSession));
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const mood = await res.json();
+            if (sequence !== moodRefreshSequence) return;
+            if (requestedSession !== (currentSessionId || '') || requestedRole !== currentRoleMode) return;
+            window.SayaChatUI?.paintMood(chip, currentRoleMode === 'assistant' ? null : mood);
+            const label = '当前会话';
+            const values = [['happiness','快乐'],['excitement','活力'],['stress','压力'],['sadness','低落'],['anger','愤怒'],['curiosity','好奇'],['affection','亲近'],['confidence','从容']].map(([key,label]) => `${label} ${mood[key] ?? '—'}`).join(' · ');
+            chip.dataset.mood = mood.dominant || '';
+            const moodEl = document.getElementById('companion-mood-status');
+            if (moodEl) moodEl.textContent = `当前：${label}（${values}）${mood.locked ? ' · 已锁定' : mood.enabled === false ? ' · 变化已暂停' : ' · 自动变化'}${mood.enabled === false ? ' · 情绪连续已关闭' : ''}`;
+            const lockButton = document.getElementById('companion-mood-lock');
+            if (lockButton) {
+                lockButton.dataset.locked = String(!!mood.locked);
+                lockButton.textContent = mood.locked ? '解除情绪锁定' : '锁定当前情绪';
+                if (lockButton.dataset.busy !== 'true') lockButton.disabled = false;
+            }
+        } catch (e) {
+            if (sequence !== moodRefreshSequence) return;
+            chip.title = '情绪状态读取失败，点击打开设置重试。';
+            const moodEl = document.getElementById('companion-mood-status');
+            if (moodEl) moodEl.textContent = '情绪状态读取失败：' + e.message;
+            const lockButton = document.getElementById('companion-mood-lock');
+            if (lockButton) lockButton.disabled = true;
+        }
+    }
+    window.updateMoodChip = updateMoodChip;
+
+    // ---- Memory conflict negotiation cards -------------------------------
+    async function resolveMemoryConflict(conflictId, action) {
+        const card = document.querySelector(`.chat-memory-conflict[data-conflict-id="${cssEscapeValue(conflictId)}"]`);
+        try {
+            const res = await fetch('/api/companion/conflicts/resolve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ conflict_id: conflictId, action, expected_version: requireMemoryVersion(card) })
+            });
+            const data = await res.json();
+            if (!res.ok || data.status !== 'success') throw new Error(data.detail || data.message || `HTTP ${res.status}`);
+            if (card) {
+                const container = card.closest('.chat-memory-confirm');
+                const labels = { supersede_old: '已改用新说法，旧记忆已标记被取代', keep_both: '两条记忆都保留了', discard_new: '新候选已忽略或新记忆已归档' };
+                const line = document.createElement('div');
+                line.className = 'chat-memory-done';
+                line.dataset.conflictId = conflictId;
+                line.textContent = `记忆冲突已处理 · ${labels[action] || action}`;
+                card.replaceWith(line);
+                updateChatMemoryConfirmTitle(container);
+            }
+            showToast('Conflict resolved.', { type: 'info', duration: 3000 });
+        } catch (e) {
+            showToast('Resolve failed: ' + e.message, { type: 'error', duration: 3600 });
+        }
+    }
+    window.resolveMemoryConflict = resolveMemoryConflict;
+
+    function renderMemoryConflictCard(body, conflict) {
+        const id = String(conflict.id || '').trim();
+        if (!id || body.querySelector(`.chat-memory-conflict[data-conflict-id="${cssEscapeValue(id)}"]`)) return;
+        const origin = String(conflict.origin || 'explicit');
+        const oldItem = conflict.old || {};
+        const newItem = conflict.new || {};
+        const card = document.createElement('section');
+        card.className = 'memory-candidate-card chat-memory-card chat-memory-conflict';
+        card.dataset.conflictId = id;
+        card.dataset.contentVersion = conflict.content_version || '';
+        card.innerHTML = `
+            <div class="memory-candidate-topline">
+                <div><div class="memory-candidate-kicker">记忆冲突 · 需要你裁决</div></div>
+            </div>
+            <div class="memory-conflict-pair">
+                <div class="memory-conflict-side old"><span>原有记忆</span><p>${escapeHtml(String(oldItem.content || '').slice(0, 200))}</p></div>
+                <div class="memory-conflict-side new"><span>新${origin === 'candidate' ? '候选' : '保存'}</span><p>${escapeHtml(String(newItem.content || '').slice(0, 200))}</p></div>
+            </div>
+            <div class="memory-candidate-footer">
+                <div class="memory-candidate-options"><span>两条说法互相矛盾</span></div>
+                <div class="memory-candidate-actions">
+                    ${origin === 'candidate' ? `<button onclick="resolveMemoryConflict('${escapeJsString(id)}','discard_new')">丢弃新的</button>` : ''}
+                    <button onclick="resolveMemoryConflict('${escapeJsString(id)}','keep_both')">都保留</button>
+                    <button class="primary" onclick="resolveMemoryConflict('${escapeJsString(id)}','supersede_old')">改用新说法</button>
+                </div>
+            </div>
+        `;
+        body.appendChild(card);
+    }
+    window.renderMemoryConflictCard = renderMemoryConflictCard;
+
+    function updateChatMemoryConfirmTitle(container) {
+        if (!container) return;
+        const titleEl = container.querySelector('.chat-memory-confirm-title');
+        if (!titleEl) return;
+        const explicitCount = container.querySelectorAll('.chat-memory-explicit').length;
+        const pendingCards = container.querySelectorAll('.memory-candidate-card:not(.chat-memory-explicit):not(.chat-memory-conflict)').length;
+        const autoLines = container.querySelectorAll('.chat-memory-done.auto').length;
+        const conflictCards = container.querySelectorAll('.chat-memory-conflict').length;
+        const operationResult = container.querySelector('.memory-write-result');
+        const parts = [];
+        if (explicitCount) parts.push(`已按你的要求保存 ${explicitCount} 条`);
+        if (pendingCards) parts.push(`Saya 想记住这 ${pendingCards} 条记忆，请确认`);
+        if (conflictCards) parts.push(`发现 ${conflictCards} 条记忆冲突`);
+        if (autoLines) parts.push(`已自动保存 ${autoLines} 条`);
+        titleEl.textContent = parts.join(' · ') || (operationResult ? '记忆操作结果' : '记忆处理完成');
+        if (!pendingCards && !explicitCount && !conflictCards && !operationResult) {
+            collapseChatMemoryContainer(container, false);
+        }
+    }
+    window.updateChatMemoryConfirmTitle = updateChatMemoryConfirmTitle;
+
+    async function changeMoodControl(button, endpoint, body) {
+        if (!currentSessionId || isWaitingForResponse) {
+            showToast(isWaitingForResponse ? '请在本轮回答结束后调整心情。' : '请先选择会话。', {type:'info'});
+            return;
+        }
+        button.dataset.busy = 'true';
+        button.disabled = true;
+        try {
+            const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({...body, session_id: currentSessionId || ''}) });
+            if (!response.ok) {
+                const data = await response.json().catch(() => ({}));
+                throw new Error(data.detail || `HTTP ${response.status}`);
+            }
+            await updateMoodChip();
+            showToast(endpoint.endsWith('/reset') ? '当前会话已恢复初始心情。' : body.locked ? '当前会话心情已锁定。' : '已解锁，心情将随本会话继续变化。', { type: 'info' });
+        } catch (error) { showToast('情绪设置失败：' + error.message, { type: 'error', duration: 5000 }); }
+        finally { button.dataset.busy = 'false'; button.disabled = false; }
+    }
+    function toggleEmotionLock(button) {
+        return changeMoodControl(button, '/api/emotion/lock', { locked: button.dataset.locked !== 'true' });
+    }
+    function resetEmotionNeutral(button) {
+        return changeMoodControl(button, '/api/emotion/reset', {});
+    }
+    window.toggleEmotionLock = toggleEmotionLock;
+    window.resetEmotionNeutral = resetEmotionNeutral;
 
     async function showOfflineReport() {
         try {
@@ -10617,19 +13071,27 @@
             if (data.details && data.details.length > 0) {
                 msg += "\n\nChanges:\n" + data.details.join("\n");
             }
-            alert(msg);
-        } catch(e) { alert("Failed to fetch report"); }
+            showToast(msg, { type: 'info', duration: 3600 });
+        } catch(e) { showToast("Failed to fetch report", { type: 'error', duration: 3600 }); }
     }
 
     async function loadSession(id, options = {}) {
-        if(!options.skipConfirm && !confirm("Load this session? Current unsaved chat will be lost.")) return false;
+        if (!options.skipConfirm) {
+            confirmAction("Load this session? Current unsaved chat will be lost.", async () => {
+                await loadSession(id, {...options, skipConfirm: true});
+                document.getElementById('memory-modal').style.display = 'none';
+            }, { title: 'Load this session?', confirmLabel: 'Load' });
+            return false;
+        }
         try {
+            if (isWaitingForResponse) { stopGeneration(); }
             const res = await fetch('/api/sessions/load_full', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({session_id: id})
             });
             const data = await res.json();
+            if (!res.ok) throw new Error(data.detail || 'Session could not be loaded');
             const loadedRoleMode = options.roleMode || data.role_mode || '';
             if (loadedRoleMode === 'assistant') {
                 setCurrentRoleMode('assistant');
@@ -10640,34 +13102,50 @@
             }
             const chatContent = document.getElementById('chat-content');
             if (chatContent) chatContent.innerHTML = '';
+            const completedWriteRequests = new Set((data.items || []).filter(item =>
+                ['ai', 'assistant'].includes(item.role) && item.memory_confirm?.operation)
+                .map(item => item.chat_runtime?.request_id));
             
             (data.items || []).forEach((item, historyIndex) => {
                 if (item.role === "user") {
                     appendMessage('user', item.content || '', {
                         historyIndex,
+                        requestId: item.chat_runtime?.request_id || '',
+                        sessionId: id,
+                        memoryConfirm: completedWriteRequests.has(item.chat_runtime?.request_id) ? null : item.memory_confirm,
+                        agentIds: item.agent_ids || [],
                         attachments: item.attachments || []
                     });
                 } else if (item.role === "ai" || item.role === "assistant") {
                     const webResearch = item.web_research || {};
                     appendMessage('ai', item.content || '', {
                         historyIndex,
+                        sessionId: id,
                         translation: item.translation || '',
                         readableGenerated: item.readable_generated === true,
                         webSources: (webResearch.sources || []),
                         webQuery: webResearch.query || '',
                         webCitationCheck: webResearch.citation_check || null,
-                        memoryRecall: item.memory_recall || null
+                        memoryRecall: item.memory_recall || null,
+                        memoryConfirm: item.memory_confirm || null,
+                        moodState: item.mood_state || null,
+                        moodEstimated: item.mood_estimated === true,
+                        roleMode: item.agent_id && item.agent_id !== 'saya' ? 'assistant' : item.role_mode || loadedRoleMode,
+                        agentId: item.agent_id || 'saya', agentName: item.agent_name || 'Saya'
                     });
                 }
             });
             currentHistoryLength = (data.items || []).length;
             updateModeProgressRing();
             currentSessionId = data.session_id || id;
+            window.SayaChatUI?.stopSpeech();
+            void updateMoodChip();
+            void enhanceListenerSessionOnLoad();
             if (data.migrated_from) fetchSessionList();
-            if (!options.skipAlert) alert("Session loaded.");
+            if (!options.skipAlert) showToast("Session loaded.", { type: 'info', duration: 3600 });
             return true;
         } catch(e) {
-            alert("Load failed: " + e);
+            showToast("Load failed: " + e, { type: 'error', duration: 3600 });
             return false;
         }
     }
@@ -10677,6 +13155,7 @@
     }
 
     async function startNewSessionSilently(projectIdOverride = undefined, options = {}) {
+        if (isWaitingForResponse) { stopGeneration(); }
         const roleMode = options.roleMode || '';
         if (currentRoleMode === 'assistant' && roleMode !== 'assistant' && !options.skipRoleExit) {
             await exitAssistantRoleMode({silent: true, keepModalClosed: true, clearChat: false});
@@ -10700,6 +13179,7 @@
         currentHistoryLength = 0; // Reset
         updateModeProgressRing();
         currentSessionId = data.session_id || null;
+        window.SayaChatUI?.stopSpeech();
         if (roleMode === 'assistant') {
             setCurrentRoleMode('assistant');
         } else {
@@ -10711,14 +13191,16 @@
                 setCurrentProject("", {refresh: false});
             }
         }
+        void updateMoodChip();
         fetchSessionList();
         return data;
     }
 
     async function createNewSession() {
-        if(!confirm("Start new session?")) return;
-        await startNewSessionSilently(projectSidebarViewId || "");
-    }
+        confirmAction("Start new session?", async () => {
+
+            await startNewSessionSilently(projectSidebarViewId || "");
+    });    }
 
     async function deleteSession(id) {
         try {
@@ -10735,6 +13217,35 @@
             if (blockedMemories.length) {
                 throw new Error('This session has protected automatic memories. Unlock them before deleting the session.');
             }
+
+            const runDelete = async () => {
+                const response = await fetch('/api/sessions/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        session_id: id,
+                        session_confirmation_token: preview.session_confirmation_token,
+                        memory_confirmation_token: preview.memory_confirmation_token
+                    })
+                });
+                if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
+                const data = await response.json();
+                if (!data.success) throw new Error(data.message || "Server returned failure");
+
+                const deletingDisplayedNormalSession = currentRoleMode !== 'assistant' &&
+                    (deletingCurrentSession || data.was_active_session === true);
+                if (deletingDisplayedNormalSession) {
+                    const chatContent = document.getElementById('chat-content');
+                    if (chatContent) chatContent.innerHTML = '';
+                    currentHistoryLength = 0;
+                    currentSessionId = null;
+                    await startNewSessionSilently(projectSidebarViewId || currentProjectId || "");
+                } else if (deletingCurrentSession) {
+                    await startNewSessionSilently(projectSidebarViewId || currentProjectId || "");
+                } else {
+                    fetchSessionList();
+                }
+            };
 
             if (autoMemories.length) {
                 const memoryList = autoMemories
@@ -10754,69 +13265,43 @@
                     '',
                     'Continue and delete both the session and these memories?'
                 ].join('\n');
-                if (!confirm(message)) return;
-            } else if (!confirm('Delete this session permanently?\n\nNo linked automatic memory will be removed. This cannot be undone.')) {
-                return;
-            }
-
-            const response = await fetch('/api/sessions/delete', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    session_id: id,
-                    session_confirmation_token: preview.session_confirmation_token,
-                    memory_confirmation_token: preview.memory_confirmation_token
-                })
-            });
-            if (!response.ok) throw new Error(`Delete failed: ${response.status}`);
-            const data = await response.json();
-            if (!data.success) throw new Error(data.message || "Server returned failure");
-
-            const deletingDisplayedNormalSession = currentRoleMode !== 'assistant' &&
-                (deletingCurrentSession || data.was_active_session === true);
-            if (deletingDisplayedNormalSession) {
-                const chatContent = document.getElementById('chat-content');
-                if (chatContent) chatContent.innerHTML = '';
-                currentHistoryLength = 0;
-                currentSessionId = null;
-                await startNewSessionSilently(projectSidebarViewId || currentProjectId || "");
-            } else if (deletingCurrentSession) {
-                await startNewSessionSilently(projectSidebarViewId || currentProjectId || "");
+                confirmAction(message, runDelete, { title: 'Delete this session and its memories?', confirmLabel: 'Delete session', danger: true });
             } else {
-                fetchSessionList();
+                confirmAction('Delete this session permanently?\n\nNo linked automatic memory will be removed. This cannot be undone.', runDelete, { title: 'Delete this session?', confirmLabel: 'Delete session', danger: true });
             }
         } catch (e) {
             console.error("Delete session failed", e);
-            alert("Failed to delete session: " + e.message);
+            showToast("Failed to delete session: " + e.message, { type: 'error', duration: 3600 });
         }
     }
 
     async function moveSessionToGlobal(sessionId, previewText) {
         if (!sessionId) return;
         const label = previewText ? `"${String(previewText).slice(0, 40)}"` : 'this conversation';
-        if (!confirm(`Move ${label} out of this project and into the global conversation list?\n\nThe conversation itself is preserved; it just no longer belongs to the project.`)) return;
-        try {
-            const response = await fetch('/api/projects/remove_session', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({session_id: sessionId})
-            });
-            if (!response.ok) throw new Error(`Move failed: ${response.status}`);
-            const data = await response.json();
-            if (data.status !== 'success') throw new Error('Server returned failure');
-            // If the moved session is currently displayed, keep it loaded but
-            // clear the project context so the UI no longer treats it as part
-            // of the open project.
-            if (currentSessionId && String(currentSessionId) === String(sessionId)) {
-                setCurrentProject("", {refresh: false});
-                projectSidebarViewId = "";
+        confirmAction(`Move ${label} out of this project and into the global conversation list?\n\nThe conversation itself is preserved; it just no longer belongs to the project.`, async () => {
+
+            try {
+                const response = await fetch('/api/projects/remove_session', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({session_id: sessionId})
+                });
+                if (!response.ok) throw new Error(`Move failed: ${response.status}`);
+                const data = await response.json();
+                if (data.status !== 'success') throw new Error('Server returned failure');
+                // If the moved session is currently displayed, keep it loaded but
+                // clear the project context so the UI no longer treats it as part
+                // of the open project.
+                if (currentSessionId && String(currentSessionId) === String(sessionId)) {
+                    setCurrentProject("", {refresh: false});
+                    projectSidebarViewId = "";
+                }
+                fetchSessionList();
+            } catch (e) {
+                console.error("Move session to global failed", e);
+                showToast("Failed to move conversation: " + e.message, { type: 'error', duration: 3600 });
             }
-            fetchSessionList();
-        } catch (e) {
-            console.error("Move session to global failed", e);
-            alert("Failed to move conversation: " + e.message);
-        }
-    }
+    });}
 
     function toggleApiInput() {
         const select = document.getElementById('model-select');
@@ -10895,7 +13380,14 @@
         const rowDiv = document.createElement('div');
         rowDiv.className = `message-row ${type}-row`;
         rowDiv.dataset.rawContent = text; // Store raw content for edit/regenerate
+        if (options.requestId) rowDiv.dataset.requestId = options.requestId;
+        if (options.sessionId) rowDiv.dataset.sessionId = options.sessionId;
+        if (type === 'ai') {
+            rowDiv.dataset.agentId = options.agentId || 'saya';
+            rowDiv.dataset.agentName = options.agentName || 'Saya';
+        }
         rowDiv._attachments = cloneAttachmentMetadata(options.attachments);
+        rowDiv._agentIds = options.agentIds || [];
         if (type === 'user') rowDiv.dataset.questionText = getQuestionIndexText(text);
         if (Number.isInteger(options.historyIndex)) {
             rowDiv.dataset.historyIndex = String(options.historyIndex);
@@ -10910,8 +13402,10 @@
         
         // Content
         const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-body';
+        let imageElement = null; // 图片缩略图，最终渲染在气泡上方（不在气泡内）
         if (type === 'ai') {
-            contentDiv.innerHTML = `Saya: ` + renderMarkdownSafe(text);
+            contentDiv.innerHTML = escapeHtml(rowDiv.dataset.agentName) + ': ' + renderMarkdownSafe(text);
         } else {
             // Check for image tag [IMAGE:url]
             const imgMatch = text.match(/\[IMAGE:(.*?)\]/);
@@ -10960,14 +13454,16 @@
 
                 const img = document.createElement('img');
                 img.src = /^(?:\/|https?:\/\/)/i.test(imgUrl) ? imgUrl : '';
-                img.style.maxWidth = '100%';
+                img.style.width = '80px';
+                img.style.height = '80px';
+                img.style.objectFit = 'cover'; // 非方形图片取正中部分
                 img.style.borderRadius = '8px';
                 img.style.display = 'block';
                 img.style.marginBottom = '8px';
+                img.title = '点击查看大图';
                 img.onclick = () => window.open(imgUrl, '_blank');
                 img.style.cursor = 'pointer';
-                
-                contentDiv.appendChild(img);
+                imageElement = img;
                 
                 // Show Description Toggle
                 if (displayNote) {
@@ -10994,7 +13490,7 @@
                 }
 
                 if (remainingText.length > 0) {
-                    contentDiv.appendChild(document.createTextNode(`Doctor: ${remainingText}`));
+                    contentDiv.appendChild(document.createTextNode(remainingText));
                 }
             } else if (fileMatch) {
                 const filename = fileMatch[1];
@@ -11015,7 +13511,7 @@
                 fileDiv.style.border = '1px solid rgba(255,255,255,0.2)';
                 
                 fileDiv.innerHTML = `
-                    <span style="font-size:1.5rem;">📄</span>
+                    <span style="font-size:1.5rem; display:inline-flex;">${ic('note', 'icn-lg')}</span>
                     <div style="display:flex; flex-direction:column;">
                         <span style="font-weight:bold; font-size:0.9rem;">${escapeHtml(filename)}</span>
                         <span style="font-size:0.75rem; opacity:0.7;">File Content Uploaded</span>
@@ -11027,7 +13523,7 @@
                     contentDiv.appendChild(document.createTextNode(`Doctor: ${cleanText}`));
                 }
             } else {
-                contentDiv.textContent = `Doctor: ${text}`;
+                contentDiv.textContent = text;
             }
         }
         bubbleDiv.appendChild(contentDiv);
@@ -11039,26 +13535,32 @@
         if (type === 'user') {
             const editBtn = document.createElement('button');
             editBtn.className = 'btn-action';
-            editBtn.innerText = 'Edit';
+            editBtn.title = 'Edit message';
+            editBtn.setAttribute('aria-label', 'Edit message');
+            editBtn.innerHTML = ic('edit', 'icn-sm');
             editBtn.onclick = () => editMessage(editBtn);
             actionsDiv.appendChild(editBtn);
         } else {
             const regenBtn = document.createElement('button');
             regenBtn.className = 'btn-action';
-            regenBtn.innerText = 'Regenerate';
+            regenBtn.title = 'Regenerate response';
+            regenBtn.setAttribute('aria-label', 'Regenerate response');
+            regenBtn.innerHTML = ic('refresh', 'icn-sm');
             regenBtn.onclick = () => regenerateMessage(regenBtn);
             actionsDiv.appendChild(regenBtn);
 
             // [MODIFIED] New Collapsible Translation
             const transBtn = document.createElement('button');
             transBtn.className = 'btn-action';
-            transBtn.innerText = 'Translate';
+            transBtn.title = 'Translate';
+            transBtn.setAttribute('aria-label', 'Translate');
+            transBtn.innerHTML = ic('translate', 'icn-sm');
             transBtn.onclick = () => {
                 const allRows = Array.from(document.getElementById('chat-content').children);
                 const index = rowDiv.dataset.historyIndex !== undefined
                     ? Number(rowDiv.dataset.historyIndex)
                     : allRows.indexOf(rowDiv);
-                const raw = contentDiv.innerText.replace(/^Saya:\s*/, '').trim();
+                const raw = getAiMessageText(rowDiv);
                 toggleTranslation(bubbleDiv, raw, index);
             };
             actionsDiv.appendChild(transBtn);
@@ -11066,22 +13568,40 @@
             // Branch: copy this conversation up to this message into a new session.
             const branchBtn = document.createElement('button');
             branchBtn.className = 'btn-action';
-            branchBtn.innerText = 'Branch';
+            branchBtn.title = 'Branch conversation here';
+            branchBtn.setAttribute('aria-label', 'Branch conversation here');
+            branchBtn.innerHTML = ic('branch', 'icn-sm');
             branchBtn.onclick = () => branchFromMessage(branchBtn);
             actionsDiv.appendChild(branchBtn);
 
-            if (options.readableGenerated) {
+            if (type === 'ai') {
                 const readBtn = document.createElement('button');
                 readBtn.className = 'btn-action read-aloud-inline';
-                readBtn.innerText = '🔊 Read';
-                readBtn.onclick = () => speakWithElevenLabs(getAiMessageText(rowDiv));
+                readBtn.title = 'Read aloud';
+                readBtn.setAttribute('aria-label', 'Read aloud');
+                readBtn.innerHTML = ic('volume', 'icn-sm');
+                readBtn.onclick = () => { readBtn.dataset.manualVoiceRequested = 'true'; return window.SayaChatUI?.speak(readBtn, getAiMessageText(rowDiv), {roleMode: rowDiv._roleMode || '', moodState: rowDiv._moodState || {dominant:'neutral'}, sessionId: currentSessionId || ''}); };
                 actionsDiv.appendChild(readBtn);
             }
         }
         bubbleDiv.appendChild(actionsDiv);
-        rowDiv.appendChild(bubbleDiv);
+        if (imageElement) {
+            // 图片渲染在气泡上方：用纵向 flex 包装，图片 + 气泡上下排列
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.flexDirection = 'column';
+            wrapper.style.width = '100%'; // 占满整行，避免气泡按收缩宽度计算 max-width 导致过早换行
+            wrapper.style.alignItems = type === 'user' ? 'flex-end' : 'flex-start';
+            wrapper.appendChild(imageElement);
+            wrapper.appendChild(bubbleDiv);
+            rowDiv.appendChild(wrapper);
+        } else {
+            rowDiv.appendChild(bubbleDiv);
+        }
 
         chatContent.appendChild(rowDiv);
+        rowDiv._roleMode = options.roleMode || currentRoleMode || '';
+        if (type === 'ai' && rowDiv._roleMode !== 'assistant') window.SayaChatUI?.attachMood(rowDiv, options.moodState || null, options.moodEstimated === true);
         chatContent.scrollTop = chatContent.scrollHeight;
 
         // Restore web research sources panel from history (plan section 19.6).
@@ -11093,6 +13613,9 @@
         }
         if (type === 'ai' && options.memoryRecall) {
             renderMemoryRecallAudit(rowDiv, options.memoryRecall);
+        }
+        if (options.memoryConfirm && (type === 'ai' || options.memoryConfirm.operation)) {
+            renderChatMemoryConfirm(rowDiv, options.memoryConfirm, { history: true });
         }
 
         if (type === 'ai' && options.translation) {
@@ -11108,9 +13631,11 @@
     function getAiMessageText(rowDiv) {
         const bubble = rowDiv?.querySelector('.message-bubble.ai');
         if (!bubble) return "";
-        const clone = bubble.cloneNode(true);
-        clone.querySelectorAll('.msg-actions, .read-aloud-inline, .trans-box, .web-sources-panel, .web-citation-check, .memory-recall-audit, .web-status-line, .web-warning-line').forEach(node => node.remove());
-        return clone.innerText.replace(/^Saya:\s*/, '').trim();
+        // Read the reply itself, independent of cards and status text in its bubble.
+        const text = typeof rowDiv.dataset?.rawContent === 'string'
+            ? rowDiv.dataset.rawContent
+            : bubble.querySelector(':scope > .message-body')?.innerText || '';
+        return text.replace(/^Saya:\s*/, '').trim();
     }
 
     function showStoredTranslation(bubbleDiv, translatedText) {
@@ -11160,6 +13685,7 @@
         bubbleDiv.appendChild(transBox);
 
         try {
+            await window.SayaLocalProfile?.ready();
             const translationSettings = getSavedOtherApiSettings();
             const trRes = await fetch('/translate', {
                 method: 'POST',
@@ -11259,7 +13785,7 @@
             : domIndex;
         
         if (domIndex === -1) {
-             alert("Error identifying message.");
+             showToast("Error identifying message.", { type: 'error', duration: 3600 });
              return;
         }
 
@@ -11271,42 +13797,51 @@
         // const contentDiv = bubbleDiv.firstElementChild;
         // const currentText = contentDiv.textContent.replace("Doctor:", "").trim();
         
-        const newText = prompt("Edit your message:", userPart.trim());
-        
-        if (newText !== null && newText !== userPart.trim()) {
-            if(!confirm("Resend edited message? This will remove all subsequent conversation history.")) return;
+        showPromptDialog({
+            title: 'Edit your message',
+            label: 'Message text',
+            value: userPart.trim(),
+            multiline: true,
+            confirmLabel: 'Continue',
+            onConfirm: (newText, close) => {
+                close();
+                if (newText === userPart.trim()) return;
+                confirmAction("Resend edited message? This will remove all subsequent conversation history.", async () => {
 
-            // 1. Reset backend history to this index
-            try {
-                const res = await fetch('/api/history/reset_to', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({index: historyIndex, session_id: currentSessionId})
-                });
-                const data = await res.json();
-                if(data.status !== 'success') throw new Error(data.message);
+
+                // 1. Reset backend history to this index
+                try {
+                    const res = await fetch('/api/history/reset_to', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({index: historyIndex, session_id: currentSessionId})
+                    });
+                    const data = await res.json();
+                    if(data.status !== 'success') throw new Error(data.message);
                 
-                // 2. Update local state
-                currentHistoryLength = data.remaining_count;
+                    // 2. Update local state
+                    currentHistoryLength = data.remaining_count;
 
-                // 3. Remove subsequent DOM elements
-                const container = document.getElementById('chat-content');
-                while (container.children.length > domIndex) {
-                    container.removeChild(container.lastElementChild);
+                    // 3. Remove subsequent DOM elements
+                    const container = document.getElementById('chat-content');
+                    while (container.children.length > domIndex) {
+                        container.removeChild(container.lastElementChild);
+                    }
+
+                    // 4. Send new message
+                    const editedContent = prefix + newText;
+                    sendMessage({
+                        userText: editedContent,
+                        displayText: editedContent,
+                        attachments
+                    });
+
+                } catch(e) {
+                    showToast("Edit failed: " + e, { type: 'error', duration: 3600 });
                 }
-
-                // 4. Send new message
-                const editedContent = prefix + newText;
-                sendMessage({
-                    userText: editedContent,
-                    displayText: editedContent,
-                    attachments
                 });
-
-            } catch(e) {
-                alert("Edit failed: " + e);
             }
-        }
+        });
     }
 
     async function regenerateMessage(btn) {
@@ -11319,13 +13854,15 @@
         // We need to find the preceding User message to re-send.
         // Usually index - 1.
         if (domIndex === 0) {
-            alert("Cannot regenerate without context.");
+            showToast("Cannot regenerate without context.", { type: 'error', duration: 3600 });
             return;
         }
         
-        const userRowDiv = allRows[domIndex - 1];
-        if (!userRowDiv.classList.contains('user-row')) {
-             alert("Preceding message is not from user. Cannot regenerate.");
+        let userDomIndex = domIndex - 1;
+        while (userDomIndex >= 0 && !allRows[userDomIndex].classList.contains('user-row')) userDomIndex -= 1;
+        const userRowDiv = allRows[userDomIndex];
+        if (!userRowDiv) {
+             showToast("Preceding message is not from user. Cannot regenerate.", { type: 'error', duration: 3600 });
              return;
         }
         
@@ -11333,44 +13870,47 @@
         const rawContent = userRowDiv.dataset.rawContent || "";
         const attachments = getMessageAttachments(userRowDiv);
         
-        if(!confirm("Regenerate response?")) return;
+        confirmAction("Regenerate response?", async () => {
 
-        try {
-            // 1. Reset history to User message index (removing User + AI)
-            // Wait, we want to re-send the User message.
-            // So we need to remove the User message from backend history too, 
-            // because sendMessage() will append it again.
-            const resetIndex = userRowDiv.dataset.historyIndex !== undefined
-                ? Number(userRowDiv.dataset.historyIndex)
-                : domIndex - 1;
-            
-            const res = await fetch('/api/history/reset_to', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({index: resetIndex, session_id: currentSessionId})
-            });
-            const data = await res.json();
-            if(data.status !== 'success') throw new Error(data.message);
-            
-            currentHistoryLength = data.remaining_count;
 
-            // 2. Remove DOM elements (remove all subsequent messages including the ones being regenerated)
-            const container = document.getElementById('chat-content');
-            while (container.children.length > domIndex - 1) {
-                container.removeChild(container.lastElementChild);
+            try {
+                // 1. Reset history to User message index (removing User + AI)
+                // Wait, we want to re-send the User message.
+                // So we need to remove the User message from backend history too,
+                // because sendMessage() will append it again.
+                const resetIndex = userRowDiv.dataset.historyIndex !== undefined
+                    ? Number(userRowDiv.dataset.historyIndex)
+                    : userDomIndex;
+            
+                const res = await fetch('/api/history/reset_to', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({index: resetIndex, session_id: currentSessionId})
+                });
+                const data = await res.json();
+                if(data.status !== 'success') throw new Error(data.message);
+            
+                currentHistoryLength = data.remaining_count;
+
+                // 2. Remove DOM elements (remove all subsequent messages including the ones being regenerated)
+                const container = document.getElementById('chat-content');
+                while (container.children.length > userDomIndex) {
+                    container.removeChild(container.lastElementChild);
+                }
+
+                // 3. Re-send User message using raw content
+                sendMessage({
+                    userText: rawContent,
+                    displayText: rawContent,
+                    requestId: userRowDiv.dataset.requestId,
+                    agentIds: userRowDiv._agentIds,
+                    attachments
+                });
+
+            } catch(e) {
+                showToast("Regenerate failed: " + e, { type: 'error', duration: 3600 });
             }
-
-            // 3. Re-send User message using raw content
-            sendMessage({
-                userText: rawContent,
-                displayText: rawContent,
-                attachments
-            });
-
-        } catch(e) {
-            alert("Regenerate failed: " + e);
-        }
-    }
+    });}
 
     // Branch: copy conversation up to this AI message into a new session.
     async function branchFromMessage(btn) {
@@ -11384,45 +13924,38 @@
             ? Number(rowDiv.dataset.historyIndex)
             : domIndex;
 
-        if (!confirm(`Branch a new session from here?\n将复制到此条为止的所有对话到新会话。`)) return;
+        confirmAction(`Branch a new session from here?\n将复制到此条为止的所有对话到新会话。`, async () => {
 
-        try {
-            const res = await fetch('/api/sessions/branch', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ up_to_index: upToIndex, session_id: currentSessionId })
-            });
-            if (!res.ok) throw new Error(`Branch failed: ${res.status}`);
-            const data = await res.json();
-            // Switch to the new session.
-            currentSessionId = data.session_id;
-            currentHistoryLength = data.copied_count || (upToIndex + 1);
-            updateModeProgressRing();
-            fetchSessionList();
-            // Reload the chat view from the new session.
-            await loadSession(data.session_id, {silent: true});
-        } catch (e) {
-            alert("Branch failed: " + e);
-        }
-    }
+
+            try {
+                const res = await fetch('/api/sessions/branch', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ up_to_index: upToIndex, session_id: currentSessionId })
+                });
+                if (!res.ok) throw new Error(`Branch failed: ${res.status}`);
+                const data = await res.json();
+                // Switch to the new session.
+                currentSessionId = data.session_id;
+                currentHistoryLength = data.copied_count || (upToIndex + 1);
+                updateModeProgressRing();
+                fetchSessionList();
+                // Reload the chat view from the new session.
+                await loadSession(data.session_id, {silent: true});
+            } catch (e) {
+                showToast("Branch failed: " + e, { type: 'error', duration: 3600 });
+            }
+    });}
 
     const physicsParams = {
-        type: 1,
         friction: 0.2,
         restitution: 0.05,
-        collisionMargin: 0.002,
-        damping: 0.95,
-        rigidBodyType: 0
+        damping: 0.95
     };
 
     function createAnimationHelper() {
         return new THREE.MMDAnimationHelper({
             afterglow: 2.0,
-            physics: true,
-            unitStep: FIXED_STEP,
-            maxStepNum: 3,
-            gravity: new THREE.Vector3(0, -9.8 * 0.8, 0),
-            worldScale: 1.0
         });
     }
 
@@ -11442,7 +13975,7 @@
         lastPhysicsResetTime = Date.now();
         abnormalPhysicsFrames = 0;
         lastPhysicsVisualSample = null;
-        accumulator = 0;
+        mmdPhysicsStepper?.reset();
         clock.getDelta();
     }
 
@@ -11456,10 +13989,6 @@
 
     function isHairRigidBody(rigidBody) {
         return /髪|hair/i.test(getRigidBodySearchName(rigidBody));
-    }
-
-    function isTieRigidBody(rigidBody) {
-        return /ネクタイ|ネクタイ[0-9]|tie|necktie/i.test(getRigidBodySearchName(rigidBody));
     }
 
     function applyOriginalMmdRigidBodyStability(rigidBodies) {
@@ -11524,27 +14053,14 @@
                 if (tuning.breast?.disableAllCollisions) body.groupTarget = 0;
             });
 
-            // 领带抗抖动：大幅提高阻尼消除高频抖动，但保留物理特性（不设 kinematic、不删碰撞）
-            // 这样领带仍受重力自然下垂、有物理摆动，但不会剧烈抖动或穿模
-            let tieBodiesChanged = 0;
-            if (tuning.tie?.highDamping) {
-                const tieBodies = rigidBodies.filter(isTieRigidBody);
-                tieBodies.forEach((body) => {
-                    // 提高阻尼到接近临界阻尼，消除抖动但保留摆动
-                    body.damping = 0.995;
-                    body.positionDamping = 0.995;
-                    body.rotationDamping = 0.995;
-                    // 略增摩擦和质量，稳定碰撞响应避免穿模
-                    body.friction = 0.9;
-                    body.mass = Math.max(0.02, Number(body.mass || 0.01) * 2.0);
-                    tieBodiesChanged++;
-                });
+            if (tuning.tie?.enabled) {
+                activeTiePhysicsDiagnostics = MmdTiePhysics.tuneRigidBodies(rigidBodies, genogeTieMode);
             }
 
             console.log('Applied げのげ-only cloth/upper-body stability:', {
                 skirtBodies: skirtBodies.length,
                 stabilizedBreastBodies: breastBodies.length,
-                tieBodiesChanged: tieBodiesChanged,
+                tie: activeTiePhysicsDiagnostics,
             });
         }
     }
@@ -11553,6 +14069,10 @@
         const groups = activeShoeDiagnostics?.groups || [];
         const payload = {
             modelId: currentModelId,
+            tiePhysics: activeTiePhysicsDiagnostics ? {
+                ...activeTiePhysicsDiagnostics,
+                timing: mmdPhysicsStepper ? { ...mmdPhysicsStepper.stats } : null,
+            } : null,
             shoeSkinRemap: groups.map(group => ({
                 side: group.side,
                 sourceBone: group.sourceBone,
@@ -11582,6 +14102,8 @@
 
     function clearMmdModelDiagnostics() {
         activeShoeDiagnostics = null;
+        activeTiePhysicsDiagnostics = null;
+        mmdPhysicsStepper = null;
         lastShoeDiagnosticSampleAt = 0;
         publishMmdModelDiagnostics();
     }
@@ -11713,10 +14235,29 @@
     function attachMeshToAnimationHelper(mesh) {
         if (!animationHelper || !mesh) return;
         applyMmdRigidBodyStability(mesh);
+        const tieProfile = currentModelConfig?.rigidBodyTuning?.tie?.enabled
+            ? MmdTiePhysics.getProfile(genogeTieMode) : null;
+        // Per-mesh physics options belong to add(), not the helper constructor.
+        // Other models keep the r106 defaults they have actually been using.
         animationHelper.add(mesh, {
             physics: true,
-            ...physicsParams
+            unitStep: tieProfile?.unitStep ?? 1 / 65,
+            maxStepNum: tieProfile?.maxStepNum ?? 3,
+            gravity: new THREE.Vector3(...(tieProfile?.gravity ?? [0, -98, 0])),
+            warmup: tieProfile ? 0 : 60,
         });
+        if (tieProfile) {
+            const physics = animationHelper.objects.get(mesh).physics;
+            const runtime = MmdTiePhysics.configurePhysics(physics, genogeTieMode);
+            if (tieProfile.hz) {
+                for (let i = 0; i < tieProfile.hz; i++) physics.update(tieProfile.unitStep);
+            } else {
+                physics.warmup(60);
+            }
+            activeTiePhysicsDiagnostics.runtime = runtime;
+            mmdPhysicsStepper = MmdTiePhysics.createStepper(genogeTieMode);
+            publishMmdModelDiagnostics();
+        }
     }
 
     function getFootPosition() {
@@ -11951,17 +14492,19 @@
         return true;
     }
 
+    sayaPageReady(() => {
     if (typeof Ammo === 'function') {
         Ammo().then(function() {
             console.log('Ammo.js initialized');
             init();
         }).catch(function(err) {
             console.error('Ammo.js initialization failed:', err);
-            alert('Failed to load Ammo.js. The model cannot be loaded. Please check your internet connection.');
+            showToast('Failed to load Ammo.js. The model cannot be loaded. Please check your internet connection.', { type: 'error', duration: 3600 });
         });
     } else {
-        alert('Failed to load Ammo.js. The model cannot be loaded. Please check your internet connection.');
+        showToast('Failed to load Ammo.js. The model cannot be loaded. Please check your internet connection.', { type: 'error', duration: 3600 });
     }
+    });
 
     function createAnimationBindingPose(mesh) {
         if (!mesh || !mesh.skeleton || !Array.isArray(mesh.skeleton.bones)) {
@@ -12091,7 +14634,7 @@
         abnormalPhysicsFrames = 0;
         lastPhysicsVisualSample = null;
         lastPhysicsResetTime = Date.now();
-        accumulator = 0;
+        mmdPhysicsStepper?.reset();
         clock.getDelta();
 
         if (camera && controls) {
@@ -12110,6 +14653,7 @@
     }
 
     function loadModel(isFirstLoad, options = {}) {
+        mmdPersistReady = false;
         const coldStart = Boolean(options.coldStart);
         const loadGeneration = ++modelLoadGeneration;
         if (currentMesh) {
@@ -12203,6 +14747,8 @@
 
                 // [ADDED] Restore saved view state (camera position/target) after model load
                 applyViewState();
+                mmdPersistReady = true;
+                window.SayaSettingsStore?.viewReady();
 
                 // [FIX] Wait for all textures to finish loading, then reveal.
                 // MMD models reference many texture files (skin, clothes, hair, etc.)
@@ -12279,7 +14825,7 @@
             function(err) {
                 console.error('MMD Model load error:', err);
                 if (mmdOverlay) mmdOverlay.hidden = true;
-                alert("Failed to load model. Please try again.");
+                showToast("Failed to load model. Please try again.", { type: 'error', duration: 3600 });
             }
         );
     }
@@ -12309,6 +14855,14 @@
             modelSelect.appendChild(opt);
         });
         modelSelect.value = currentModelId;
+        syncMmdTieControls();
+        const tieSelect = document.getElementById('mmd-tie-mode');
+        tieSelect?.addEventListener('change', () => {
+            genogeTieMode = MmdTiePhysics.normalizeMode(tieSelect.value);
+            syncMmdTieControls();
+            saveMmdSettings();
+            reloadModel();
+        });
 
         // Sync sliders to current state
         syncLightControlsToState();
@@ -12393,7 +14947,8 @@
             moreToggle.addEventListener('click', () => {
                 advSection.hidden = !advSection.hidden;
                 moreToggle.classList.toggle('active', !advSection.hidden);
-                moreToggle.textContent = advSection.hidden ? 'More' : 'Less';
+                // innerHTML 保留图标 span（textContent 会把图标抹掉）
+                moreToggle.innerHTML = ic('chevron-down', 'icn-sm') + (advSection.hidden ? 'More' : 'Less');
             });
         }
 
@@ -12406,8 +14961,9 @@
         if (saveDefaultBtn) {
             saveDefaultBtn.addEventListener('click', () => {
                 saveCurrentLightAsModelDefault();
-                saveDefaultBtn.textContent = 'Saved!';
-                setTimeout(() => { saveDefaultBtn.textContent = 'Default'; }, 1200);
+                // innerHTML（而非 textContent），textContent 会把图标 span 抹掉
+                saveDefaultBtn.innerHTML = ic('save', 'icn-sm') + 'Saved!';
+                setTimeout(() => { saveDefaultBtn.innerHTML = ic('save', 'icn-sm') + 'Default'; }, 1200);
             });
         }
     }
@@ -12696,10 +15252,11 @@
 
     function loadMmdSettings() {
         try {
-            const raw = localStorage.getItem(MMD_SETTINGS_KEY);
+            const raw = sayaSettings.getItem(MMD_SETTINGS_KEY);
             if (raw) {
                 const data = JSON.parse(raw);
                 if (data && typeof data === 'object') {
+                    genogeTieMode = MmdTiePhysics.normalizeMode(data.genogeTieMode);
                     if (typeof data.ambient === 'number') mmdLight.ambient = data.ambient;
                     if (typeof data.dir === 'number') mmdLight.dir = data.dir;
                     if (typeof data.top === 'number') mmdLight.top = data.top;
@@ -12742,7 +15299,23 @@
         currentModelUrl = m.url;
         currentModelConfig = m;
         applyCurrentModelPhysics();
+        syncMmdTieControls();
         return true;
+    }
+
+    function syncMmdTieControls() {
+        const section = document.getElementById('mmd-tie-settings');
+        const select = document.getElementById('mmd-tie-mode');
+        const hint = document.getElementById('mmd-tie-hint');
+        if (!section || !select || !hint) return;
+        section.hidden = currentModelId !== 'genoge_miku';
+        if (!select.options.length) {
+            Object.entries(MmdTiePhysics.profiles).forEach(([value, profile]) => {
+                select.add(new Option(profile.label, value));
+            });
+        }
+        select.value = genogeTieMode;
+        hint.textContent = `${MmdTiePhysics.getProfile(genogeTieMode).description} Reload the model after switching.`;
     }
 
     // [ADDED] Load per-model light defaults: user-saved overrides take priority,
@@ -12764,7 +15337,7 @@
         if (!builtin.topColor && builtin.color) builtin.topColor = builtin.color;
         if (!builtin.ambientColor && builtin.color) builtin.ambientColor = builtin.color;
         try {
-            const raw = localStorage.getItem(MMD_LIGHT_DEFAULTS_KEY);
+            const raw = sayaSettings.getItem(MMD_LIGHT_DEFAULTS_KEY);
             if (raw) {
                 const all = JSON.parse(raw);
                 if (all && all[modelId] && typeof all[modelId] === 'object') {
@@ -12782,10 +15355,10 @@
     // [ADDED] Save current mmdLight as the default for the active model.
     function saveCurrentLightAsModelDefault() {
         try {
-            const raw = localStorage.getItem(MMD_LIGHT_DEFAULTS_KEY);
+            const raw = sayaSettings.getItem(MMD_LIGHT_DEFAULTS_KEY);
             let all = {};
             if (raw) all = JSON.parse(raw) || {};
-            // 保存灯光配置 + 当前视角（相机位置、target、模型缩放/位置）
+            // 保存灯光配置 + 当前视角（相机位置、target、模型缩放/位置）+ 模型框大小
             const viewState = {};
             if (camera) {
                 viewState.camPos = [camera.position.x, camera.position.y, camera.position.z];
@@ -12797,8 +15370,17 @@
                 viewState.modelScale = currentModelConfig.scale;
                 viewState.modelPosY = currentModelConfig.posY;
             }
+            const frame = document.getElementById('draggable-model');
+            if (frame) {
+                viewState.frameW = Math.round(frame.offsetWidth);
+                viewState.frameH = Math.round(frame.offsetHeight);
+            }
             all[currentModelId] = { ...mmdLight, _view: viewState };
-            localStorage.setItem(MMD_LIGHT_DEFAULTS_KEY, JSON.stringify(all));
+            sayaSettings.setItem(MMD_LIGHT_DEFAULTS_KEY, JSON.stringify(all));
+            // 让本次保存的视角/框大小立即成为会话内的恢复基准，
+            // 防止后续 saveMmdSettings 把旧视角快照写回去。
+            mmdLight._view = viewState;
+            window.SayaSettingsStore?.markViewDirty();
         } catch (e) { /* ignore */ }
     }
 
@@ -12807,6 +15389,29 @@
         mmdLight = getModelDefaultLight(currentModelId);
         applyMmdLightVisuals();
         syncLightControlsToState();
+    }
+
+    // [ADDED] Apply a saved size to the draggable model frame, keeping the
+    // camera aspect + renderer in sync (same updates the resize handles do).
+    function applyModelFrameSize(w, h) {
+        const frame = document.getElementById('draggable-model');
+        if (!frame || !Number.isFinite(w) || !Number.isFinite(h)) return;
+        // Same bounds logic as the resize handles: keep the frame inside the
+        // chat region and never narrower than the handle minimum.
+        const panel = document.querySelector('.model-panel');
+        const sidebarWidth = panel && !panel.classList.contains('collapsed')
+            ? Math.round(panel.getBoundingClientRect().width) : 0;
+        const minWidth = 160;
+        const maxWidth = Math.max(minWidth, window.innerWidth - sidebarWidth - 8);
+        const newW = Math.min(maxWidth, Math.max(minWidth, Math.round(w)));
+        const newH = Math.max(120, Math.round(h));
+        frame.style.width = newW + 'px';
+        frame.style.height = newH + 'px';
+        if (renderer && camera) {
+            camera.aspect = newW / newH;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newW, newH);
+        }
     }
 
     // [ADDED] Apply saved view state (camera position/target) from mmdLight._view.
@@ -12820,6 +15425,19 @@
         if (Array.isArray(v.camTarget) && v.camTarget.length === 3) {
             controls.target.set(v.camTarget[0], v.camTarget[1], v.camTarget[2]);
         }
+        if (Number.isFinite(v.frameW) && Number.isFinite(v.frameH) && v.frameW > 0 && v.frameH > 0) {
+            applyModelFrameSize(v.frameW, v.frameH);
+        }
+        if(v.frame && window.SayaSettingsStore?.state()?.enabled){
+            const frame=document.getElementById('draggable-model'),panel=document.querySelector('.model-panel');
+            const fitted=window.SayaSettingsStore.fitFrame(v.frame,{width:window.innerWidth,height:window.innerHeight},
+                {left:panel&&!panel.classList.contains('collapsed')?panel.getBoundingClientRect().width:0,
+                 top:document.querySelector('.panel-header')?.getBoundingClientRect().bottom||52});
+            if(frame){for(const key of ['left','top','width','height'])frame.style[key]=fitted[key]+'px';}
+            camera.aspect=fitted.width/fitted.height;renderer.setSize(fitted.width,fitted.height);
+        }
+        if(Number.isFinite(v.zoom)&&v.zoom>0)camera.zoom=v.zoom;
+        camera.updateProjectionMatrix();
         controls.update();
         if (typeof initialCameraDistance !== 'undefined') {
             initialCameraDistance = camera.position.distanceTo(controls.target);
@@ -12889,9 +15507,10 @@
             const viewState = {};
             if (camera) viewState.camPos = [camera.position.x, camera.position.y, camera.position.z];
             if (controls) viewState.camTarget = [controls.target.x, controls.target.y, controls.target.z];
-            localStorage.setItem(MMD_SETTINGS_KEY, JSON.stringify({
-                ...mmdLight, _view: viewState, modelId: currentModelId
+            sayaSettings.setItem(MMD_SETTINGS_KEY, JSON.stringify({
+                ...mmdLight, _view: viewState, modelId: currentModelId, genogeTieMode
             }));
+            window.SayaSettingsStore?.markViewDirty();
         } catch (e) { /* ignore */ }
     }
 
@@ -12957,6 +15576,7 @@
         scene.add(pointLight);
 
         controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.addEventListener('end',()=>window.SayaSettingsStore?.markViewDirty());
         controls.enableKeys = false; // Disable keyboard panning so arrow keys work normally in all input fields
         loader = new THREE.MMDLoader();
         initModelPartInteractions();
@@ -12976,6 +15596,35 @@
         } else {
             applyMmdLightVisuals();
         }
+        // Default 按钮保存的视角（按模型，含模型框大小）优先于
+        // saya_mmd_3d_settings 里的 _view —— 后者只在调灯光时更新，
+        // 是旧快照，会把 Default 保存的镜头视角顶掉。
+        const savedDefaultView = getModelDefaultLight(currentModelId)._view;
+        if (savedDefaultView) mmdLight._view = savedDefaultView;
+
+        // Runtime snapshot captures view changes that the legacy Default button
+        // never saved. It wins over stale per-model defaults on first load only.
+        if(window.SayaSettingsStore?.state()?.enabled){
+            try{
+                const live=JSON.parse(sayaSettings.getItem('saya_3d_live_view_snapshot_v1')||'null');
+                if(live && selectCurrentModel(live.modelId)){
+                    if(live.lighting && typeof live.lighting==='object')mmdLight={...mmdLight,...live.lighting};
+                    genogeTieMode=MmdTiePhysics.normalizeMode(live.tieMode);
+                    const vector=v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite);
+                    mmdLight._view={frame:live.frame,zoom:live.camera?.zoom};
+                    if(vector(live.camera?.position))mmdLight._view.camPos=live.camera.position;
+                    if(vector(live.camera?.target))mmdLight._view.camTarget=live.camera.target;
+                    if(Number.isFinite(live.model?.scale)&&live.model.scale>0)currentModelConfig.scale=live.model.scale;
+                    if(Number.isFinite(live.model?.posY))currentModelConfig.posY=live.model.posY;
+                    const panel=document.querySelector('.model-panel');
+                    if(typeof live.sidebarCollapsed==='boolean'){
+                        panel?.classList.toggle('collapsed',live.sidebarCollapsed);
+                        document.body.classList.toggle('sidebar-collapsed',live.sidebarCollapsed);
+                    }
+                    applyMmdLightVisuals();
+                }
+            }catch(error){console.warn('Saved 3D snapshot could not be restored.',error);}
+        }
 
         loadModel(true);
 
@@ -12989,6 +15638,17 @@
     function onWindowResize() {
         const container = document.querySelector('.canvas-container');
         if (!container || !camera || !renderer) return;
+        if(window.SayaSettingsStore?.state()?.enabled){
+            const frame=document.getElementById('draggable-model'),panel=document.querySelector('.model-panel');
+            if(frame){
+                const rect=frame.getBoundingClientRect(),fitted=window.SayaSettingsStore.fitFrame(
+                    {left:rect.left,top:rect.top,width:rect.width,height:rect.height},
+                    {width:window.innerWidth,height:window.innerHeight},
+                    {left:panel&&!panel.classList.contains('collapsed')?panel.getBoundingClientRect().width:0,
+                     top:document.querySelector('.panel-header')?.getBoundingClientRect().bottom||52});
+                for(const key of ['left','top','width','height'])frame.style[key]=fitted[key]+'px';
+            }
+        }
         
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -13036,13 +15696,30 @@
         }
 
         const delta = clock.getDelta() * motionSpeed;
+        if (mmdPhysicsStepper && genogeTieMode !== 'legacy' && document.hidden) {
+            mmdPhysicsStepper.reset();
+        } else if (mmdPhysicsStepper) {
+            mmdPhysicsStepper.advance(delta, updateMmdSimulationStep);
+        } else {
+            updateMmdSimulationStep(delta);
+        }
+
+        sampleMmdShoeDiagnostics(Date.now());
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    function updateMmdSimulationStep(delta) {
         const beforeY = currentMesh ? currentMesh.position.y : 0;
-        
+        // Preserve the old correction rate when animation and physics run at 120/240 Hz.
+        const correctionOptions = mmdPhysicsStepper && genogeTieMode !== 'legacy'
+            ? { correctionSpeed: 1 - Math.pow(1 - 0.16, delta * 60) } : {};
+
         if (mixer && currentMesh) {
             mixer.update(delta);
         }
 
-        forceResetPosition();
+        forceResetPosition(correctionOptions);
         const prePhysicsInstability = detectPhysicsInstability(beforeY);
         const physicsResetStarted = prePhysicsInstability
             ? resetMmdPhysics(`pre-update instability (${prePhysicsInstability})`)
@@ -13077,7 +15754,7 @@
         if (animationHelper && !physicsResetStarted) {
             try {
                 animationHelper.update(delta);
-                forceResetPosition();
+                forceResetPosition(correctionOptions);
                 const postPhysicsInstability = detectPhysicsInstability(beforeY);
                 if (postPhysicsInstability) {
                     resetMmdPhysics(`post-update instability (${postPhysicsInstability})`);
@@ -13088,10 +15765,6 @@
             }
         }
 
-        sampleMmdShoeDiagnostics(now);
-        
-        controls.update();
-        renderer.render(scene, camera);
     }
 
     async function fetchMotionFiles(options = {}) {
@@ -13592,7 +16265,7 @@
                              vmd.isProcessed = true;
                          }
 
-                         if (animationHelper) {
+                         if (animationHelper && !(mmdPhysicsStepper && genogeTieMode !== 'legacy')) {
                              animationHelper.enable('physics', false);
                          }
 
@@ -13681,12 +16354,19 @@
 
                              const helperSnapshot = animationHelper;
                              if (physicsEnableTimer) clearTimeout(physicsEnableTimer);
-                             physicsEnableTimer = setTimeout(() => {
-                                 if (animationHelper && animationHelper === helperSnapshot) {
-                                    animationHelper.enable('physics', true);
-                                 }
+                             if (mmdPhysicsStepper && genogeTieMode !== 'legacy') {
+                                 // Keep contact solving during animation crossfades; freezing it for
+                                 // 100 ms lets the animated torso jump into a stationary tie.
+                                 animationHelper.enable('physics', true);
                                  physicsEnableTimer = null;
-                             }, 100);
+                             } else {
+                                 physicsEnableTimer = setTimeout(() => {
+                                     if (animationHelper && animationHelper === helperSnapshot) {
+                                        animationHelper.enable('physics', true);
+                                     }
+                                     physicsEnableTimer = null;
+                                 }, 100);
+                             }
                          }
                      }
                  } catch (error) {
@@ -13753,24 +16433,53 @@
      }
 
     async function resetConversation() {
-        if (!confirm("Are you sure you want to clear the conversation history?")) return;
-        try {
-            await fetch('/reset', { method: 'POST' });
-            const chatContent = document.getElementById('chat-content');
-            if (chatContent) chatContent.innerHTML = '';
+        confirmAction("Are you sure you want to clear the conversation history?", async () => {
 
-            playIntelligentMotion({ context: { emotion: 'normal' } });
-            alert("Conversation reset.");
-        } catch (e) {
-            console.error("Reset failed", e);
-            alert("Failed to reset conversation.");
-        }
+            try {
+                await fetch('/reset', { method: 'POST' });
+                const chatContent = document.getElementById('chat-content');
+                if (chatContent) chatContent.innerHTML = '';
+
+                playIntelligentMotion({ context: { emotion: 'normal' } });
+                showToast("Conversation reset.", { type: 'info', duration: 3600 });
+            } catch (e) {
+                console.error("Reset failed", e);
+                showToast("Failed to reset conversation.", { type: 'error', duration: 3600 });
+            }
+    });}
+
+    let chatAbortController = null;
+
+    function setChatStopVisible(visible) {
+        window.SayaChatUI?.busy(visible);
+        const btn = document.getElementById('chat-stop-btn');
+        if (!btn) return;
+        if (visible) btn.removeAttribute('hidden');
+        else btn.setAttribute('hidden', '');
     }
 
+    window.stopGeneration = function stopGeneration() {
+        if (chatAbortController) chatAbortController.abort();
+        window.SayaChatUI?.stopSpeech();
+    };
+
     async function sendMessage(options = {}) {
+        try { await window.SayaLocalProfile?.ready(); }
+        catch (_) { showToast('本机API配置暂不可读，未切换到浏览器旧缓存。请检查后端后重试。',{type:'error'});return; }
+        if (isWaitingForResponse) return;
+        await window.SayaAgents?.ready;
+        if (isWaitingForResponse) return;
+        const turnIsTemporary = temporaryChatEnabled;
         const input = document.getElementById('user-input');
         const directUserText = options && Object.prototype.hasOwnProperty.call(options, 'userText');
         let userText = directUserText ? String(options.userText || '').trim() : input.value.trim();
+        const mentionSource = userText;
+        const mentionSelection = window.SayaAgents?.selection(mentionSource) || {ids: [], text: mentionSource};
+        if (options.agentIds?.length) mentionSelection.ids = options.agentIds;
+        if (window.SayaAgents?.loadError && /(^|\s)@/.test(mentionSource)) {
+            showToast('智能体列表加载失败，请打开智能体设置重试。', {type: 'error'});
+            return;
+        }
         let displayText = options?.displayText ? String(options.displayText).trim() : '';
         const outgoingAttachments = cloneAttachmentMetadata(options?.attachments);
         
@@ -13813,22 +16522,46 @@
         }
 
         if (!userText) return;
+        window.SayaChatUI?.stopSpeech();
         if (!displayText) displayText = userText;
+        if (mentionSelection.ids.length) {
+            if (currentRoleMode === 'listener') {
+                showToast('请先退出 Listener 模式，再 @ 智能体。', {type: 'info'});
+                return;
+            }
+            // Strip routing tokens only from the typed question, never from file content.
+            const typedStart = userText.lastIndexOf(mentionSource);
+            if (typedStart >= 0) userText = userText.slice(0, typedStart) + mentionSelection.text;
+            if (!userText.trim()) {
+                showToast('选择智能体后，请输入要讨论的问题。', {type: 'info'});
+                return;
+            }
+        }
+
+        // Listener role: one conversation records exactly one memory; the
+        // flow has its own endpoint (no /chat_stream, no persona prompt).
+        if (currentRoleMode === 'listener') {
+            if (turnIsTemporary) {
+                showToast('Listener saves a memory. Leave Listener to use Temporary Chat.', {type: 'info'});
+                return;
+            }
+            appendUserMessageForListener(displayText || userText);
+            await sendListenerTurn(userText);
+            return;
+        }
 
         const model = document.getElementById('model-select').value;
-        const apiKey = document.getElementById('api-key-input').value;
+        const effectiveApiSettings = getSavedApiSettings();
+        const apiKey = effectiveApiSettings.api_key || '';
         const apiUrlInputForSend = document.getElementById('api-url-input');
-        const apiUrl = normalizeApiBaseUrlForChat(apiUrlInputForSend?.value || '');
-        if (apiUrlInputForSend && apiUrl && apiUrl !== apiUrlInputForSend.value.trim()) {
-            apiUrlInputForSend.value = apiUrl;
-        }
-        const apiModelName = document.getElementById('api-model-input').value.trim();
-        const multimodalModelName = document.getElementById('api-multimodal-model-input')?.value.trim() || '';
-        const strongLogicModelName = document.getElementById('api-strong-logic-model-input')?.value.trim() || '';
-        const autonomousMemoryModelName = document.getElementById('api-autonomous-memory-model-input')?.value.trim() || '';
+        const apiUrl = normalizeApiBaseUrlForChat(effectiveApiSettings.api_url || '');
+        const apiModelName = effectiveApiSettings.api_model_name || '';
+        const multimodalModelName = effectiveApiSettings.multimodal_model_name || '';
+        const strongLogicModelName = effectiveApiSettings.strong_logic_model_name || '';
+        const autonomousMemoryModelName = effectiveApiSettings.autonomous_memory_model_name || '';
         const useAssistantStrongLogic = currentRoleMode === 'assistant' && isAssistantStrongLogicEnabled();
         const maxOutputTokens = getOutputLimitForModel(useAssistantStrongLogic ? 'api' : model);
-        const memoryStrongModelInput = document.getElementById('api-memory-strong-model-input')?.value.trim() || '';
+        const memoryStrongModelInput = effectiveApiSettings.memory_strong_model_name || '';
         const memoryStrongModelName = memoryStrongModelInput || apiModelName;
         const sayaStyleSnapshot = getSayaStyleSettings();
         // Combined Recall · Search mode from #combined-mode.
@@ -13836,29 +16569,46 @@
         const recallPreset = getRecallPresetConfig();
         // UI "on" maps to internal "force" for the backend.
         const webSearchMode = rawSearchMode === 'on' ? 'force' : rawSearchMode;
-        const webSearchApiKey = getSavedApiSettings().brave_search_api_key || '';
+        const selectedSearchProvider=window.SayaLocalProfile?.status()?.search_provider||'brave';
+        const webSearchApiKey = getSavedApiSettings()[selectedSearchProvider+'_search_api_key'] || '';
         const webSearchPreset = getWebSearchPresetConfig();
         const inputLimits = getInputLimits();
         saveCurrentApiSettings();
 
         lastInteractionTime = Date.now();
         isWaitingForResponse = true;
+        chatAbortController = new AbortController();
+        setChatStopVisible(true);
         
         // addLog(`User: ${userText}`, 'user'); // Removed
         
         // Use appendMessage for consistent UI
-        appendMessage('user', displayText, {
+        const requestId = options.requestId || crypto.randomUUID().replaceAll('-', '');
+        const outgoingUserRow = appendMessage('user', displayText, {
             historyIndex: currentHistoryLength,
+            requestId,
+            agentIds: mentionSelection.ids,
             attachments: outgoingAttachments
         });
         input.value = '';
         input.style.height = '48px'; // Reset height
         input.style.overflowY = 'hidden'; // Reset overflow
         updateInputSuggestions();
+        window.SayaAgents?.update();
 
         let aiDiv = null;
         let fullResponseText = "";
+        let chatVoicePending = null;
+        let personaCount = 0;
+        let batchHistoryCount = null;
+        const voiceContext = { roleMode: currentRoleMode, sessionId: currentSessionId || '' };
         try {
+            // Final mood must exist before speech starts; audio still streams.
+            aiDiv = appendMessage('ai', '', {historyIndex: currentHistoryLength + 1, readableGenerated: sayaStyleSnapshot.readable === true,
+                roleMode: mentionSelection.ids.length && mentionSelection.ids[0] !== 'saya' ? 'assistant' : currentRoleMode});
+            voiceContext.button = aiDiv.querySelector('.read-aloud-inline');
+            if (voiceContext.button) voiceContext.button.disabled = true;
+            window.SayaChatUI?.phase(aiDiv, 'starting', '正在准备回答……');
             const requestContext = {};
             if (pendingCheckinContext) {
                 requestContext.checkin_context = pendingCheckinContext;
@@ -13872,8 +16622,11 @@
             const response = await fetch('/chat_stream', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                signal: chatAbortController.signal,
                 body: JSON.stringify({ 
                     user_input: userText,
+                    request_id: requestId,
+                    agent_ids: mentionSelection.ids,
                     display_input: displayText,
                     session_id: currentSessionId || '',
                     context: requestContext,
@@ -13881,6 +16634,8 @@
                     api_key: apiKey,
                     api_url: apiUrl,
                     api_model_name: apiModelName,
+                    use_shared_credentials: getSavedApiSettings().use_shared_credentials === true,
+                    thinking_effort: window.SayaChatUI?.thinkingEffort(outgoingAttachments.some(item => item.type === 'image') && multimodalModelName ? multimodalModelName : useAssistantStrongLogic ? strongLogicModelName : currentRoleMode !== 'assistant' && !agentModeEnabled && recallMode === 'on' ? memoryStrongModelName : apiModelName) || 'auto',
                     multimodal_model_name: multimodalModelName,
                     max_output_tokens: maxOutputTokens,
                     strong_logic_model_name: strongLogicModelName,
@@ -13888,29 +16643,35 @@
                     memory_strong_model_name: memoryStrongModelName,
                     autonomous_memory_model_name: autonomousMemoryModelName,
                     attachments: outgoingAttachments,
-                    mode: recallMode === 'on' ? 'deep' : 'normal',
-                    recall_mode: recallMode,
-                    recall_memory_count: recallPreset,
+                    // Agent mode owns memory/search selection. Send neutral
+                    // compatibility values so stale localStorage presets do
+                    // not compete with the Agent policy on the server.
+                    mode: agentModeEnabled ? 'normal' : (recallMode === 'on' ? 'deep' : 'normal'),
+                    recall_mode: agentModeEnabled ? 'auto' : recallMode,
+                    recall_memory_count: agentModeEnabled ? 0 : recallPreset,
                     graph_recall_mode: getModeSettings().graph_recall_mode || 'auto',
                     history_turns: inputLimits.history_turns,
+                    api_history_chars: inputLimits.api_history_chars || 0,
                     style_settings: sayaStyleSnapshot,
-                    web_search_mode: webSearchMode,
+                    web_search_mode: agentModeEnabled ? 'auto' : webSearchMode,
+                    temporary_chat: turnIsTemporary,
+                    agent_mode: agentModeEnabled,
                     web_search_api_key: webSearchApiKey,
-                    web_search_count: webSearchPreset.count,
-                    web_final_sources: webSearchPreset.sources,
+                    web_search_count: agentModeEnabled ? 0 : webSearchPreset.count,
+                    web_final_sources: agentModeEnabled ? 0 : webSearchPreset.sources,
                     web_source_strategy: getModeSettings().web_source_strategy || 'official_first',
                     web_safe_search: getModeSettings().safe_search || 'moderate'
                 })
             });
 
-            if (!response.ok) throw new Error("Network response was not ok");
+            if (!response.ok) {
+                const failure = await response.json().catch(() => ({}));
+                throw new Error(typeof failure.detail === 'string' ? failure.detail : '聊天请求失败');
+            }
 
-            aiDiv = appendMessage('ai', '...', {
-                historyIndex: currentHistoryLength + 1,
-                readableGenerated: sayaStyleSnapshot.readable === true
-            });
-            const textSpan = aiDiv.firstElementChild.firstElementChild; // The content div inside bubble
-            textSpan.innerHTML = `Saya: `;
+            let textSpan = aiDiv.querySelector('.message-body');
+            aiDiv.dataset.rawContent = '';
+            textSpan.innerHTML = '';
 
             if (!response.body) throw new Error('Streaming response body is unavailable.');
             const reader = response.body.getReader();
@@ -13918,9 +16679,45 @@
             let buffer = "";
             let streamNotice = null;
             let chatMotionHandled = false;
+            let agentFallbackText = "";
 
             const handleStreamEvent = (eventType, eventData) => {
                 if (!eventType || !eventData) return;
+                if (eventType === 'persona_start') {
+                    if (personaCount > 0) {
+                        aiDiv = appendMessage('ai', '', {agentId: eventData.id, agentName: eventData.name,
+                            historyIndex: eventData.history_index, roleMode: eventData.id === 'saya' ? currentRoleMode : 'assistant'});
+                    }
+                    personaCount += 1;
+                    aiDiv.dataset.agentId = eventData.id;
+                    aiDiv.dataset.agentName = eventData.name;
+                    aiDiv._roleMode = eventData.id === 'saya' ? currentRoleMode : 'assistant';
+                    aiDiv.dataset.historyIndex = String(eventData.history_index);
+                    textSpan = aiDiv.querySelector('.message-body');
+                    fullResponseText = '';
+                    aiDiv.dataset.rawContent = '';
+                    textSpan.innerHTML = '';
+                    streamNotice = null;
+                    agentFallbackText = '';
+                    chatMotionHandled = false;
+                    voiceContext.roleMode = eventData.id === 'saya' ? currentRoleMode : 'assistant';
+                    voiceContext.button = aiDiv.querySelector('.read-aloud-inline');
+                    if (voiceContext.button) voiceContext.button.disabled = true;
+                    window.SayaChatUI?.phase(aiDiv, 'starting', `${eventData.name} 正在准备回答（${eventData.index + 1}/${eventData.total}）`);
+                    return;
+                }
+                if (eventType === 'persona_end') {
+                    if (!fullResponseText && agentFallbackText) fullResponseText = agentFallbackText;
+                    finalizeResponse(aiDiv, fullResponseText);
+                    if (streamNotice) showStreamNotice(aiDiv, streamNotice.message, streamNotice.isError);
+                    window.SayaChatUI?.phase(aiDiv, streamNotice?.isError ? 'error' : 'completed', streamNotice?.isError ? '生成未完成' : '处理完成');
+                    if (!turnIsTemporary && Number.isInteger(eventData.history_count)) currentHistoryLength = eventData.history_count;
+                    return;
+                }
+                if (eventType === 'personas_complete') {
+                    batchHistoryCount = eventData.history_count;
+                    return;
+                }
                 if (eventType === 'motion_start' || eventType === 'motion_end') {
                     if (chatMotionHandled) return;
                     if (eventData.motion_name || eventData.motion_url || eventData.motion_file || eventData.motion_id) {
@@ -13952,14 +16749,43 @@
                         }
                     }
                 } else if (eventType === 'text') {
-                    fullResponseText += String(eventData.text || '');
-                    textSpan.innerHTML = `Saya: ` + renderMarkdownSafe(fullResponseText);
+                    const delta = String(eventData.text || '');
+                    fullResponseText += delta;
+                    aiDiv.dataset.rawContent = fullResponseText;
+                    // Keep the public activity visible, then reveal the complete answer.
                     const chatContent = document.getElementById('chat-content');
                     chatContent.scrollTop = chatContent.scrollHeight;
+                } else if (eventType === 'stream_status' && eventData.retry) {
+                    showStreamNotice(aiDiv, eventData.message || 'Provider hiccup; retrying…', false);
                 } else if (eventType === 'stream_status' && eventData.incomplete) {
                     streamNotice = {message: eventData.message || 'The response reached its output limit.', isError: false};
                 } else if (eventType === 'stream_error') {
                     streamNotice = {message: eventData.message || 'The response stream was interrupted.', isError: true};
+                } else if (eventType === 'assistant_status') {
+                    renderAgentStatus(aiDiv, eventData.phase, eventData.message);
+                } else if (eventType === 'turn_mood') {
+                    const state = eventData.state;
+                    if (voiceContext.roleMode !== 'assistant') window.SayaChatUI?.attachMood(aiDiv, state);
+                    voiceContext.moodState = eventData.enabled === false ? {dominant:'neutral'} : state;
+                    voiceContext.sessionId = eventData.session_id;
+                    if (voiceContext.roleMode !== 'assistant' && (currentSessionId || '') === eventData.session_id && currentRoleMode !== 'assistant') window.SayaChatUI?.paintMood(document.getElementById('mood-chip'), state);
+                } else if (eventType === 'answer_complete') {
+                    fullResponseText = String(eventData.text || fullResponseText);
+                    aiDiv.dataset.rawContent = fullResponseText;
+                    textSpan.innerHTML = escapeHtml(aiDiv.dataset.agentName || 'Saya') + ': ' + renderMarkdownSafe(fullResponseText);
+                    if (voiceContext.button) voiceContext.button.disabled = false;
+                    window.SayaChatUI?.phase(aiDiv, 'completed', '处理完成');
+                } else if (eventType === 'agent_event') {
+                    renderAgentEvent(aiDiv, eventData);
+                } else if (eventType === 'agent_result') {
+                    // The canonical visible reply arrives through the normal
+                    // `text` event. Keep the Agent answer only as an end-of-
+                    // stream fallback; rendering it here caused the later
+                    // text event to append the same answer a second time.
+                    if (eventData.answer) agentFallbackText = String(eventData.answer);
+                    if (eventData.status === 'needs_approval') {
+                        streamNotice = {message: 'This action needs your confirmation before it can continue.', isError: false};
+                    }
                 } else if (eventType === 'web_status') {
                     // Live phase indicator (searching / reading / preparing).
                     renderWebStatus(aiDiv, eventData.phase, eventData.message);
@@ -13970,11 +16796,29 @@
                 } else if (eventType === 'web_citation_check') {
                     renderWebCitationCheck(aiDiv, eventData);
                 } else if (eventType === 'chat_runtime') {
-                    if (eventData.session_id) currentSessionId = eventData.session_id;
+                    if (eventData.session_id) aiDiv.dataset.sessionId = eventData.session_id;
+                    if (eventData.request_id) outgoingUserRow.dataset.requestId = eventData.request_id;
+                    if (!turnIsTemporary && Number.isInteger(eventData.history_count)) {
+                        currentHistoryLength = eventData.history_count;
+                        outgoingUserRow.dataset.historyIndex = String(eventData.history_count - 1);
+                    }
+                    if (eventData.mood_state_before && voiceContext.roleMode !== 'assistant') {
+                        window.SayaChatUI?.attachMood(aiDiv, eventData.mood_state_before);
+                        voiceContext.moodState = eventData.mood_state_before;
+                    }
+                    if (eventData.session_id && !eventData.temporary && !chatAbortController?.signal.aborted) {
+                        currentSessionId = eventData.session_id;
+                        voiceContext.sessionId = eventData.session_id;
+                    }
                 } else if (eventType === 'memory_recall') {
                     renderMemoryRecallAudit(aiDiv, eventData);
+                } else if (eventType === 'memory_usage') {
+                    renderAgentStatus(aiDiv, 'memory_used', `${Number((eventData.receipts || []).length)} 条记忆已记录使用反馈`);
                 } else if (eventType === 'memory_candidates') {
-                    renderAutonomousMemoryCandidates(eventData.candidates || []);
+                    // The SSE payload is the full memory-confirm box content
+                    // (explicit saves + autonomous candidates + auto-saved);
+                    // it renders inside this reply and is persisted with it.
+                    renderChatMemoryConfirm(aiDiv, eventData);
                 } else if (eventType === 'memory_maintenance') {
                     if (!renderedMemoryMaintenanceEventIds.has(String(eventData.id || ''))) {
                         showStreamNotice(aiDiv, eventData.message || 'Memory capacity maintenance completed.', eventData.level === 'critical');
@@ -14023,27 +16867,62 @@
             buffer = '';
             finalParts.forEach(handleSseBlock);
 
+            if (!fullResponseText && agentFallbackText) {
+                fullResponseText = agentFallbackText
+                    .replace(/\[MOTION[^\]\r\n]{0,160}\]/gi, '')
+                    .replace(/\[MC[^\]\r\n]{0,220}\]/gi, '')
+                    .trim();
+                aiDiv.dataset.rawContent = fullResponseText;
+                textSpan.innerHTML = escapeHtml(aiDiv.dataset.agentName || 'Saya') + ': ' + renderMarkdownSafe(fullResponseText);
+            }
+            if (!fullResponseText && !streamNotice) {
+                streamNotice = {
+                    message: 'The response stream ended without reply text. Please retry this message.',
+                    isError: true
+                };
+            }
+
             if (streamNotice) showStreamNotice(aiDiv, streamNotice.message, streamNotice.isError);
             
             fetchSessionList(); // Update session list preview
             
-            // Sync length: Assuming one User msg and one AI msg added
-            // BUT, if stream failed, it might be different.
-            // Safe way: fetch status from backend?
-            // Or just increment by 2
-            currentHistoryLength += 2;
+            // Multi-persona streams report the persisted count; legacy streams add one pair.
+            if (!turnIsTemporary) currentHistoryLength = Number.isInteger(batchHistoryCount) ? batchHistoryCount : currentHistoryLength + (mentionSelection.ids.length ? 0 : 2);
             updateModeProgressRing();
 
             finalizeResponse(aiDiv, fullResponseText);
+            window.SayaChatUI?.phase(aiDiv, streamNotice?.isError ? 'error' : 'completed', streamNotice?.isError ? '生成未完成' : '处理完成');
+            void updateMoodChip();
             isWaitingForResponse = false;
+            if (chatVoicePending) {
+                void chatVoicePending.then(session => {
+                    if (streamNotice) { session?.cancel(); return; }
+                    if (session) return session.finish(fullResponseText);
+                    if (fullResponseText) return window.SayaVoice?.autoRead(fullResponseText, voiceContext);
+                }).catch(() => {});
+            } else if (!mentionSelection.ids.length && !streamNotice && fullResponseText) void window.SayaVoice?.autoRead(fullResponseText, voiceContext);
             lastInteractionTime = Date.now();
+            setChatStopVisible(false);
 
         } catch (error) {
+            chatVoicePending?.then(session => session?.cancel());
             isWaitingForResponse = false;
             lastInteractionTime = Date.now();
+            setChatStopVisible(false);
+            if (error && error.name === 'AbortError') {
+                // User pressed Stop: keep whatever text already streamed in
+                // (the server persists the partial reply on cancellation).
+                if (aiDiv) {
+                    finalizeResponse(aiDiv, fullResponseText);
+                    window.SayaChatUI?.phase(aiDiv, 'stopped', '已停止生成');
+                    showStreamNotice(aiDiv, '已停止生成，已生成的部分已保留。', false);
+                }
+                return;
+            }
             console.error('Error:', error);
             if (aiDiv) {
                 finalizeResponse(aiDiv, fullResponseText);
+                window.SayaChatUI?.phase(aiDiv, 'error', '生成未完成');
                 showStreamNotice(aiDiv, `Response stream interrupted: ${error.message || error}`, true);
             } else {
                 appendMessage('ai', 'Sorry, I encountered an error.');
@@ -14053,6 +16932,10 @@
 
     async function finalizeResponse(aiDiv, fullText) {
         if (aiDiv) aiDiv.dataset.rawContent = fullText;
+        const speaker = aiDiv?.querySelector('.read-aloud-inline');
+        if (speaker) speaker.disabled = !fullText;
+        const body = aiDiv?.querySelector('.message-body');
+        if (body) body.innerHTML = fullText ? escapeHtml(aiDiv?.dataset.agentName || 'Saya') + ': ' + renderMarkdownSafe(fullText.replace(/\[(?:MOOD_SAYA|MOTION|MC)[^\]]*(?:\]|$)/gi, '')) : '';
     }
 
     function showStreamNotice(rowDiv, message, isError = false) {
@@ -14068,6 +16951,32 @@
         notice.textContent = message;
     }
 
+    function renderAgentStatus(aiDiv, phase, message) {
+        window.SayaChatUI?.phase(aiDiv, phase === 'completed' ? 'preparing' : phase === 'failed' ? 'error' : phase, message);
+    }
+
+    function renderAgentEvent(aiDiv, event) {
+        if (!aiDiv || !event || typeof event !== 'object') return;
+        const bubble = aiDiv.querySelector('.message-bubble.ai');
+        if (!bubble) return;
+        const eventId = String(event.id || '');
+        if (eventId && bubble.querySelector(`[data-agent-event-id="${cssEscapeValue(eventId)}"]`)) return;
+        const payload = event.public_payload && typeof event.public_payload === 'object' ? event.public_payload : {};
+        if (event.type === 'assistant.message.delta') return;
+        if (event.type === 'tool.call.started' || event.type === 'tool.call.completed') {
+            const name = String(payload.name || '');
+            const action = /search/i.test(name) ? '搜索' : /read|fetch|browse/i.test(name) ? '读取来源' : /memory|recall/i.test(name) ? '检索记忆' : /weather/i.test(name) ? '查询天气' : '处理工具请求';
+            window.SayaChatUI?.phase(aiDiv, 'tool', event.type === 'tool.call.started' ? `正在${action}……` : `${action}已完成`);
+        }
+        const card = document.createElement('div');
+        card.className = 'agent-event-card';
+        if (eventId) card.dataset.agentEventId = eventId;
+        const label = event.type === 'tool.call.started' ? 'Tool running' : event.type === 'tool.call.completed' ? 'Tool complete' : event.type === 'approval.required' ? 'Confirmation needed' : event.type;
+        card.innerHTML = `<strong>${escapeHtml(label)}</strong><span>${escapeHtml(payload.name || payload.message || payload.summary || payload.reason || '')}</span>`;
+        const actions = bubble.querySelector('.msg-actions');
+        bubble.insertBefore(card, actions || null);
+    }
+
     function renderMemoryRecallAudit(aiDiv, audit) {
         if (!aiDiv || !audit || typeof audit !== 'object') return;
         const bubble = aiDiv.querySelector('.message-bubble.ai');
@@ -14079,7 +16988,7 @@
         const statusLabels = {
             selected: 'Recall complete', daily_only: 'Daily snapshot only',
             no_match: 'No matching memory', budget_limited: 'Limited by context budget',
-            disabled: 'Recall disabled', assistant_scope: 'Assistant memory isolated',
+            disabled: 'Recall disabled', agent_selected: 'Agent-selected memory', assistant_scope: 'Assistant memory isolated',
             no_daily_snapshot: 'No daily snapshot'
         };
         const reasonLabels = {
@@ -14106,9 +17015,16 @@
         meta.textContent = `Mode: ${audit.mode || 'normal'} · Active pool: ${Number(candidates.active || 0)} · Project filtered: ${Number(candidates.project_filtered || 0)}${graphText}`;
         body.appendChild(meta);
 
-        selected.forEach((item) => {
+        const visibleMemoryCount = 3;
+        const memoryCards = [];
+        selected.forEach((item, index) => {
             const card = document.createElement('div');
             card.className = 'memory-recall-item';
+            if (index >= visibleMemoryCount) {
+                card.hidden = true;
+                card.classList.add('memory-recall-item-hidden');
+            }
+            if (item.memory_id) card.dataset.memoryId = item.memory_id;
             const heading = document.createElement('div');
             heading.className = 'memory-recall-item-heading';
             const title = document.createElement('strong');
@@ -14119,6 +17035,16 @@
             heading.appendChild(title);
             heading.appendChild(badges);
             card.appendChild(heading);
+
+            const contentPreview = String(
+                item.content_preview || item.content || item.prompt_excerpt || ''
+            ).trim();
+            if (contentPreview) {
+                const content = document.createElement('div');
+                content.className = 'memory-recall-content';
+                content.textContent = contentPreview;
+                card.appendChild(content);
+            }
 
             if (item.graph) {
                 const graphLine = document.createElement('div');
@@ -14138,7 +17064,26 @@
                 card.appendChild(warning);
             }
             body.appendChild(card);
+            memoryCards.push(card);
         });
+
+        if (selected.length > visibleMemoryCount) {
+            const moreButton = document.createElement('button');
+            moreButton.type = 'button';
+            moreButton.className = 'memory-recall-more';
+            moreButton.textContent = `More (${selected.length - visibleMemoryCount})`;
+            moreButton.setAttribute('aria-expanded', 'false');
+            moreButton.addEventListener('click', () => {
+                const expanded = moreButton.getAttribute('aria-expanded') === 'true';
+                memoryCards.slice(visibleMemoryCount).forEach((card) => {
+                    card.hidden = expanded;
+                    card.classList.toggle('memory-recall-item-hidden', expanded);
+                });
+                moreButton.setAttribute('aria-expanded', String(!expanded));
+                moreButton.textContent = expanded ? 'More' : 'Less';
+            });
+            body.appendChild(moreButton);
+        }
         details.appendChild(body);
         const actions = bubble.querySelector('.msg-actions');
         bubble.insertBefore(details, actions || null);
@@ -14150,21 +17095,7 @@
     // Reuses the existing global escapeHtml() helper.
 
     function renderWebStatus(aiDiv, phase, message) {
-        if (!aiDiv) return;
-        const bubble = aiDiv.querySelector('.message-bubble.ai');
-        if (!bubble) return;
-        let line = bubble.querySelector('.web-status-line');
-        if (!line) {
-            line = document.createElement('div');
-            line.className = 'web-status-line';
-            const actions = bubble.querySelector('.msg-actions');
-            bubble.insertBefore(line, actions || null);
-        }
-        line.textContent = message || phase || '';
-        // Clear the live status once preparation is done (sources take over).
-        if (phase === 'preparing') {
-            setTimeout(() => { if (line) line.textContent = ''; }, 800);
-        }
+        window.SayaChatUI?.phase(aiDiv, phase, message);
     }
 
     function renderWebWarning(aiDiv, code, message) {
@@ -14181,9 +17112,11 @@
     function buildSourcesPanelNode(query, sources) {
         const panel = document.createElement('div');
         panel.className = 'web-sources-panel';
-        const toggle = document.createElement('div');
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
         toggle.className = 'web-sources-toggle';
-        toggle.textContent = `参考来源 (${sources.length}) ▾`;
+        toggle.innerHTML = `<span>参考来源 (${sources.length})</span>${ic('chevron-down', 'icn-sm')}`;
+        toggle.setAttribute('aria-expanded', 'false');
         const list = document.createElement('div');
         list.className = 'web-sources-list';
         sources.forEach((src) => {
@@ -14206,7 +17139,11 @@
                 (domain ? ` <span style="color:#666">— ${domain}${statusTag}${typeTag ? ' · ' + escapeHtml(typeTag) : ''}</span>` : '');
             list.appendChild(item);
         });
-        toggle.addEventListener('click', () => list.classList.toggle('open'));
+        toggle.addEventListener('click', () => {
+            const open = list.classList.toggle('open');
+            toggle.classList.toggle('open', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
         panel.appendChild(toggle);
         panel.appendChild(list);
         return panel;
@@ -14235,8 +17172,8 @@
         details.open = status === 'needs_review' || status === 'no_citations';
         const label = document.createElement('summary');
         const labelByStatus = {
-            pass: '引用证据校验通过',
-            partial: '引用证据部分通过',
+            pass: '引用词面匹配，事实仍需核实',
+            partial: '引用词面部分匹配',
             needs_review: '引用证据需要复核',
             no_citations: '回答中没有编号引用'
         };
@@ -14245,6 +17182,10 @@
 
         const body = document.createElement('div');
         body.className = 'web-citation-check-body';
+        const limitation = document.createElement('div');
+        limitation.className = 'web-citation-empty';
+        limitation.textContent = '仅检查词面、数字及明显冲突，不代表事实已经核实。';
+        body.appendChild(limitation);
         const claims = Array.isArray(report.claims) ? report.claims : [];
         if (!claims.length) {
             const empty = document.createElement('div');
@@ -14265,15 +17206,21 @@
                 const heading = document.createElement('div');
                 heading.className = 'web-citation-evidence-heading';
                 const supportLabels = {
-                    supported: '原文支持',
+                    supported: '词面匹配',
                     partial: '部分匹配',
                     snippet_only: '仅搜索摘要',
-                    unsupported: '未找到支持',
+                    unsupported: '未匹配或存在疑似冲突',
                     invalid_reference: '引用编号不存在',
                     unavailable: '无可用正文'
                 };
                 heading.textContent = `[${Number(citation.source_id) || '?'}] ${citation.title || ''} · ${supportLabels[citation.support] || '无法判断'}`;
                 evidence.appendChild(heading);
+                const conflictLabels = {negation_mismatch: '肯定/否定不一致', direction_mismatch: '增减方向不一致', unit_mismatch: '数值单位不一致', subject_mismatch: '陈述主体不一致'};
+                if (Array.isArray(citation.conflicts) && citation.conflicts.length) {
+                    const warning = document.createElement('div');
+                    warning.textContent = '需要复核：' + citation.conflicts.map(code => conflictLabels[code] || code).join('、');
+                    evidence.appendChild(warning);
+                }
                 if (citation.passage) {
                     const passage = document.createElement('blockquote');
                     passage.textContent = citation.passage;
@@ -14297,40 +17244,24 @@
 
     // [REMOVED] Old Translation Functions: renderTranslationItem, renderTranslations, performTranslation
     
-    async function speakWithElevenLabs(text) {
-        try {
-            const ttsSettings = getSavedOtherApiSettings();
-            const res = await fetch("/tts", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    text,
-                    api_url: ttsSettings.tts_api_url,
-                    api_key: ttsSettings.tts_api_key,
-                    voice_id: ttsSettings.tts_voice_id,
-                    model_id: ttsSettings.tts_model_id
-                })
-            });
-
-            if (!res.ok) {
-                let detail = `TTS failed (${res.status})`;
-                try {
-                    const data = await res.json();
-                    detail = data.detail || detail;
-                } catch (_) {}
-                throw new Error(detail);
-            }
-            if (!res.headers.get("Content-Type")?.includes("audio")) throw new Error('TTS API did not return audio.');
-
-            const arrayBuf = await res.arrayBuffer();
-            const blob = new Blob([arrayBuf], { type: "audio/mpeg" });
-            const url = URL.createObjectURL(blob);
-            const audio = new Audio(url);
-            audio.play().catch(e => console.warn("Playback failed", e));
-        } catch (e) {
-            console.warn("TTS playback failed:", e);
-            alert(e.message || 'TTS playback failed.');
-        }
+    // Provider selection, WAV playback and interruption live in voice_settings.js.
+    const SayaSpeech = window.SayaSpeech;
+    window.getSayaChatContext = () => {
+        const strongLogic = currentRoleMode === 'assistant' && isAssistantStrongLogicEnabled();
+        const effective = getSavedApiSettings();
+        const chatModel = effective.api_model_name || '';
+        const thinkingModel = pendingAttachment?.type === 'image' && effective.multimodal_model_name
+            || (strongLogic ? effective.strong_logic_model_name
+                : currentRoleMode !== 'assistant' && !agentModeEnabled && !temporaryChatEnabled && parseCombinedMode().recallMode === 'on'
+                    ? effective.memory_strong_model_name || chatModel : chatModel);
+        return { sessionId: currentSessionId || '', roleMode: currentRoleMode, strongLogic, thinkingModel };
+    };
+    window.getSavedOtherApiSettings = getSavedOtherApiSettings;
+    window.SayaBrowserApiDraft = {flush:saveCurrentApiSettings,read:getBrowserApiSettings,
+        reload:()=>{loadApiSettings();applyOtherApiSettings(getBrowserOtherApiSettings());}};
+    async function speakMessage(text) {
+        try { await SayaSpeech.speak(text, { roleMode: currentRoleMode }); }
+        catch (error) { showToast(error.message || '语音播放失败。', { type: 'error', duration: 5000 }); }
     }
 
     const inputField = document.getElementById('user-input');
@@ -14380,3 +17311,649 @@
     // Start periodic status updates
     setInterval(fetchStatus, 5000);
     fetchStatus(); // Initial fetch
+
+    // ========================================================================
+    // ========================================================================
+    // Listener role (memory intake): one conversation = one memory.
+    // Flow: user msg -> Saya asks ONE batched clarification OR proposes ->
+    // editable proposal card (content + layer core/semantic/episodic) ->
+    // confirm stores the memory and LOCKS the conversation.  Editing an
+    // earlier message truncates the session server-side, which auto-unlocks
+    // and makes the next confirm REPLACE the same linked memory.
+    // ========================================================================
+    const LISTENER_LAYERS = [
+        {value: 'core', label: 'core · 核心身份（永久）'},
+        {value: 'semantic', label: 'semantic · 稳定知识/偏好'},
+        {value: 'episodic', label: 'episodic · 具体事件经历'},
+    ];
+
+    async function startListenerSession() {
+        try {
+            closeToolsModal();
+            const response = await fetch('/api/listener/open', {method: 'POST'});
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            setCurrentRoleMode('listener');
+            currentSessionId = data.session_id;
+            currentHistoryLength = 0;
+            document.getElementById('chat-content').innerHTML = '';
+            const input = document.getElementById('user-input');
+            if (input) { input.value = ''; input.disabled = false; }
+            appendListenerNotice('🎙 Listener 模式：这条对话用来记录一条记忆。告诉我内容，我最多追问一次细节，然后给你一份可修改的记忆提案。');
+        } catch (e) {
+            showToast(`无法开启 Listener 对话：${e.message || e}`, { type: 'info', duration: 3600 });
+        }
+    }
+    window.startListenerSession = startListenerSession;
+
+    function setListenerInputLocked(locked) {
+        const input = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        if (input) input.disabled = locked;
+        if (sendBtn) sendBtn.disabled = locked;
+    }
+
+    function appendListenerNotice(text) {
+        const chat = document.getElementById('chat-content');
+        const div = document.createElement('div');
+        div.className = 'message-row';
+        div.innerHTML = `<div class="message-bubble listener-card" style="border-style:dashed;">
+            <div class="lc-hint" style="font-size:13px;color:#9db8ff;">${text}</div></div>`;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function appendUserMessageForListener(text) {
+        appendMessage('user', text, {});
+    }
+
+    async function sendListenerTurn(text) {
+        setListenerInputLocked(true);
+        try {
+            const response = await fetch('/api/listener/send', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({session_id: currentSessionId, text})
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
+            if (payload.type === 'locked') {
+                appendListenerNotice(`🔒 ${payload.message}`);
+                return;
+            }
+            if (payload.type === 'question') {
+                appendMessage('ai', `🎙 ${payload.text}`, {});
+                setListenerInputLocked(false);
+                return;
+            }
+            if (payload.type === 'proposal') {
+                renderListenerProposalCard(payload.proposal,false,payload.confirmation_version);
+                // no input unlock: the card owns the next action
+                return;
+            }
+            throw new Error('未知响应');
+        } catch (e) {
+            appendListenerNotice(`⚠️ ${e.message || e}（可以重发或修改你的话）`);
+            setListenerInputLocked(false);
+        }
+    }
+
+    function renderListenerProposalCard(proposal,locked,confirmationVersion,pendingOperation=null) {
+        const sessionId=currentSessionId;
+        let originalBody=null;
+        let operationId=crypto.randomUUID().replace(/-/g,'');
+        let pending=pendingOperation;
+        let busy=false;
+        let reloadOnly=false;
+        const chat = document.getElementById('chat-content');
+        const card = document.createElement('div');
+        card.className = 'message-row';
+        const layerOptions = LISTENER_LAYERS.map(l =>
+            `<option value="${l.value}" ${l.value === proposal.layer ? 'selected' : ''}>${l.label}</option>`).join('');
+        card.innerHTML = `
+        <div class="message-bubble listener-card ${locked ? 'lc-locked' : ''}">
+            <div class="lc-title">${ic('note', 'icn-sm')} 记忆提案（可修改后保存）</div>
+            <input class="lc-title-input" maxlength="40" value="${escapeHtml(proposal.title || '')}" />
+            <textarea class="lc-content" maxlength="2000">${escapeHtml(proposal.content || '')}</textarea>
+            <div class="listener-row">
+                <span class="lc-row-label">记忆分级：</span>
+                <select class="lc-layer">${layerOptions}</select>
+                <span class="lc-row-label">类别：</span>
+                <input class="lc-category" value="${escapeHtml(proposal.category || 'general')}" style="width:120px;" />
+                ${locked
+                    ? `<button class="lc-update">${ic('save', 'icn-sm')}更新这条记忆</button><span class="lc-badge">✔ 已保存</span>`
+                    : `<button class="lc-confirm">${ic('lock', 'icn-sm')}确认保存并锁定对话</button>`}
+            </div>
+            <div class="lc-hint">${locked
+                ? '对话已锁定（保存新记忆请开启新的 Listener 对话）。这里仍可直接修改已保存的记忆内容或分级。'
+                : '保存后这条对话会锁定；如需重来，可以编辑/返回上面对话，重新确认时会替换同一条记忆而不是新增。'}</div>
+        </div>`;
+        chat.appendChild(card);
+        chat.scrollTop = chat.scrollHeight;
+        const btn = card.querySelector(locked ? '.lc-update' : '.lc-confirm');
+
+        const inputs=card.querySelectorAll('input,textarea,select');
+        const freeze=disabled=>inputs.forEach(input=>{input.disabled=disabled;});
+        const label=()=>{
+            btn.innerHTML=pending ? (pending.committed ? '恢复关联与回执' : '核对原操作结果')
+                : reloadOnly ? '重新读取Listener状态' : originalBody ? '核对原保存请求'
+                : locked ? '更新这条记忆' : '确认保存并锁定对话';
+        };
+        if(pending)freeze(true);
+        label();
+        btn.onclick=async()=>{
+            if(busy)return;
+            busy=true;btn.disabled=true;freeze(true);
+            try {
+                if(reloadOnly){await enhanceListenerSessionOnLoad();return;}
+                let endpoint,body;
+                if(pending){
+                    endpoint=pending.committed ? '/api/listener/recover'
+                        : '/api/listener/result?'+new URLSearchParams({session_id:sessionId,operation_id:pending.operation_id});
+                    body=pending.committed ? {session_id:sessionId,operation_id:pending.operation_id} : null;
+                }else{
+                    if(!confirmationVersion)throw new Error('请重新读取Listener提案后保存');
+                    if(!originalBody)originalBody={session_id:sessionId,operation_id:operationId,expected_version:confirmationVersion,
+                        title:card.querySelector('.lc-title-input').value.trim(),content:card.querySelector('.lc-content').value.trim(),
+                        layer:card.querySelector('.lc-layer').value,category:card.querySelector('.lc-category').value.trim()||'general'};
+                    endpoint=locked ? '/api/listener/update' : '/api/listener/confirm';body=originalBody;
+                }
+                const response=await fetch(endpoint,body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)} : undefined);
+                const payload=await response.json().catch(()=>({}));
+                if(!response.ok){if(response.status===400||response.status===409)reloadOnly=true;throw new Error(payload.detail||'结果暂时无法核对');}
+                if(!payload.operation){
+                    pending={...pending,committed:payload.committed};
+                    appendListenerNotice('原操作状态：'+escapeHtml((payload.items||[]).map(item=>item.state).join('、'))+'。没有再次保存。');
+                    return;
+                }
+                if(payload.content_changed){reloadOnly=true;throw new Error('原条目已变化，请重新读取当前内容后再编辑');}
+                if(!payload.operation.committed||payload.recovery_pending){
+                    pending={operation_id:payload.operation.operation_id,committed:payload.operation.committed};
+                    appendListenerNotice(escapeHtml(payload.message||'结果待核对，请查询原操作。'));
+                    return;
+                }
+                locked=true;pending=null;originalBody=null;operationId=crypto.randomUUID().replace(/-/g,'');
+                confirmationVersion=payload.confirmation_version;
+                if(payload.proposal){
+                    card.querySelector('.lc-title-input').value=payload.proposal.title||'';
+                    card.querySelector('.lc-content').value=payload.proposal.content||'';
+                    card.querySelector('.lc-layer').value=payload.proposal.layer||'semantic';
+                    card.querySelector('.lc-category').value=payload.proposal.category||'general';
+                }
+                if(currentSessionId===sessionId)setListenerInputLocked(true);
+                appendListenerNotice(payload.action==='updated' ? '✔ 已更新同一条记忆。' : '🔒 记忆已保存，对话已锁定。');
+                freeze(false);
+            }catch(error){
+                showToast('Listener保存结果：'+(error.message||error),{type:'info',duration:3600});
+            }finally{
+                busy=false;btn.disabled=false;label();
+                if(!originalBody&&!pending&&!reloadOnly)freeze(false);
+            }
+        };
+    }
+
+    async function enhanceListenerSessionOnLoad() {
+        // After loading a listener session, rebuild the interactive tail
+        // (pending proposal or saved card) from the derived server state.
+        if (currentRoleMode !== 'listener' || !currentSessionId) return;
+        try {
+            const response = await fetch(`/api/listener/state?session_id=${encodeURIComponent(currentSessionId)}`);
+            if (!response.ok) return;
+            const state = await response.json();
+            setListenerInputLocked(!!state.locked);
+            if (state.proposal) {
+                renderListenerProposalCard(state.proposal,!!state.locked,state.confirmation_version,state.pending_operation);
+            } else if (!state.locked && !state.question_used) {
+                appendListenerNotice('🎙 继续这条 Listener 对话：告诉我这条记忆的内容。');
+            }
+        } catch (e) { /* best-effort enhancement */ }
+    }
+
+    // ========================================================================
+    // Connect-more-tools row: visible only while the input is EMPTY and not
+    // focused (idle state). Typing or focusing the composer hides the chips.
+    // ========================================================================
+    function updateConnectToolsVisibility() {
+        const row = document.getElementById('connect-tools-row');
+        const input = document.getElementById('user-input');
+        if (!row || !input) return;
+        const idle = input.value.trim() === '' && document.activeElement !== input;
+        row.classList.toggle('ctr-hidden', !idle);
+        row.setAttribute('aria-hidden', String(!idle));
+    }
+    window.updateConnectToolsVisibility = updateConnectToolsVisibility;
+
+    (function initConnectTools() {
+        const input = document.getElementById('user-input');
+        if (!input) return;
+        input.addEventListener('input', updateConnectToolsVisibility);
+        input.addEventListener('focus', updateConnectToolsVisibility);
+        input.addEventListener('blur', () => setTimeout(updateConnectToolsVisibility, 120));
+        updateConnectToolsVisibility();
+    })();
+
+    // Weather panel (feature ported from airi-main's get_weather widget; the
+    // backend proxies Open-Meteo so no API key is needed).
+    // ========================================================================
+    function openWeatherModal() {
+        const modal = document.getElementById('weather-modal');
+        if (modal) modal.style.display = 'flex';
+        const input = document.getElementById('weather-location-input');
+        if (input && !input.value) input.value = sayaSettings.getItem('saya_weather_city') || '';
+        if (input && input.value) fetchWeather();
+    }
+
+    function closeWeatherModal() {
+        const modal = document.getElementById('weather-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function backToToolsFromWeather() {
+        closeWeatherModal();
+        openToolsModal();
+    }
+
+    async function fetchWeather() {
+        const input = document.getElementById('weather-location-input');
+        const resultBox = document.getElementById('weather-result');
+        const location = (input?.value || '').trim();
+        if (!location || !resultBox) return;
+        sayaSettings.setItem('saya_weather_city', location);
+        resultBox.innerHTML = '<div class="weather-loading">Checking...</div>';
+        try {
+            const response = await fetch('/api/weather', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({location})
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
+            const current = payload.current || {};
+            const days = payload.daily || [];
+            resultBox.innerHTML = `
+                <div class="weather-now">
+                    <div class="weather-temp">${current.temperature ?? '?'}°C</div>
+                    <div class="weather-desc">
+                        <div class="weather-place">${escapeHtml(payload.location || location)}</div>
+                        <div>${escapeHtml(current.text_en || '')} · feels ${current.apparent_temperature ?? '?'}°C · humidity ${current.humidity ?? '?'}%</div>
+                    </div>
+                </div>
+                <div class="weather-days">
+                    ${days.map(day => `
+                        <div class="weather-day">
+                            <div class="weather-day-date">${escapeHtml(String(day.date || '').slice(5))}</div>
+                            <div class="weather-day-text">${escapeHtml(day.text_cn || day.text_en || '')}</div>
+                            <div class="weather-day-range">${day.temp_min ?? '?'}~${day.temp_max ?? '?'}°C</div>
+                            <div class="weather-day-rain">${day.precipitation_probability ?? 0}%</div>
+                        </div>`).join('')}
+                </div>
+                <div class="weather-summary">${escapeHtml(payload.summary_cn || '')}</div>`;
+        } catch (error) {
+            renderSurfaceState(resultBox, {
+                title: 'Weather could not be loaded',
+                message: 'Check the city name or connection, then try again.',
+                retry: () => fetchWeather(),
+                details: error,
+                icon: 'cloud'
+            });
+        }
+    }
+
+    // ========================================================================
+    // Diary panel (feature ported from airi-main's text_journal tool and the
+    // character notebook diary; recent entries also join the chat prompt).
+    // ========================================================================
+    function openJournalModal() {
+        const modal = document.getElementById('journal-modal');
+        if (modal) modal.style.display = 'flex';
+        fetchJournalEntries();
+    }
+
+    function closeJournalModal() {
+        const modal = document.getElementById('journal-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function backToToolsFromJournal() {
+        closeJournalModal();
+        openToolsModal();
+    }
+
+    async function fetchJournalEntries() {
+        const box = document.getElementById('journal-entries');
+        if (!box) return;
+        try {
+            const response = await fetch('/api/journal/entries?limit=30', {cache: 'no-store'});
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const payload = await response.json();
+            box.innerHTML = (payload.entries || []).length
+                ? payload.entries.map(entry => `
+                    <div class="journal-entry">
+                        <div class="journal-entry-head">
+                            <span class="journal-entry-title">${escapeHtml(entry.title || '')}</span>
+                            <span class="journal-entry-meta">${escapeHtml(entry.date || '')} · ${entry.source === 'saya' ? 'Saya' : 'Doctor'}${entry.mood ? ' · ' + escapeHtml(entry.mood) : ''}</span>
+                            <button class="journal-entry-delete" onclick="journalDeleteEntry('${entry.id}')">x</button>
+                        </div>
+                        <div class="journal-entry-body">${escapeHtml(entry.content || '')}</div>
+                    </div>`).join('')
+                : '<div class="journal-empty">No diary entries yet. Ask Saya to write about today.</div>';
+        } catch (error) {
+            renderSurfaceState(box, {
+                title: 'Diary could not be loaded',
+                message: 'Your existing entries are safe. Try again to refresh this view.',
+                retry: () => fetchJournalEntries(),
+                details: error,
+                icon: 'book'
+            });
+        }
+    }
+
+    function journalCredentials() {
+        const settings = getSavedApiSettings();
+        const style = getSayaStyleSettings();
+        return {
+            api_url: settings.api_url || '',
+            api_key: settings.api_key || '',
+            api_model_name: settings.api_model_name || '',
+            response_language: style.response_language || 'auto'
+        };
+    }
+
+    async function journalWriteToday() {
+        const button = document.getElementById('journal-write-btn');
+        if (button) { button.disabled = true; button.textContent = 'Saya is writing...'; }
+        try {
+            const response = await fetch('/api/journal/write', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(journalCredentials())
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.detail || `HTTP ${response.status}`);
+            fetchJournalEntries();
+        } catch (error) {
+            showToast(`Could not write diary: ${error.message}`, { type: 'error', duration: 3600 });
+        } finally {
+            if (button) { button.disabled = false; button.textContent = 'Ask Saya to write today'; }
+        }
+    }
+
+    async function journalAddManual() {
+        const textarea = document.getElementById('journal-new-entry');
+        const content = (textarea?.value || '').trim();
+        if (!content) return;
+        try {
+            const response = await fetch('/api/journal/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({content})
+            });
+            if (!response.ok) throw new Error((await response.json()).detail || `HTTP ${response.status}`);
+            if (textarea) textarea.value = '';
+            fetchJournalEntries();
+        } catch (error) {
+            showToast(`Could not add note: ${error.message}`, { type: 'error', duration: 3600 });
+        }
+    }
+
+    async function journalDeleteEntry(entryId) {
+        confirmAction('Delete this diary entry?', async () => {
+
+            try {
+                const response = await fetch(`/api/journal/${entryId}/delete`, {method: 'POST'});
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                fetchJournalEntries();
+            } catch (error) {
+                showToast(`Could not delete: ${error.message}`, { type: 'error', duration: 3600 });
+            }
+    });}
+
+    // ===================== Game bridge module =====================
+    // Ported from airi-main's minecraft-bot integration: external bots push
+    // status, Saya answers with [MC:] commands that queue for the bot to poll.
+    let bridgeRefreshTimer = null;
+
+    function openBridgeModal() {
+        const modal = document.getElementById('bridge-modal');
+        if (modal) modal.style.display = 'flex';
+        bridgeBotDirty = false;
+        refreshBridgeState();
+        refreshBridgeBot();
+        if (bridgeRefreshTimer) clearInterval(bridgeRefreshTimer);
+        bridgeRefreshTimer = setInterval(() => { refreshBridgeState(); refreshBridgeBot(); }, 5000);
+    }
+
+    function closeBridgeModal() {
+        const modal = document.getElementById('bridge-modal');
+        if (modal) modal.style.display = 'none';
+        if (bridgeRefreshTimer) { clearInterval(bridgeRefreshTimer); bridgeRefreshTimer = null; }
+    }
+
+    function backToToolsFromBridge() {
+        closeBridgeModal();
+        openToolsModal();
+    }
+
+    async function refreshBridgeState() {
+        const box = document.getElementById('bridge-sources');
+        if (!box) return;
+        try {
+            const response = await fetch('/api/bridge/state');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            if (!data.sources.length) {
+                box.innerHTML = '<div class="bridge-empty">No bots connected yet. Push a status below to register one.</div>';
+                return;
+            }
+            box.innerHTML = data.sources.map(source => `
+                <div class="bridge-source">
+                    <div class="bridge-head">
+                        <span class="bridge-dot ${source.online ? 'on' : ''}"></span>
+                        <span class="bridge-name">${escapeHtml(source.label)}</span>
+                        <span class="bridge-badge">${source.online ? 'online' : 'offline'}</span>
+                        <span class="bridge-pending">${source.pending} pending</span>
+                    </div>
+                    <div class="bridge-latest">${escapeHtml(source.latest_text || 'No status pushed yet.')}</div>
+                    <div class="bridge-cmd-row">
+                        <input type="text" id="bridge-cmd-${escapeHtml(source.source)}" placeholder="Send a command to this bot...">
+                        <button onclick="bridgeSendCommand('${escapeHtml(source.source)}')">${ic('arrow-up-sm', 'icn-sm')}Send</button>
+                    </div>
+                    ${source.commands.length ? `<div class="bridge-commands">${source.commands.slice(-5).reverse().map(command => `
+                        <div class="bridge-command ${command.status}">
+                            <span class="bridge-command-origin">${command.origin === 'saya' ? 'Saya' : 'Doctor'}</span>
+                            <span class="bridge-command-text">${escapeHtml(command.text)}</span>
+                            <span class="bridge-command-status">${command.status}</span>
+                        </div>`).join('')}</div>` : ''}
+                    ${source.events.length ? `<div class="bridge-events">${source.events.slice(-4).reverse().map(event => `
+                        <div class="bridge-event"><span class="bridge-event-lane">${escapeHtml(event.lane)}</span>${escapeHtml(event.text)}</div>`).join('')}</div>` : ''}
+                </div>
+            `).join('');
+        } catch (error) {
+            renderSurfaceState(box, {
+                title: 'Bridge status unavailable',
+                message: 'The bot connection was not changed. Try refreshing the status.',
+                retry: () => refreshBridgeState(),
+                details: error,
+                icon: 'monitor'
+            });
+        }
+    }
+
+    async function bridgeSendCommand(source) {
+        const input = document.getElementById(`bridge-cmd-${source}`);
+        const text = input && input.value.trim();
+        if (!text) return;
+        try {
+            const response = await fetch(`/api/bridge/${source}/send`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text}),
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            input.value = '';
+            refreshBridgeState();
+        } catch (error) {
+            showToast(`Could not send: ${error.message}`, { type: 'error', duration: 3600 });
+        }
+    }
+
+    // --- Minecraft bot control (Node.js Mineflayer worker) ---
+    // Once the user edits a field, stop overwriting the form from the saved
+    // config until Start saves it or the modal is reopened.
+    let bridgeBotDirty = false;
+
+    function bridgeBotMarkDirty() {
+        bridgeBotDirty = true;
+    }
+
+    async function refreshBridgeBot() {
+        const badge = document.getElementById('bridge-bot-badge');
+        const dot = document.getElementById('bridge-bot-dot');
+        const errorBox = document.getElementById('bridge-bot-error');
+        const logBox = document.getElementById('bridge-bot-log');
+        const activityBox = document.getElementById('bridge-bot-activity');
+        if (!badge) return;
+        try {
+            const response = await fetch('/api/bridge/minecraft/bot');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const bot = await response.json();
+            const engine = bot.engine === 'mineflayer' ? 'Mineflayer' : (bot.engine || 'Minecraft');
+            badge.textContent = bot.running ? (bot.connected ? `in game · ${engine}` : `connecting · ${engine}`) : 'idle';
+            if (bot.running && bot.connected && bot.pending_chats) {
+                badge.textContent = `in game · ${bot.pending_chats} chat${bot.pending_chats > 1 ? 's' : ''}`;
+            }
+            dot.className = 'bridge-dot' + (bot.connected ? ' on' : '');
+            errorBox.textContent = bot.last_error ? ` ${bot.last_error}` : '';
+            if (activityBox) {
+                const activity = bot.activity || {};
+                const progress = Math.max(0, Math.min(100, Number(activity.progress || 0)));
+                const follow = bot.follow_enabled
+                    ? `Follow: ${escapeHtml(bot.follow_target || '?')} · ${escapeHtml(bot.follow_mode || 'on')}`
+                    : 'Follow: off';
+                const vitals = bot.runtime && bot.runtime.vitals
+                    ? `HP ${escapeHtml(String(bot.runtime.vitals.health ?? '?'))} · Food ${escapeHtml(String(bot.runtime.vitals.food ?? '?'))}`
+                    : '';
+                const inventoryCount = bot.runtime && Array.isArray(bot.runtime.inventory)
+                    ? bot.runtime.inventory.reduce((sum, item) => sum + Number(item.count || 0), 0)
+                    : null;
+                const inventory = inventoryCount === null ? '' : `Inventory ${inventoryCount}`;
+                const title = activity.command
+                    ? `${escapeHtml(activity.command)} · ${escapeHtml(activity.state || 'idle')}`
+                    : 'No active task';
+                const message = activity.message ? escapeHtml(activity.message) : 'Waiting for a command';
+                activityBox.innerHTML = `
+                    <div class="bridge-bot-activity-title"><span>${title}</span><span>${Math.round(progress)}%</span></div>
+                    <div class="bridge-bot-progress"><span style="width:${progress}%"></span></div>
+                    <div class="bridge-bot-activity-message">${message}</div>
+                    <div class="bridge-bot-activity-meta">${follow}${vitals ? ` · ${vitals}` : ''}${inventory ? ` · ${inventory}` : ''}</div>`;
+            }
+            if (logBox) {
+                logBox.innerHTML = bot.log.length
+                    ? bot.log.map(line => `<div class="bridge-bot-log-line">${escapeHtml(line.text)}</div>`).join('')
+                    : '<div class="bridge-bot-log-line dim">No bot activity yet.</div>';
+            }
+            if (bridgeBotDirty) return;
+            const fields = {host: 'mc-host', port: 'mc-port', username: 'mc-username',
+                            version: 'mc-version', account: 'mc-account'};
+            for (const [key, id] of Object.entries(fields)) {
+                const input = document.getElementById(id);
+                if (input && bot.config && bot.config[key] !== undefined && document.activeElement !== input) {
+                    input.value = bot.config[key];
+                }
+            }
+            bridgeMaybeAutoReply(bot);
+        } catch (error) {
+            badge.textContent = 'error';
+            errorBox.textContent = ` ${error.message}`;
+        }
+    }
+
+    // Keep the unified Minecraft/desktop conversation credentials in sync
+    // while the panel is open. In-game chat is handled internally now, so this
+    // must run even when there are no legacy pending chat lines.
+    let bridgeLastAutoReplyAt = 0;
+
+    async function bridgeMaybeAutoReply(bot) {
+        if (!bot || !bot.running || !bot.connected) return;
+        const now = Date.now();
+        if (now - bridgeLastAutoReplyAt < 10000) return;
+        bridgeLastAutoReplyAt = now;
+        try {
+            const response = await fetch('/api/bridge/minecraft/bot/auto-reply', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(journalCredentials())
+            });
+            if (!response.ok) return;  // no key / not running: silent, log shows state
+        } catch (error) { /* transient: next tick retries */ }
+    }
+
+    async function bridgeBotSaveConfig() {
+        const payload = {
+            host: document.getElementById('mc-host').value.trim(),
+            port: parseInt(document.getElementById('mc-port').value, 10) || 25565,
+            username: document.getElementById('mc-username').value.trim() || 'Saya',
+            version: document.getElementById('mc-version').value.trim() || '1.21.5',
+            account: document.getElementById('mc-account').value.trim(),
+        };
+        const response = await fetch('/api/bridge/minecraft/bot', {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    }
+
+    async function bridgeBotStart() {
+        try {
+            await bridgeBotSaveConfig();
+            bridgeBotDirty = false;
+            const response = await fetch('/api/bridge/minecraft/bot/start', {method: 'POST'});
+            if (!response.ok) {
+                const detail = await response.json().catch(() => ({}));
+                throw new Error(detail.detail || `HTTP ${response.status}`);
+            }
+            refreshBridgeBot();
+        } catch (error) {
+            showToast(`Could not start bot: ${error.message}`, { type: 'error', duration: 3600 });
+        }
+    }
+
+    async function bridgeBotStop() {
+        try {
+            const response = await fetch('/api/bridge/minecraft/bot/stop', {method: 'POST'});
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            setTimeout(refreshBridgeBot, 800);
+        } catch (error) {
+            showToast(`Could not stop bot: ${error.message}`, { type: 'error', duration: 3600 });
+        }
+    }
+
+    // Desktop companion console (PySide6): the backend spawns it detached, so
+    // the window survives independently and repeated clicks are idempotent.
+    async function bridgeOpenConsole() {
+        try {
+            const response = await fetch('/api/bridge/minecraft/console', {method: 'POST'});
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+            const badge = document.getElementById('bridge-bot-error');
+            if (badge && !data.already_running) {
+                badge.textContent = ' desktop console launched';
+                setTimeout(() => { if (badge) badge.textContent = badge.textContent.replace(' desktop console launched', ''); }, 4000);
+            }
+        } catch (error) {
+            showToast(`Could not open desktop console: ${error.message}`, { type: 'error', duration: 3600 });
+        }
+    }
+
+// Only settings and 3D presentation state; no chat, memories or API secrets.
+window.SayaBrowserViewSnapshot = () => {
+    const frame=document.getElementById('draggable-model'), rect=frame?.getBoundingClientRect();
+    return {modelId:currentModelId,lighting:JSON.parse(JSON.stringify(mmdLight)),tieMode:genogeTieMode,
+        camera:camera?{position:camera.position.toArray(),zoom:camera.zoom,target:controls?.target.toArray()}:null,
+        model:{scale:currentModelConfig?.scale,posY:currentModelConfig?.posY},
+        frame:rect?{left:rect.left,top:rect.top,width:rect.width,height:rect.height}:null,
+        viewport:{width:window.innerWidth,height:window.innerHeight,pixelRatio:window.devicePixelRatio},
+        sidebarCollapsed:!!document.querySelector('.model-panel')?.classList.contains('collapsed')};
+};
+window.SayaBrowserViewReady = () => mmdPersistReady;

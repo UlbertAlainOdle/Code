@@ -1,0 +1,42 @@
+{
+    "user_accepted": true,
+    "feedback": "The speaker-vector condition is clearly better than ICL; still sounds like Saya, can adopt.",
+    "adopted_fields": {
+        "x_vector_only": true,
+        "mood_prosody": true,
+        "mood_control": "model"
+    },
+    "previous_fields": {
+        "x_vector_only": {
+            "present": true,
+            "value": false
+        },
+        "mood_prosody": {
+            "present": false,
+            "value": null
+        },
+        "mood_control": {
+            "present": false,
+            "value": null
+        }
+    },
+    "voice_id": "1fd8568ff260441587cbe97a01c0ca83",
+    "reference_sha256": "5297a210f300cc7d70559499b6c360dec066241886d82f26a79c4a16e6ebb962",
+    "instructions": {
+        "neutral": "",
+        "happy": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+        "sad": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+        "stressed": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+        "excited": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+        "hyper": "用开心、带着笑意和惊喜的语气说。重音鲜明，语调有轻快的起伏，短语间自然停顿，句末略上扬。",
+        "depressed": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。"
+    },
+    "reference_and_mood_unchanged": {
+        "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.wav": true,
+        "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.json": true,
+        "knowledge_base\\emotion_state.json": true
+    },
+    "other_settings_unchanged": true,
+    "auto_read": false,
+    "requires_backend_reload_for_v3_instructions": true
+}

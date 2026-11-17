@@ -70,6 +70,14 @@ class MemoryGraphUiContractTests(unittest.TestCase):
         self.assertEqual([organizer.index(value) for value in recall_ids], sorted(organizer.index(value) for value in recall_ids))
         self.assertLess(organizer.index(search_ids[-1]), organizer.index(recall_ids[0]))
 
+    def test_chat_bar_does_not_expose_legacy_recall_search_switcher(self):
+        self.assertNotIn('id="mode-dropdown-trigger"', self.html)
+        self.assertNotIn('data-part="recall"', self.html)
+        self.assertNotIn('data-part="search"', self.html)
+        self.assertIn('id="temporary-chat-setting-toggle"', self.html)
+        self.assertIn('id="agent-mode-setting-toggle"', self.html)
+        self.assertIn('function syncAgentPrivacyModeToggles()', self.javascript)
+
     def test_cache_version_includes_network_ui_release(self):
         self.assertEqual(self.html.count("g22-20260811-ai-memory-compression"), 2)
 

@@ -5,6 +5,7 @@ history and persistence must never be selected through a global "current file".
 """
 
 import asyncio
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List
@@ -19,6 +20,7 @@ class ChatRuntime:
     project_id: str = ""
     project_name: str = ""
     role_mode: str = ""
+    temporary: bool = False
     memory_recall: Dict[str, Any] = field(default_factory=dict)
     created_at: str = field(default_factory=lambda: datetime.now().isoformat(timespec="seconds"))
 
@@ -28,6 +30,7 @@ class ChatRuntime:
             "session_id": self.session_id,
             "project_id": self.project_id,
             "role_mode": self.role_mode,
+            "temporary": self.temporary,
             "created_at": self.created_at,
         }
 
@@ -45,14 +48,20 @@ class ChatRuntimeManager:
                 self._locks[session_id] = lock
             return lock
 
-    def create(self, memory_manager, requested_session_id="", project_id="", project_name="", role_mode=""):
+    def create(self, memory_manager, requested_session_id="", project_id="", project_name="", role_mode="", temporary=False, request_id=""):
+        if request_id and not re.fullmatch(r'[a-f0-9]{32}',request_id):
+            raise ValueError('invalid_chat_request_id')
+        if temporary:
+            # No session lookup, history read, or empty file creation.
+            return ChatRuntime(uuid4().hex, "temporary_" + uuid4().hex, [], temporary=True)
         requested_session_id = str(requested_session_id or "").strip()
         path = memory_manager._safe_session_path(requested_session_id)
         if not path:
-            requested_session_id = memory_manager.create_session(make_current=False)
+            requested_session_id = ('session_request_'+request_id+'.jsonl' if request_id
+                                    else memory_manager.create_session(make_current=False))
         history = memory_manager.load_session(requested_session_id, make_current=False)
         return ChatRuntime(
-            request_id=uuid4().hex,
+            request_id=request_id or uuid4().hex,
             session_id=requested_session_id,
             history=list(history or []),
             project_id=str(project_id or ""),

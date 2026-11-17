@@ -14,6 +14,12 @@ http://127.0.0.1:8000/static/Chat4o5-Modern.html?v=g13-20260811-citation-memory
 - `docs/cleanup-guide.md` lists runtime-critical folders and safe cleanup candidates.
 
 ### Optional service configuration
+QQ auto-reply (NapCat / OneBot 11): see `docs/qq-bridge.md` and the delivery
+report `docs/qq-bridge-report-2026-10-24.md`. Copy `.env.qq.example` to `.env.qq`,
+fill in the QQ account, allowlists and tokens, then run `scripts/start_qq.ps1`.
+The web entry is Tools -> QQ 接入 (`/static/qq.html`). Personal memory is isolated
+by default; only explicitly configured owner friend-private chats may share it.
+
 Set secrets through environment variables instead of writing them into HTML or Python:
 - API_KEY / API_URL / API_MODEL
 - ELEVEN_API_KEY / ELEVEN_VOICE_ID

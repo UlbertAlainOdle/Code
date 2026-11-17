@@ -1,0 +1,792 @@
+{
+  "schema_version": 1,
+  "implementation_date": "2026-10-29",
+  "branch": "codex/qq-message-bridge",
+  "base_head": "2940618db653a70e4fb4b3bef007c04758ccd4c8",
+  "session": 23,
+  "generated_utc": "2026-10-29T10:56:10.802370+00:00",
+  "previous_manifest": "docs/qq-implementation-manifest-2026-10-29-session22.json",
+  "scope": "Real long-answer save receipt and two continuations after guarded backend restart confirmed and reconciled. Startup system dual_write metadata delta preserved, no repeated user save. Legacy restoration and group outbound display pending. QQ04-08 not started.",
+  "tests": {
+    "new_run": false,
+    "prior_related_python": 148,
+    "earlier_cumulative_python": 642,
+    "earlier_js": 76
+  },
+  "runtime_restart": {
+    "result": "PASS",
+    "drain_seconds": 0.03,
+    "restart_seconds": 4.14,
+    "qq_process_preserved": true,
+    "settings_groups_credentials_browser_receipts_preserved": true,
+    "qq_login": "matched"
+  },
+  "private_evidence": ".runtime/qq-upgrade/session23-*",
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 147,
+      "sha256": "ef2149f730922e0793efe677ebfd0c9d7fb7b806024e8f8edee15bcf899602ba"
+    },
+    {
+      "path": ".runtime/napcat/start-all.ps1",
+      "bytes": 525,
+      "sha256": "cfd236279ecd2896ec6e58275c172f673c3789a6ced0182e783890abbf5a8c0c"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 3265,
+      "sha256": "93561e82b2019f6001a42dbb41dfd2d3c9329cfdcd9b86b5c48e6c9d5e73d003"
+    },
+    {
+      "path": "core_services.py",
+      "bytes": 536657,
+      "sha256": "392ce038019c9bcfab17a5e4f45a33a7e402f9793dc0c82fd68d1cb4a0e9994f"
+    },
+    {
+      "path": "docs/browser-settings-inventory-2026-10-28.md",
+      "bytes": 6588,
+      "sha256": "c278df8cdf209c93fb48df6fb3042e289b5dbec3d5bf36c26084188c063bfde4"
+    },
+    {
+      "path": "docs/qq-acceptance-2026-10-26.md",
+      "bytes": 30892,
+      "sha256": "617162aa16140c89220ba6d5ba89eb151da6641fb90baf31c6b35622519aac5c"
+    },
+    {
+      "path": "docs/qq-bridge.md",
+      "bytes": 17196,
+      "sha256": "74a0a47a1e556865e8bab5e7f4d0c19be45029ead8ad258346340e0d1aaa218a"
+    },
+    {
+      "path": "docs/qq-channel-presentation-plan-2026-10-28.md",
+      "bytes": 7226,
+      "sha256": "ec2fd8de539bd49600979cc07a2feb70ec32aab5bd1e30dd10fd2b3d1db65cd2"
+    },
+    {
+      "path": "docs/qq-configuration-and-service.md",
+      "bytes": 17540,
+      "sha256": "8a822d42343dfd849cf8e183d8bcd11f65715d930faf6599806875a8f020c5fd"
+    },
+    {
+      "path": "docs/qq-gate-review-2026-10-28-session10.md",
+      "bytes": 6861,
+      "sha256": "79b1adb07dea395c60f66ea5ef14969ac7928a60a61314f78ade964baed2ca09"
+    },
+    {
+      "path": "docs/qq-gate-review-2026-10-28-session13.md",
+      "bytes": 2720,
+      "sha256": "1e64b5457143595456059618e5ca5a1a2282ccc4f733110e3aa452ad441a9cfc"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-27-session2.md",
+      "bytes": 5991,
+      "sha256": "a471dc84038aef8224a2ea4ea17874267aea6c689ee67aa2910b182b4a7204a1"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-27-session3.md",
+      "bytes": 6805,
+      "sha256": "d2683d0072e0c5492abecb90a28d46257abe971d8501bae825b86b045b9ab07a"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-27-session4.md",
+      "bytes": 8598,
+      "sha256": "ef43c6e9e7b51445a57cb89d8c366801ad3a4ae0dd911b46f2c74245b31e52a9"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-27.md",
+      "bytes": 5741,
+      "sha256": "0c0ce33343f2912540d55effe6eae65719555e1e94edacd17fc260e66472e683"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session10.md",
+      "bytes": 5224,
+      "sha256": "eb813f9088421848b6e2e79957ad06e63c9d503b9620e939618ebea0549b620b"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session11.md",
+      "bytes": 7347,
+      "sha256": "7220e62d369e277741170fd2ddd1b333a112c565ed43e4ce638fdf344e5a8a83"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session12.md",
+      "bytes": 6502,
+      "sha256": "12cb5d99017230d823ff1b4a9467aa1e1f3fb164751c9e33d380a6fcf71bfd02"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session13.md",
+      "bytes": 8270,
+      "sha256": "d8beeb63a0e623982a9aeeba1da1a64091f6a1c5da6f51a094635314f909807f"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session14.md",
+      "bytes": 7065,
+      "sha256": "01813d0009934a719843990bc5207bcaf2db90bb4d2ce21d7c824d14589a1349"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session15.md",
+      "bytes": 6513,
+      "sha256": "b8d3df6206e30f19504ea1fba740ab61cc05074812576296793f200f4ae971cd"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session16.md",
+      "bytes": 6575,
+      "sha256": "33662ffa57b371fca595562dfca9f98c81b6972a5487db4af9e2e9c96d2ad542"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session5.md",
+      "bytes": 7137,
+      "sha256": "3eecf629cd8ebf27fb37032341139d21534b0cfeae350a048baf2128e9e29a72"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session6.md",
+      "bytes": 2457,
+      "sha256": "77077973cc3206c22cbe461841979c0c4774f5abd4b96db0e01bc26c76090b3a"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session7.md",
+      "bytes": 5323,
+      "sha256": "f80c75c3d810a355883da28920a5e5758b89ba0071b71cd8c777c0ee04b63c7e"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session8.md",
+      "bytes": 4973,
+      "sha256": "ec24cff898b93da44d404d1719cf2378a7b11ec977a41b62de087d4415a47b9b"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-28-session9.md",
+      "bytes": 4564,
+      "sha256": "46ad555df70da04e0efaecd6f9d1fbe72c712098fc964dd0fdf15c84a18deea8"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-29-session18.md",
+      "bytes": 8231,
+      "sha256": "5257a2def1362e05f1fd90be93474292496c419abbe539a24b7a37c48f49d39a"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-29-session19.md",
+      "bytes": 2878,
+      "sha256": "ac2ee12ff53ae3dcb099683bd0dd486bf5ce59e904d2bcadd4875b88bde8bc5a"
+    },
+    {
+      "path": "docs/qq-implementation-status.md",
+      "bytes": 62242,
+      "sha256": "5bd6df705a8edcb12a230319d2eed4fc1d817d444230ede268446c66a7a8a705"
+    },
+    {
+      "path": "docs/qq-natural-bubbles-plan-2026-10-29.md",
+      "bytes": 6199,
+      "sha256": "9376d9e4ac5b2be64de0971f2949d9c1ef7c78a3a5938318f4b83ccc7c8b836e"
+    },
+    {
+      "path": "docs/qq-roadmap-2026-10-26.md",
+      "bytes": 22692,
+      "sha256": "4fd7607a9d282aa695e72dc3ace6706ecdb246290680c2c5ca6c36348b307b5a"
+    },
+    {
+      "path": "docs/qq03-acceptance-2026-10-28.md",
+      "bytes": 7870,
+      "sha256": "671bbc3c67fef97525720bb77b9a7bf409fc9cb39062518bacc9bb8b57e59d7c"
+    },
+    {
+      "path": "saya_app/routers/backups.py",
+      "bytes": 4914,
+      "sha256": "d0b26756018c07181afd380035b91e1b1466c6fada59501e3d57e205528c6d8f"
+    },
+    {
+      "path": "saya_app/routers/bridge.py",
+      "bytes": 21900,
+      "sha256": "96ece2c229861a61c7aec6396bd4c2abd185bb12c545871d98e0e1334cb87fe0"
+    },
+    {
+      "path": "saya_app/routers/learner.py",
+      "bytes": 4922,
+      "sha256": "92747fb6a16002a57b08cdf22e3dc6dcda35073882c098d20c74d3384ef9830d"
+    },
+    {
+      "path": "saya_app/routers/qq.py",
+      "bytes": 22467,
+      "sha256": "fbfdcd7bf79d41dd5c3a09162f1ee01788fe68c780975b0d240299eed9279ddc"
+    },
+    {
+      "path": "saya_app/routers/web_window.py",
+      "bytes": 2172,
+      "sha256": "12ebc1df16469d4602f799c004034249c330fd362b5b5064e988afa6cd0f1dee"
+    },
+    {
+      "path": "saya_app/services/api_thinking.py",
+      "bytes": 901,
+      "sha256": "70e3ed412783f510ee261f075ae36f6b3819c62897786a13e2e7a4b4e6d1f4f3"
+    },
+    {
+      "path": "saya_app/services/backup_manager.py",
+      "bytes": 14834,
+      "sha256": "9aebde753d18ff5893416cb53768ae5e78499a052cbf17fe64bcd14d60214e77"
+    },
+    {
+      "path": "saya_app/services/browser_settings_archive.py",
+      "bytes": 7308,
+      "sha256": "8a672338ffb2a4df3b5292221e33e7e0fd1d1adbc9c5867a312786017d7f98cc"
+    },
+    {
+      "path": "saya_app/services/chat_runtime.py",
+      "bytes": 2440,
+      "sha256": "4f78d83a1f6eadcbc80e15fa00eee67d32bae9a93da9b16544d63015c77bce71"
+    },
+    {
+      "path": "saya_app/services/conversation.py",
+      "bytes": 94866,
+      "sha256": "f4ba3dbb5e2a7dbbc115e9e933a0f77679381b9eaec595b5ceec79ae79e5f319"
+    },
+    {
+      "path": "saya_app/services/credentials_storage.py",
+      "bytes": 1376,
+      "sha256": "2be355c2f9e2ec737992cb9972632b363979c36dcaad0d5f78909bc6f216b702"
+    },
+    {
+      "path": "saya_app/services/learner.py",
+      "bytes": 102113,
+      "sha256": "55c7f715ac4efe2ca574411d135c50e688f414c582cb2d76094ef2a731dc0cff"
+    },
+    {
+      "path": "saya_app/services/local_api_profile.py",
+      "bytes": 7131,
+      "sha256": "9309dcde8b4fed87d559a86e9d7cab24a3994335ff5c786008d00962dbb969f9"
+    },
+    {
+      "path": "saya_app/services/memory_v4/agent_loop.py",
+      "bytes": 14627,
+      "sha256": "a038d2dd1d6a0ef2a183fe92a406819fa0ebf4ab0e2521eafecbefe8f982d4aa"
+    },
+    {
+      "path": "saya_app/services/memory_v4/capabilities.py",
+      "bytes": 16506,
+      "sha256": "cc4acaf7b8ba13e519306df0332c5c836d90ccbf64ffd63972a70b5717d4ef5d"
+    },
+    {
+      "path": "saya_app/services/memory_v4/model_adapters.py",
+      "bytes": 22880,
+      "sha256": "d0bd0b5dad4fb707cee8ac82b85c210d402466fd74983acc9dd158f330c28058"
+    },
+    {
+      "path": "saya_app/services/memory_v4/web_tools.py",
+      "bytes": 11742,
+      "sha256": "b2c4f90d7aadeebb28f9b5ed3a560bad17221bad531e02823d40d514e14b0f17"
+    },
+    {
+      "path": "saya_app/services/qq_bridge.py",
+      "bytes": 60019,
+      "sha256": "f40e1324da5c70cc7d0ea5a7c98d07b3822d8f9737c9ca10cb5f2fa38e81f2cb"
+    },
+    {
+      "path": "saya_app/services/qq_chat.py",
+      "bytes": 13364,
+      "sha256": "3c9b709079a2512dd1d18a52f5fc5ff7dd2e3d11760cf55287e99c96efd2093d"
+    },
+    {
+      "path": "saya_app/services/qq_controls.py",
+      "bytes": 8729,
+      "sha256": "cd8adacf9548e6b09a582450bdac6032fd8a9acc08378cc2480697d87558f3ea"
+    },
+    {
+      "path": "saya_app/services/qq_delivery.py",
+      "bytes": 14839,
+      "sha256": "2539dfd39708d93ef6e81e5de32c37070f20e9b682f34a4d399024cce9d5d806"
+    },
+    {
+      "path": "saya_app/services/qq_health.py",
+      "bytes": 4874,
+      "sha256": "cc528249985bb245f12a638bc3b459c5aeb86b55b344e476d1050b599621484e"
+    },
+    {
+      "path": "saya_app/services/qq_lifecycle.py",
+      "bytes": 5024,
+      "sha256": "9c9a53b2fa78eb84c2591864695664a8dd41602513b190eb1c0197e5f48fc668"
+    },
+    {
+      "path": "saya_app/services/qq_napcat.py",
+      "bytes": 12512,
+      "sha256": "f7308a01e44c6744d08cbad3230cca716ab16680cea537220d01de56973e0097"
+    },
+    {
+      "path": "saya_app/services/qq_napcat_login_health.py",
+      "bytes": 3262,
+      "sha256": "eb0011780d8484af88423cf6a002ca785812a40e4782c2bfe0280b6aee79b8af"
+    },
+    {
+      "path": "saya_app/services/qq_network_health.py",
+      "bytes": 1768,
+      "sha256": "5184256843c76531ff89b690af044f4e5e8bbf9022d25d5fab987611d3b12d53"
+    },
+    {
+      "path": "saya_app/services/qq_observation.py",
+      "bytes": 3861,
+      "sha256": "01217a07e70aa3879feae8ae2e7c31896ec81b16c36a69d0d7f05e6cc9ce69f5"
+    },
+    {
+      "path": "saya_app/services/qq_presentation.py",
+      "bytes": 11713,
+      "sha256": "baa0768d14076d98954c49d6f4e7e43c944941a0dac5a010aaa0630559276733"
+    },
+    {
+      "path": "saya_app/services/qq_quotes.py",
+      "bytes": 9865,
+      "sha256": "b77ec1d714b7000ad2f22669fcebebe237136430e049f6dd80fafbf78f5fcc8a"
+    },
+    {
+      "path": "saya_app/services/qq_rollback.py",
+      "bytes": 11548,
+      "sha256": "eb0faaf40a3c218845f2a88de419b6414436e4a0558bd1cd756a6e2fe51e7584"
+    },
+    {
+      "path": "saya_app/services/qq_runtime_status.py",
+      "bytes": 2024,
+      "sha256": "637f48d43cc9841c06ae9785212514a833e1b80495cd5da1cf4deb081df333a5"
+    },
+    {
+      "path": "saya_app/services/service_activity.py",
+      "bytes": 1406,
+      "sha256": "ac07240f3080ac204d9983a7e10a01eaab46258e887934d2549b4098fff87668"
+    },
+    {
+      "path": "saya_app/services/shared_chat_config.py",
+      "bytes": 2895,
+      "sha256": "c3f1ada7e6a4ade42fb96c834b61cff9ec0adeed9fb7aab26f9e9abea13ca3a2"
+    },
+    {
+      "path": "saya_app/services/state_storage.py",
+      "bytes": 1672,
+      "sha256": "0dcb37adab8cb45f2f5b058151d93a3d6d2f0f2159557c6cc140fdc460ee1a44"
+    },
+    {
+      "path": "saya_app/services/web_research/deepseek.py",
+      "bytes": 5606,
+      "sha256": "ebdcee8e1b776da0a9fd5af3f0c6f1f708573448b73b9597dbab2db2eac77d77"
+    },
+    {
+      "path": "saya_app/services/web_research/models.py",
+      "bytes": 3691,
+      "sha256": "dc516206b52f788772c076880f7b4230e35195258dbe7c8b5adc341a52ffd12d"
+    },
+    {
+      "path": "saya_app/services/web_research/orchestrator.py",
+      "bytes": 28122,
+      "sha256": "b7f054ade37fe686fe2e7788717706f23211143272987356ef0c871e2d2661f0"
+    },
+    {
+      "path": "saya_app/services/web_research/providers.py",
+      "bytes": 1183,
+      "sha256": "89e18391e010181cb3602dd4921efc682e58e65ab41133e2c1f6ff065c2611ac"
+    },
+    {
+      "path": "saya_app/services/web_research/reader.py",
+      "bytes": 17531,
+      "sha256": "0d10803da360626b57dd4542958e9b365d835d114b596ab0c4f853f13a342717"
+    },
+    {
+      "path": "saya_app/services/web_research/search.py",
+      "bytes": 6573,
+      "sha256": "44d370e86215bbc7a6a3ce9eb20fe7ea974f236dba0ede977e053d34a96215ca"
+    },
+    {
+      "path": "saya_app/services/web_research/security.py",
+      "bytes": 5706,
+      "sha256": "0cf307015c9db30b499b89f25f5f54693ec40d6eed90471599d4231696edb812"
+    },
+    {
+      "path": "saya_app/services/web_window.py",
+      "bytes": 1065,
+      "sha256": "f19e621fc9537fd8536c5c4db05abbe544d60afd4dbea678c4169037e0ac8e84"
+    },
+    {
+      "path": "scripts/manage_qq_service.py",
+      "bytes": 11910,
+      "sha256": "6b39754cffe366a5af35c464f001eb67ce5904c8b29e5b2fe93ffce12863ecdc"
+    },
+    {
+      "path": "scripts/register_qq_service.ps1",
+      "bytes": 2869,
+      "sha256": "754421a986499d145d1c90ab19c6b5c84ac8c36b8c07cd4a6b682d715d4d0f79"
+    },
+    {
+      "path": "scripts/rehearse_qq_rollback.py",
+      "bytes": 1634,
+      "sha256": "24d1c501c15dc85d9cae49f7b483038275e3210966b063a7d2a67ed1d7a1d913"
+    },
+    {
+      "path": "scripts/run_qq_backend.py",
+      "bytes": 1099,
+      "sha256": "8bdf60d5b10d186c4c9c632191b76dc365bab7f7201c8de8231f4ca2f71000a5"
+    },
+    {
+      "path": "scripts/start_qq.ps1",
+      "bytes": 3552,
+      "sha256": "c24fbd897e1e00ac0f290adde4292b50a9ff4a80ee228474c4a94a6b445cd058"
+    },
+    {
+      "path": "scripts/start_qq_managed.ps1",
+      "bytes": 1666,
+      "sha256": "4616a5091abcb2dab134d72b770df5c49f4a3a58dd9b47f329b5ef22c1ef9cf8"
+    },
+    {
+      "path": "server5-22B----.py",
+      "bytes": 257046,
+      "sha256": "9bb4c12762e44e40cdcc6ccefdb38d42e75de85477b5e761e57e2a2491150c1a"
+    },
+    {
+      "path": "static/Chat4o5-Modern.html",
+      "bytes": 175419,
+      "sha256": "df24a5f01ad3ca35c23e65d861b2d24e6c3c07350412e4653d6a00c094840f68"
+    },
+    {
+      "path": "static/browser_settings_inventory.json",
+      "bytes": 3327,
+      "sha256": "6dce6f1e2d1b7cc8385b578e48d0bf811c157277e1d2db9aed04df09de5f1a27"
+    },
+    {
+      "path": "static/css/qq_settings.css",
+      "bytes": 7124,
+      "sha256": "20516c66f62832837d66e0d1404e7fe0988cbba524e5eccafee57fc03e2f877a"
+    },
+    {
+      "path": "static/js/app.js",
+      "bytes": 894328,
+      "sha256": "f8fedd49bb063fcdc9499bbe643a8f1b7b01fe9321bcc4641ea9779ffe00fbb3"
+    },
+    {
+      "path": "static/js/browser_settings_archive.js",
+      "bytes": 6514,
+      "sha256": "0e627e10cf4ffa4b671d85380adb2e3d1e6128b88d626ecc6ce24f5b00ccd400"
+    },
+    {
+      "path": "static/js/chat_experience.js",
+      "bytes": 12255,
+      "sha256": "9fd8373aebcfbefe5ee8ad65f74198289fe7d0f34902c061a7ced6125dece802"
+    },
+    {
+      "path": "static/js/local_api_profile.js",
+      "bytes": 18277,
+      "sha256": "75382cf809f778b8ca81ff240fafb7283854aa70ed407bffbd44ad4f0ce784bd"
+    },
+    {
+      "path": "static/js/local_settings.js",
+      "bytes": 11305,
+      "sha256": "50e49647a33eff3ba717ce44f66250c1d41f7cb9c3333ccaebcd6284892d7943"
+    },
+    {
+      "path": "static/js/mmd_try_showcase.js",
+      "bytes": 57100,
+      "sha256": "44ac13807a9ab091e05c9a7d1a3061c5442aa25861b8e849754cd6b500779010"
+    },
+    {
+      "path": "static/js/qq_settings.js",
+      "bytes": 21807,
+      "sha256": "be58ca2ffa0e3a00cb304b24eb5d132d894353baa4bcb80f0784c0d790bbd025"
+    },
+    {
+      "path": "static/js/settings_tool_boot.js",
+      "bytes": 671,
+      "sha256": "65c44eceac2e0fb348192ba645ea2ba36451865f207e25f8ed6c941c5f247be1"
+    },
+    {
+      "path": "static/js/voice_settings.js",
+      "bytes": 27715,
+      "sha256": "70c078e9f31da3f0e09a0ae6dd4fcb65035104262436c19bfe3097dddfcd5f26"
+    },
+    {
+      "path": "static/js/web_window.js",
+      "bytes": 5734,
+      "sha256": "04f001a797d138f2bb01df794bf7abee809f4ba4b308de1139d7e619f73e842f"
+    },
+    {
+      "path": "static/mmd_try_showcase.html",
+      "bytes": 4093,
+      "sha256": "21cfe754dbf07031ea74a2244b05fb8133912946984cc02d3f570636645ad92c"
+    },
+    {
+      "path": "tests/browser_settings_archive.test.cjs",
+      "bytes": 3477,
+      "sha256": "eb06e11cb8c7e9e82cd2a2d17161d36d23eb1a776d92da294dc2ede2d763ef94"
+    },
+    {
+      "path": "tests/chat_agents.test.cjs",
+      "bytes": 1903,
+      "sha256": "fecde4d4f78d123a554ab1e7bc0f1c6262bfa50ad6c35313f8539a5ab6f958af"
+    },
+    {
+      "path": "tests/chat_experience.test.cjs",
+      "bytes": 9029,
+      "sha256": "8ea29f894aa01bd0485fd62c5530f5c3c76304171222fc1c1df8f30a0d7bdab8"
+    },
+    {
+      "path": "tests/fixtures/qq_store_pre03.py",
+      "bytes": 8054,
+      "sha256": "bf72dd9f30328e9e7c185512bdfe9484832ef61ad4dedcf1af5efd0e4aaadb33"
+    },
+    {
+      "path": "tests/local_api_profile.test.cjs",
+      "bytes": 5241,
+      "sha256": "4e215a4481f7aa5a4fb036fed250a78998e229a4b40a97ed854910eb47dcfe4c"
+    },
+    {
+      "path": "tests/local_settings.test.cjs",
+      "bytes": 7608,
+      "sha256": "61065cf4ebd666260a5890704a5c6f122333019fdc96dfab5d136f421e79cda9"
+    },
+    {
+      "path": "tests/qq_delivery_ui.test.cjs",
+      "bytes": 2918,
+      "sha256": "2df14ff8e9d824b1589d7075525a53087552ddfcda85f10ba09186f41347482e"
+    },
+    {
+      "path": "tests/qq_health_ui.test.cjs",
+      "bytes": 1786,
+      "sha256": "ecb76657cc57c7016f7ee224d402050eeb11cc6fd305542043ad4aaf397fd0a6"
+    },
+    {
+      "path": "tests/test_browser_settings_archive.py",
+      "bytes": 4119,
+      "sha256": "ba58a5d13e830394bc7ec25c60e9463d6613491694be2d9178f761ce01371a6f"
+    },
+    {
+      "path": "tests/test_chat_agents.py",
+      "bytes": 12994,
+      "sha256": "c78f38800f14de06b255cceb0ad10f014ed27ac30f841d44d25456a69d5d806e"
+    },
+    {
+      "path": "tests/test_chat_prompt_web.py",
+      "bytes": 23279,
+      "sha256": "d68d881ce8aae37b407d40abca353b58156d99d9c634706215ef33f65823f131"
+    },
+    {
+      "path": "tests/test_companion_features.py",
+      "bytes": 24773,
+      "sha256": "62809096257141e1635b901918cc5a6fd8198e89e9a2615ff45dea22719e8682"
+    },
+    {
+      "path": "tests/test_conversation_mood.py",
+      "bytes": 8792,
+      "sha256": "de6e652794d8cce5c0aac2701f21b487a969217984d447c9ebc119eb4ab17a87"
+    },
+    {
+      "path": "tests/test_four_priority_fixes.py",
+      "bytes": 15314,
+      "sha256": "84b0b59ac3ee10cab07294a5866d33955fb9e00b445aeecb3da73f15c30d763c"
+    },
+    {
+      "path": "tests/test_learner.py",
+      "bytes": 52263,
+      "sha256": "61a1b818a17464b86aaf81c2b71fcb16003480ca0e02320b9f9c9d95c2a0de9b"
+    },
+    {
+      "path": "tests/test_local_api_profile.py",
+      "bytes": 7467,
+      "sha256": "1a575a14c4863fd70faaa9b4b7e0c30adcda1c12ea04990290cc0acd03c54b66"
+    },
+    {
+      "path": "tests/test_local_settings_runtime.py",
+      "bytes": 7604,
+      "sha256": "72fab9824fb84386a4d6522d297eff4915d553cf02ff098427def331be751feb"
+    },
+    {
+      "path": "tests/test_memory_default_runtime.py",
+      "bytes": 6552,
+      "sha256": "73deb29902129961b1fc20d4210f23043ff672ba08746b5b569aee1ee902bfb3"
+    },
+    {
+      "path": "tests/test_memory_v4_agent_adapter.py",
+      "bytes": 5761,
+      "sha256": "00e8c9e76342fd300603ee9f16984eda285b8cc409f392eab71e3de826dc9c97"
+    },
+    {
+      "path": "tests/test_memory_v4_phase7.py",
+      "bytes": 5223,
+      "sha256": "4cf2eb1529c18f7fcc3368857d08eec1d3983a25e8c65176d28eeffd40c6cc22"
+    },
+    {
+      "path": "tests/test_pcm_voice.cjs",
+      "bytes": 3341,
+      "sha256": "9846809ac6d5f8d3ee40255fc2da79ced1193080aa7b9e29460aa469fdc4ab54"
+    },
+    {
+      "path": "tests/test_priority_improvements.py",
+      "bytes": 7107,
+      "sha256": "a7cc057f7e8e84fe817c73fa05c7be653ceca90bce2d8f7572ca996cfafb8f1a"
+    },
+    {
+      "path": "tests/test_qq_bridge.py",
+      "bytes": 15146,
+      "sha256": "488be399cf285028ebbbb33bb5085116c6ffb84d474cc698cdeb0a3f840e7653"
+    },
+    {
+      "path": "tests/test_qq_capabilities.py",
+      "bytes": 10709,
+      "sha256": "1f0d100b9a8762d728ef46c99562d2768a8f9ddf83182cbb95871486b0ec6a15"
+    },
+    {
+      "path": "tests/test_qq_chat_runtime.py",
+      "bytes": 43727,
+      "sha256": "7da95b0c13e0c9208642875f5be4d092376a842e004a8625d6c5749e219debd5"
+    },
+    {
+      "path": "tests/test_qq_configuration_scopes.py",
+      "bytes": 9915,
+      "sha256": "44d5d649537f0175ed8b468d2247ea4b662767aa81d1a0db590628674a85e2c0"
+    },
+    {
+      "path": "tests/test_qq_controls.py",
+      "bytes": 15949,
+      "sha256": "d2ffffbd2ededfd2bdaf4da8c506238a369da03c43ec7ab8e44d6bf0f002af40"
+    },
+    {
+      "path": "tests/test_qq_delivery.py",
+      "bytes": 16387,
+      "sha256": "c1e9852b3053c186f171c49a7931e65a34588fa76eeb31f05cd8f9944a461244"
+    },
+    {
+      "path": "tests/test_qq_groups.py",
+      "bytes": 16360,
+      "sha256": "2ccc6175e2b8cd231fa20b982bf765e703fcb4f19d91127d810c50b38fb1e896"
+    },
+    {
+      "path": "tests/test_qq_lifecycle.py",
+      "bytes": 13143,
+      "sha256": "bb89417b3e4e74ff1b7b170e0405e7c8ec0480241f43fc9dca4169e686612f00"
+    },
+    {
+      "path": "tests/test_qq_napcat_login_health.py",
+      "bytes": 3669,
+      "sha256": "fc40e2574abeb666f2aa2c55125a09675ee27c5d990e20eb08d25551197a61c2"
+    },
+    {
+      "path": "tests/test_qq_napcat_supervision.py",
+      "bytes": 10260,
+      "sha256": "d2bc5940ae45b7c0cb97252253309a37c947521d0c1a830823372177da97e847"
+    },
+    {
+      "path": "tests/test_qq_natural_bubbles.py",
+      "bytes": 8963,
+      "sha256": "00d0d578168a9d2b39baf08a09565193d224a1d533c1401dbcc7d45514da52b4"
+    },
+    {
+      "path": "tests/test_qq_network_health.py",
+      "bytes": 3973,
+      "sha256": "07d121791646da33373a39f4d2028673c498d4ba47fa9ba93a711af5f0c3a53b"
+    },
+    {
+      "path": "tests/test_qq_observation.py",
+      "bytes": 2590,
+      "sha256": "21c71fa07367429ebe9da8597b51fb78c346f06d708049c41f5c32085a05031e"
+    },
+    {
+      "path": "tests/test_qq_presentation.py",
+      "bytes": 5696,
+      "sha256": "e1880c086f380226afd0bdd06b839d13dfd685ee8e11307723c99d9a1433f0f2"
+    },
+    {
+      "path": "tests/test_qq_quotes.py",
+      "bytes": 11513,
+      "sha256": "87f71e2a90425832023d69dbb1a0a7d2c72de51c929a83237258a453056087b2"
+    },
+    {
+      "path": "tests/test_qq_rollback.py",
+      "bytes": 6789,
+      "sha256": "30553cf6efdb6c61b949db1b20583309d297c95641c2f81873c197c7ab797a16"
+    },
+    {
+      "path": "tests/test_qq_service_controls.py",
+      "bytes": 2675,
+      "sha256": "ed9303349257961f7cadd1d6cd0bec547e967df5b3131427c4e4bc49680f4f33"
+    },
+    {
+      "path": "tests/test_qq_service_drain.py",
+      "bytes": 2304,
+      "sha256": "4d43dfe78a0292bb77022377af1f0c28280e287a08734243df3894ebab179ffd"
+    },
+    {
+      "path": "tests/test_qq_startup_modes.ps1",
+      "bytes": 2373,
+      "sha256": "3d9f25fda32a7caa2b973cb41ebe1969b04ecc84e8307f5396c44c71bad7544e"
+    },
+    {
+      "path": "tests/test_qq_startup_registration.ps1",
+      "bytes": 2150,
+      "sha256": "b47b63ac2fd357c03641f98c31a1350871bc6c5db7a908128b89a12cc44b6d65"
+    },
+    {
+      "path": "tests/test_qq_transport_recovery.py",
+      "bytes": 2617,
+      "sha256": "a4980e0e26d5e816fe622f7db4f1ab5623ca65cdd467e6a0de4f4967413bfd43"
+    },
+    {
+      "path": "tests/test_search_providers.py",
+      "bytes": 12018,
+      "sha256": "8046407dedd30c6d6aafbbdf7846f96ed850096be12559a2d17307d6c860e905"
+    },
+    {
+      "path": "tests/test_speech_prosody.py",
+      "bytes": 13789,
+      "sha256": "51b60917d281db72a441780ace9d7b277325e1b351f6a7f7257eeec578b6ecc7"
+    },
+    {
+      "path": "tests/test_speech_text.py",
+      "bytes": 1173,
+      "sha256": "f6254a02eb4bb9df53694f31148d5acb38617400399e714b43bccfe803270f6f"
+    },
+    {
+      "path": "tests/test_voice_playback.cjs",
+      "bytes": 15491,
+      "sha256": "456a6def735bd9cc73a0dffc5c1a1fd135bebb5aa12152cd61c9b16067f37a9d"
+    },
+    {
+      "path": "tests/test_voice_shutdown.py",
+      "bytes": 1822,
+      "sha256": "189c614896aa5cf4afc4b618a041f3a51fcd6a8266e75e8c33df5c427dcd60ce"
+    },
+    {
+      "path": "tests/test_web_research.py",
+      "bytes": 30110,
+      "sha256": "99945283fbdc8efb43018ff54c2ecaf776fb86a788067f143a881ce6a723a869"
+    },
+    {
+      "path": "tests/test_web_search.py",
+      "bytes": 7336,
+      "sha256": "ebcd0145ca1c7170c0a8da0367b8f49e0b48075b64a8ae848cff4e3928d75921"
+    },
+    {
+      "path": "tests/test_web_window.py",
+      "bytes": 3529,
+      "sha256": "5b6954b68c390a620bbf44e8b6341dd66434e5ac0b881869ffac9fe27173b721"
+    },
+    {
+      "path": "tests/web_window.test.cjs",
+      "bytes": 5909,
+      "sha256": "a1e0de3323b25298302b936fbf344444e787d1629ef2e9ad4db78c0598501e7d"
+    },
+    {
+      "path": "docs/qq03-live-checklist-2026-10-29.md",
+      "bytes": 3977,
+      "sha256": "0b4400626cc4cde80e566912a5e5462a93ef06e3839cf821dcb419a094e63580"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-29-session20.md",
+      "bytes": 2420,
+      "sha256": "c8e8a85a8a4204a10208c5012e11a2db2c4a99401e73f5b795a88eb5523607b0"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-29-session21.md",
+      "bytes": 1688,
+      "sha256": "e7b6a7687c7da213e4c01e8176324b9bd9abb3d9d29e29ae9a7891713f7ad700"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-29-session22.md",
+      "bytes": 1529,
+      "sha256": "1afe4f1cd70e6fe992172ffc50d091ca0873c386d2814227faa255fe622f968f"
+    },
+    {
+      "path": "docs/qq-implementation-2026-10-29-session23.md",
+      "bytes": 3258,
+      "sha256": "7e3049aeaede1d4fa5291a8a567d36cd04b37dbdd0be3eade49f7bc8ccbc3af2"
+    }
+  ]
+}

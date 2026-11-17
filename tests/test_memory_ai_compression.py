@@ -24,6 +24,13 @@ class MemoryAiCompressionTests(unittest.TestCase):
         shutil.rmtree(self.root, ignore_errors=True)
 
     def _add_repeated_summary(self, index, content=None):
+        # Summaries used by maintenance must have real, versioned provenance.
+        self.kb.add_memory(
+            content or f"On 2026-08-11 the project chose 16 candidates for search batch {index}.",
+            title=f"Archived source {index}", source="manual",
+            metadata={"id": f"older-{index}", "is_archived": True,
+                      "memory_layer": "archive", "retention_policy": "permanent"},
+        )
         return self.kb.add_memory(
             content or f"On 2026-08-11 the project chose 16 candidates for search batch {index}.",
             title=f"Search summary {index}",

@@ -5,7 +5,9 @@ echo ===================================================
 echo              Starting Saya+ System
 echo ===================================================
 echo.
-echo [1/3] Activating Conda environment 'groundingdino'...
+echo [1/3] Preparing Conda environment 'Saya'...
+set "SAYA_STARTUP_MODEL=api"
+set "SAYA_MC_OWNER=Kurosawa_Jin"
 set "BILIBILI_COOKIE_FILE=%~dp0knowledge_base\bilibili_cookie.txt"
 if exist "%BILIBILI_COOKIE_FILE%" (
     for /f "usebackq delims=" %%A in ("%BILIBILI_COOKIE_FILE%") do (
@@ -48,17 +50,27 @@ if defined YOUTUBE_API_KEY (
     echo To fetch YouTube hot comments, create knowledge_base\youtube_api_key.txt with your API key.
 )
 
-:: Start backend in a separate window so the script can continue and open the browser
+if not exist "%~dp0minecraft_worker\node_modules\mineflayer\package.json" (
+    echo.
+    echo ERROR: Minecraft worker dependencies are missing.
+    echo Run: conda activate Saya
+    echo Then: npm --prefix "%~dp0minecraft_worker" install
+    pause
+    exit /b 1
+)
+
+:: Keep the backend window open so its logs remain visible.
 echo [2/3] Starting Backend Server in a new window...
-start "Saya+ Backend Server" cmd /k "conda activate groundingdino && uvicorn server5-22B----:app --host 127.0.0.1 --port 8000"
+start "Saya+ Backend Server" cmd /k "call D:\Program\anaconda3\Scripts\activate.bat Saya && python -m uvicorn server5-22B----:app --host 127.0.0.1 --port 8000"
 
 echo [3/3] Waiting for server to initialize (8 seconds)...
 timeout /t 8 /nobreak > nul
 
 echo Opening Browser...
-start http://127.0.0.1:8000/static/Chat4o5-Modern.html?v=g13-20260811-citation-memory
+start "" "http://127.0.0.1:8000/static/Chat4o5-Modern.html?v=g13-20260811-citation-memory"
 
 echo.
-echo Done! The backend is running in the new command window.
-echo You can safely close this launcher window.
-pause
+echo Done! The backend is running in the separate command window.
+echo This launcher window will close automatically.
+timeout /t 2 /nobreak > nul
+exit /b 0

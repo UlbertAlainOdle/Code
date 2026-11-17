@@ -20,6 +20,7 @@ from urllib.parse import urljoin
 from urllib.robotparser import RobotFileParser
 
 import requests
+from ..qq_tasks import checkpoint_current, phase_current
 
 from saya_app.config import (
     WEB_READER_ALLOWED_CONTENT_TYPES,
@@ -145,6 +146,7 @@ class WebReader:
         current = url
         redirects = 0
         while True:
+            phase_current('sources')
             safe, code, info = is_url_safe(current, resolver=self.resolver)
             if not safe:
                 return None, current, code or "unsafe_url"
@@ -159,6 +161,12 @@ class WebReader:
                 )
             except requests.RequestException:
                 return None, current, "network_error"
+
+            try:
+                checkpoint_current()
+            except BaseException:
+                resp.close()
+                raise
 
             if resp.status_code in REDIRECT_STATUSES:
                 location = resp.headers.get("Location") or ""
@@ -207,6 +215,7 @@ class WebReader:
         total = 0
         try:
             for chunk in resp.iter_content(chunk_size=8192, decode_unicode=False):
+                checkpoint_current()
                 if not chunk:
                     continue
                 total += len(chunk)

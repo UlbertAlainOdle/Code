@@ -1,0 +1,32 @@
+{
+  "host": "127.0.0.1",
+  "port": 25565,
+  "username": "Saya",
+  "owner_username": "",
+  "version": "1.21.5",
+  "account": "",
+  "status_interval": 30,
+  "auto_discard_unplanned": false,
+  "auto_attack_hostiles": false,
+  "auto_hunt_animals": false,
+  "auto_counterattack": false,
+  "counterattack_owner": false,
+  "auto_mine_ores": false,
+  "auto_mine_range": 24,
+  "auto_mine_ore_modes": {},
+  "slu_backend": "legacy",
+  "slu_local_model": "",
+  "slu_model_url": "",
+  "slu_model_name": "",
+  "combat_detection_range": 48,
+  "follow_search_range": 64,
+  "skin_value": "Notch",
+  "skin_command": "/skin set URL {model} {value}",
+  "skin_model": "classic",
+  "skin_url_base": "http://127.0.0.1:8000",
+  "skin_server_dir": "",
+  "survival": {
+    "mob_policy": "counter",
+    "auto_eat_food_level": 7
+  }
+}

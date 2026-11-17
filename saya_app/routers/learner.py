@@ -8,6 +8,14 @@ from saya_app.services.learner import learner_service
 router = APIRouter(prefix="/api/learner", tags=["learner"])
 
 
+def search_snapshot(credentials):
+    from saya_app.services.conversation import conversation_service
+    effective=conversation_service.credentials()
+    if 'search_provider' in effective.get('local_fields',[]):
+        credentials.update({key:effective.get(key,'') for key in ('search_provider','brave_search_api_key','deepseek_search_api_key')})
+    return credentials
+
+
 @router.get("/state")
 def get_learner_state():
     return learner_service.get_state()
@@ -121,7 +129,7 @@ def delete_learner_task(task_id: str, confirmation_token: str = ""):
 @router.post("/tasks/{task_id}/run")
 async def run_learner_task(task_id: str, req: dict):
     try:
-        credentials = dict(req or {})
+        credentials = search_snapshot(dict(req or {}))
         credentials["_event_loop"] = asyncio.get_running_loop()
         run = learner_service.start_task(task_id, credentials=credentials, force=True)
     except ValueError as exc:
@@ -133,6 +141,6 @@ async def run_learner_task(task_id: str, req: dict):
 
 @router.post("/start")
 async def start_due_learner_tasks(req: dict):
-    credentials = dict(req or {})
+    credentials = search_snapshot(dict(req or {}))
     credentials["_event_loop"] = asyncio.get_running_loop()
     return learner_service.start_due_tasks(credentials=credentials)

@@ -12,6 +12,7 @@ A thin, injectable adapter around the Brave Web Search endpoint. It:
 from urllib.parse import urlsplit, urlunsplit
 
 import requests
+from ..qq_tasks import checkpoint_current, phase_current, TaskCancelled
 
 from saya_app.config import (
     BRAVE_SEARCH_ENDPOINT,
@@ -101,6 +102,7 @@ class BraveSearchService:
         }
 
         try:
+            phase_current('search')
             resp = self.session.get(
                 self.endpoint,
                 params=params,
@@ -110,8 +112,18 @@ class BraveSearchService:
         except requests.RequestException:
             return [], "network_error"
 
+        try:
+            checkpoint_current()
+        except TaskCancelled:
+            close = getattr(resp, 'close', None)
+            if callable(close):
+                close()
+            raise
+
         if resp.status_code == 401 or resp.status_code == 403:
             return [], "auth_error"
+        if resp.status_code == 402:
+            return [], "usage_limit_exceeded"
         if resp.status_code == 429:
             return [], "rate_limited"
         if resp.status_code >= 500:

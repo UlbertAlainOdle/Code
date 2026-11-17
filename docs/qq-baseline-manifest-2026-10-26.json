@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "planning_date": "2026-10-26",
+  "scope": "Current working-tree source identity and allowlisted saved QQ settings; not an executable backup or live health report.",
+  "git": {
+    "head": "2940618db653a70e4fb4b3bef007c04758ccd4c8",
+    "branch": "codex/qq-message-bridge",
+    "tracked_changes_present": true
+  },
+  "files": [
+    {
+      "path": "saya_app/services/qq_bridge.py",
+      "bytes": 47787,
+      "sha256": "1b710b2b916652660c18667dec2ceb18a4fff30d40c17143c20f97e5fe44f601"
+    },
+    {
+      "path": "saya_app/services/qq_chat.py",
+      "bytes": 10922,
+      "sha256": "89872ced89126d4c31c18daa2008f9e4422614f203dfcb9f551baf60d0190f7a"
+    },
+    {
+      "path": "saya_app/services/qq_controls.py",
+      "bytes": 5752,
+      "sha256": "5304d6d8adc5c9d71b3d22f92854b90935c9d4f642f6fdf45cd5193c0be41584"
+    },
+    {
+      "path": "saya_app/routers/qq.py",
+      "bytes": 7187,
+      "sha256": "3cf4a37839e68870dbaa24b179c5fc62922f60de47ae14201a12a1e86d74cba1"
+    },
+    {
+      "path": "saya_app/services/state_storage.py",
+      "bytes": 1672,
+      "sha256": "0dcb37adab8cb45f2f5b058151d93a3d6d2f0f2159557c6cc140fdc460ee1a44"
+    },
+    {
+      "path": "saya_app/services/chat_runtime.py",
+      "bytes": 2440,
+      "sha256": "4f78d83a1f6eadcbc80e15fa00eee67d32bae9a93da9b16544d63015c77bce71"
+    },
+    {
+      "path": "saya_app/services/conversation.py",
+      "bytes": 92718,
+      "sha256": "06ebc972537e1907ba41d48344328dcc7693cdd501ce45856602422865d0f0b1"
+    },
+    {
+      "path": "saya_app/services/api_thinking.py",
+      "bytes": 901,
+      "sha256": "70e3ed412783f510ee261f075ae36f6b3819c62897786a13e2e7a4b4e6d1f4f3"
+    },
+    {
+      "path": "saya_app/services/memory_v4/model_adapters.py",
+      "bytes": 22880,
+      "sha256": "d0bd0b5dad4fb707cee8ac82b85c210d402466fd74983acc9dd158f330c28058"
+    },
+    {
+      "path": "saya_app/services/memory_v4/agent_loop.py",
+      "bytes": 14627,
+      "sha256": "a038d2dd1d6a0ef2a183fe92a406819fa0ebf4ab0e2521eafecbefe8f982d4aa"
+    },
+    {
+      "path": "saya_app/services/memory_v4/capabilities.py",
+      "bytes": 16506,
+      "sha256": "cc4acaf7b8ba13e519306df0332c5c836d90ccbf64ffd63972a70b5717d4ef5d"
+    },
+    {
+      "path": "saya_app/services/memory_v4/web_tools.py",
+      "bytes": 11599,
+      "sha256": "b9c65cb57c5359f58434eed7ed577cab7d1ae5223bf777945532150df342be35"
+    },
+    {
+      "path": "core_services.py",
+      "bytes": 536544,
+      "sha256": "2da08c99e51a1fe1c6d03083ddfd3f0fa1c619cb443b404eba79f66570000e2f"
+    },
+    {
+      "path": "server5-22B----.py",
+      "bytes": 246657,
+      "sha256": "d6295a60fe38e84776c74affa0a10668c11c0b7e67cebf10a2ddc7d25e90428a"
+    },
+    {
+      "path": "scripts/start_qq.ps1",
+      "bytes": 3568,
+      "sha256": "ff5fb4bc81bd155bc01b43005764b58edff69920c922225dd26c77ad5d06cdbd"
+    },
+    {
+      "path": "static/Chat4o5-Modern.html",
+      "bytes": 157808,
+      "sha256": "be1484308110fd9723dfcce792eb71df66e6c350968d2bff30eadeb473b0612d"
+    },
+    {
+      "path": "static/js/qq_settings.js",
+      "bytes": 10918,
+      "sha256": "504ce96ee5bc9e36036920f6d184ae1c5a6761b7ecf227d5e866cc9e23818b05"
+    },
+    {
+      "path": "static/js/app.js",
+      "bytes": 886695,
+      "sha256": "6b7549ef77609baeeb65d8719a076c3a247dfaad3f7a311aeb4238853c030788"
+    },
+    {
+      "path": "static/css/qq_settings.css",
+      "bytes": 4114,
+      "sha256": "e99b26a11c494ba64ef2e6842c59e9eb725d008487ab9ad71d9a61c216a5a65e"
+    },
+    {
+      "path": "tests/test_qq_bridge.py",
+      "bytes": 15146,
+      "sha256": "488be399cf285028ebbbb33bb5085116c6ffb84d474cc698cdeb0a3f840e7653"
+    },
+    {
+      "path": "tests/test_qq_groups.py",
+      "bytes": 16360,
+      "sha256": "2ccc6175e2b8cd231fa20b982bf765e703fcb4f19d91127d810c50b38fb1e896"
+    },
+    {
+      "path": "tests/test_qq_controls.py",
+      "bytes": 14425,
+      "sha256": "e9ca64e509d23482b1d0444ce2b3e275b4fdcae1b422086081da6a01d0c95ba3"
+    },
+    {
+      "path": "tests/test_qq_capabilities.py",
+      "bytes": 8013,
+      "sha256": "120e7126e9dbc9e1b9b0ada5a368795714e8e38a2e4b21412b018eeada6d56c4"
+    },
+    {
+      "path": "tests/test_qq_chat_runtime.py",
+      "bytes": 16583,
+      "sha256": "a8f0c8e4b18f0095a0c85028f2f4b4ac6a57e00b5ea9692d8845287365dfa66c"
+    },
+    {
+      "path": "tests/test_memory_default_runtime.py",
+      "bytes": 6552,
+      "sha256": "73deb29902129961b1fc20d4210f23043ff672ba08746b5b569aee1ee902bfb3"
+    },
+    {
+      "path": "tests/test_memory_v4_agent_adapter.py",
+      "bytes": 5761,
+      "sha256": "00e8c9e76342fd300603ee9f16984eda285b8cc409f392eab71e3de826dc9c97"
+    },
+    {
+      "path": "tests/test_memory_v4_phase7.py",
+      "bytes": 5223,
+      "sha256": "4cf2eb1529c18f7fcc3368857d08eec1d3983a25e8c65176d28eeffd40c6cc22"
+    },
+    {
+      "path": "tests/test_web_research.py",
+      "bytes": 29662,
+      "sha256": "24a69daa3679fe38d83259b3dfa146636f4b2fa48e96d0ed4f24d9010146c25d"
+    },
+    {
+      "path": "tests/test_chat_agents.py",
+      "bytes": 12994,
+      "sha256": "c78f38800f14de06b255cceb0ad10f014ed27ac30f841d44d25456a69d5d806e"
+    },
+    {
+      "path": "tests/chat_agents.test.cjs",
+      "bytes": 1903,
+      "sha256": "fecde4d4f78d123a554ab1e7bc0f1c6262bfa50ad6c35313f8539a5ab6f958af"
+    },
+    {
+      "path": "tests/test_speech_text.py",
+      "bytes": 1173,
+      "sha256": "f6254a02eb4bb9df53694f31148d5acb38617400399e714b43bccfe803270f6f"
+    },
+    {
+      "path": "tests/test_speech_prosody.py",
+      "bytes": 13789,
+      "sha256": "51b60917d281db72a441780ace9d7b277325e1b351f6a7f7257eeec578b6ecc7"
+    },
+    {
+      "path": "tests/test_voice_shutdown.py",
+      "bytes": 1822,
+      "sha256": "189c614896aa5cf4afc4b618a041f3a51fcd6a8266e75e8c33df5c427dcd60ce"
+    },
+    {
+      "path": "tests/test_pcm_voice.cjs",
+      "bytes": 3341,
+      "sha256": "9846809ac6d5f8d3ee40255fc2da79ced1193080aa7b9e29460aa469fdc4ab54"
+    },
+    {
+      "path": "tests/test_voice_playback.cjs",
+      "bytes": 15491,
+      "sha256": "456a6def735bd9cc73a0dffc5c1a1fd135bebb5aa12152cd61c9b16067f37a9d"
+    }
+  ],
+  "saved_qq_settings": {
+    "source": "knowledge_base/qq/settings.json",
+    "exists": true,
+    "values": {
+      "enabled": true,
+      "shared_memory": true,
+      "group_mention_only": true,
+      "auto_accept_owner_invites": true,
+      "owner_group_auto_enable": true,
+      "cooldown_seconds": 3.0,
+      "history_turns": 12,
+      "reply_timeout": 300.0,
+      "thinking_effort": "auto",
+      "agent_mode": true,
+      "recall_mode": "on",
+      "recall_memory_count": 50,
+      "memory_token_budget": 16000,
+      "graph_recall_mode": "deep",
+      "memory_write_enabled": true,
+      "web_search_mode": "auto",
+      "max_output_tokens": 8192
+    }
+  },
+  "validation_status": "Documentation preparation only; no business tests or real QQ operations executed in this turn.",
+  "excluded": [
+    "All credentials and environment secret files",
+    "Bot and owner QQ identifiers",
+    "NapCat login/profile data",
+    "Personal chat and memory contents",
+    "Private attachments and raw logs"
+  ],
+  "recovery_note": "Hashes identify a version; implementation G0 must separately create and verify a consistent private backup."
+}

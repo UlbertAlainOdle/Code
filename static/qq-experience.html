@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>QQ 对话体验</title>
+<style>body{max-width:760px;margin:40px auto;padding:0 20px;font:16px/1.7 system-ui;background:#f6f7fb;color:#243047}main{background:white;border:1px solid #ddd;border-radius:16px;padding:28px}label{display:block;margin:18px 0}button,select{font:inherit;padding:6px 12px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px}#status{min-height:2em}</style></head>
+<body><main><a href="/static/qq.html">返回 QQ 设置</a><h1>对话篇幅与短语音</h1>
+<p>根据本轮话题引导篇幅。简单聊天留出接话空间，复杂问题保留细节。适合声音时，可从长回答里选择一句完整的话朗读；仍遵守原语音长度、时长与声线。</p>
+<p>人物设定、思考档位、收藏清单及当前表情模式保持。语音与大表情互斥，可配颜文字。关闭此策略回到原来的篇幅与整篇短语音路径。</p>
+<form id="policy"><label>操作账号 <select id="owner" required><option value="">请先读取设置</option></select></label>
+<label><input type="checkbox" id="enabled"> 启用对话体验策略（总开关）</label>
+<label><input type="checkbox" id="concise_replies"> 按话题精简篇幅（试用；自然感仍需实际评价）</label>
+<label><input type="checkbox" id="short_voice"> 长文字可选一句完整短语音</label>
+<button type="button" id="read">读取设置与统计</button> <button id="save" disabled>保存设置</button></form>
+<p id="status" role="status"></p><h2>当前采样</h2><p>仅保留有界的长度、耗时和原因计数，不含聊天正文。采样不代表全部对话或连续在线时间。</p><pre id="diagnostics">尚未读取</pre>
+</main><script src="/static/js/qq_experience.js?v=77-2"></script></body></html>

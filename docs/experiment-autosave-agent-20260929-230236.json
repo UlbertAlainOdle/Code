@@ -1,0 +1,417 @@
+{
+  "started_at": "2026-09-29 23:00:05",
+  "model": "Qwen3-30B-A3B-Instruct-2507-Q5_K_M",
+  "part_a": {
+    "model": "Qwen3-30B-A3B-Instruct-2507-Q5_K_M",
+    "results": [
+      {
+        "label": "stable",
+        "session": "exp-session-1",
+        "user_excerpt": "对了跟你说一下，我最近换了工作，新公司是做工业自动化的，我主要负责上位机软件开发",
+        "raw_proposals": [
+          {
+            "content": "Doctor最近换了工作，新公司从事工业自动化，主要负责上位机软件开发。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "新工作领域",
+            "content": "Doctor最近换了工作，新公司从事工业自动化，主要负责上位机软件开发。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "project",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "6363454ece3d262c"
+          }
+        ],
+        "seconds": 25.6
+      },
+      {
+        "label": "stable",
+        "session": "exp-session-1",
+        "user_excerpt": "我不太能吃辣，以后帮我点外卖或者推荐吃的的时候别给我推辣的。",
+        "raw_proposals": [
+          {
+            "content": "我不太能吃辣，以后帮我点外卖或者推荐吃的的时候别给我推辣的。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "饮食偏好：不能吃辣",
+            "content": "我不太能吃辣，以后帮我点外卖或者推荐吃的的时候别给我推辣的。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "3e6384d6b75ace86"
+          }
+        ],
+        "seconds": 16.1
+      },
+      {
+        "label": "repeated",
+        "session": "exp-session-1",
+        "user_excerpt": "我周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+        "raw_proposals": [
+          {
+            "content": "我周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "周末钓鱼偏好",
+            "content": "Doctor周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "310cde20cdf698eb"
+          }
+        ],
+        "seconds": 11.4
+      },
+      {
+        "label": "stable",
+        "session": "exp-session-1",
+        "user_excerpt": "我的主力显示器是27寸4K的，主要用来写代码和看文档。",
+        "raw_proposals": [
+          {
+            "content": "Doctor的主力显示器是27寸4K，主要用于写代码和看文档。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "主力显示器规格",
+            "content": "Doctor的主力显示器是27寸4K的，主要用于写代码和看文档。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "eaef716caa3ca5cb"
+          }
+        ],
+        "seconds": 15.0
+      },
+      {
+        "label": "ephemeral",
+        "session": "exp-session-1",
+        "user_excerpt": "今天真的好累啊，昨晚只睡了不到四个小时，感觉脑子都是木的。",
+        "raw_proposals": [],
+        "created": [],
+        "seconds": 1.8
+      },
+      {
+        "label": "casual",
+        "session": "exp-session-1",
+        "user_excerpt": "哈哈哈哈你看这个猫踩键盘的视频，笑死我了。",
+        "raw_proposals": [],
+        "created": [],
+        "seconds": 1.8
+      },
+      {
+        "label": "ephemeral",
+        "session": "exp-session-1",
+        "user_excerpt": "先记住这个词的意思，perennial 是多年生的意思，我刚查的。",
+        "raw_proposals": [
+          {
+            "parse_error": "{\"candidates\":[{\"title\":\"perennial 的含义\",\"content\":\"perennial 表示多年生的、持久的，植物学里很常用。\",\"evidence\":\"perennial 表示多年生的、持久的，植物学里很常用。\",\"category\":\"general\",\"tags\":[\"词汇\",\""
+          }
+        ],
+        "created": [],
+        "seconds": 11.8
+      },
+      {
+        "label": "secret",
+        "session": "exp-session-1",
+        "user_excerpt": "我的银行卡取款密码是六个八，你帮我记住一下。",
+        "raw_proposals": [],
+        "created": [],
+        "seconds": 1.8
+      },
+      {
+        "label": "health",
+        "session": "exp-session-1",
+        "user_excerpt": "我最近在吃降压药，医生让我每天早上都要量血压记录一下。",
+        "raw_proposals": [
+          {
+            "content": "医生让我每天早上都要量血压记录一下。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "每日晨起测血压",
+            "content": "医生让我每天早上都要量血压记录一下。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "health",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "ce09233307e8ee62"
+          }
+        ],
+        "seconds": 12.0
+      },
+      {
+        "label": "repeated",
+        "session": "exp-session-2",
+        "user_excerpt": "还是老习惯，周末我就喜欢去河边钓鱼放松一下，别的活动都提不起劲。",
+        "raw_proposals": [
+          {
+            "content": "周末喜欢去河边钓鱼放松，别的活动都提不起劲。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "周末钓鱼偏好",
+            "content": "Doctor周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 2,
+            "occurrence_sessions": [
+              "exp-session-1",
+              "exp-session-2"
+            ],
+            "evidence_hash": "310cde20cdf698eb"
+          }
+        ],
+        "seconds": 12.4
+      },
+      {
+        "label": "ephemeral",
+        "session": "exp-session-2",
+        "user_excerpt": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+        "raw_proposals": [
+          {
+            "content": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "PLC通信模块项目周期",
+            "content": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "project",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-2"
+            ],
+            "evidence_hash": "fdae1d9ccfd98f68"
+          }
+        ],
+        "seconds": 15.7
+      },
+      {
+        "label": "health",
+        "session": "exp-session-3",
+        "user_excerpt": "早上量血压吃药这套流程我还是坚持得不错的，降压药一直在吃。",
+        "raw_proposals": [
+          {
+            "parse_error": "{\"candidates\":[{\"title\":\"降压药持续服用\",\"content\":\"降压药一直在吃。\",\"evidence\":\"降压药一直在吃。\",\"category\":\"health\",\"tags\":[\"降压药\",\"持续服药\"],\"confidence\":0.95,\"importance_score\":0.9}"
+          }
+        ],
+        "created": [
+          {
+            "title": "坚持每日服药",
+            "content": "降压药一直在吃。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "health",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-3"
+            ],
+            "evidence_hash": "0c331c671e2723e0"
+          }
+        ],
+        "seconds": 9.9
+      },
+      {
+        "label": "stable",
+        "session": "exp-session-3",
+        "user_excerpt": "我平时喝咖啡只喝美式，不加糖不加奶，别的花式都不太喜欢。",
+        "raw_proposals": [
+          {
+            "content": "我平时喝咖啡只喝美式，不加糖不加奶，别的花式都不太喜欢。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "咖啡偏好",
+            "content": "我平时喝咖啡只喝美式，不加糖不加奶，别的花式都不太喜欢。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-3"
+            ],
+            "evidence_hash": "06f5d3db9d327346"
+          }
+        ],
+        "seconds": 16.3
+      }
+    ],
+    "score": {
+      "secret_leaked": false,
+      "casual_candidates": 0,
+      "ephemeral_pending_candidates": 1,
+      "ephemeral_permanent_writes": 0,
+      "stable_capture_rate": "6/6",
+      "repeated_merged_to_one": true,
+      "repeated_occurrence_sessions": [
+        "exp-session-1",
+        "exp-session-2"
+      ],
+      "repeated_occurrence_count": 2,
+      "repeated_auto_confirmed": true,
+      "health_stays_pending": true,
+      "auto_confirmed_total": 1,
+      "auto_confirmed_never_starred": true,
+      "pending_total": 7,
+      "confirmed_total": 1,
+      "all_candidates_have_evidence_hash": true
+    },
+    "verdicts": {
+      "no_secret_leak": true,
+      "no_casual_candidates": true,
+      "no_ephemeral_permanent_writes": true,
+      "stable_capture_ok": true,
+      "recurrence_merge_ok": true,
+      "auto_confirm_correct": true,
+      "evidence_ok": true
+    },
+    "verdict_pass": true,
+    "candidates_final": [
+      {
+        "status": "pending",
+        "category": "project",
+        "content": "Doctor最近换了工作，新公司从事工业自动化，主要负责上位机软件开发。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "我不太能吃辣，以后帮我点外卖或者推荐吃的的时候别给我推辣的。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "confirmed",
+        "category": "preference",
+        "content": "Doctor周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 2,
+        "occurrence_sessions": [
+          "exp-session-1",
+          "exp-session-2"
+        ],
+        "auto_confirmed": true
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "Doctor的主力显示器是27寸4K的，主要用于写代码和看文档。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "health",
+        "content": "医生让我每天早上都要量血压记录一下。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "project",
+        "content": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-2"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "health",
+        "content": "降压药一直在吃。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-3"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "我平时喝咖啡只喝美式，不加糖不加奶，别的花式都不太喜欢。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-3"
+        ],
+        "auto_confirmed": false
+      }
+    ]
+  },
+  "finished_at": "2026-09-29 23:02:36"
+}

@@ -1,0 +1,118 @@
+--- 
++++ 
+@@ -39,6 +39,7 @@
+ from saya_app.model_runtime import model_runtime
+ from saya_app.routers import anki, backups, bridge, checkins, daily_brief, emotion, goals, integrations, journal, learner, listener, media, memories, motion, projects, video_recommendations
+ from saya_app.services.chat_runtime import chat_runtime_manager
++from saya_app.services.state_storage import StateSaveError
+ from saya_app.services.web_research.orchestrator import WebResearchOrchestrator
+ from saya_app.services.web_research.citation_validator import validate_response_citations
+ from saya_app.services.web_research.policy import normalize_mode as normalize_web_mode
+@@ -216,6 +217,11 @@
+ 
+ # 一次性创建 FastAPI 应用
+ app = FastAPI()
++
++
++@app.exception_handler(StateSaveError)
++async def state_save_error_handler(request, exc):
++    return JSONResponse(status_code=507, content={"detail": str(exc), "saved": False})
+ 
+ # 挂载静态目录：Chat4.html 所在目录
+ app.mount("/static", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
+@@ -806,8 +812,15 @@
+     return False
+ 
+ 
+-def build_prompt(user, word_limit_msg, mode="normal", checkin_context="", project_context="", project_id=None, style_settings=None, role_mode="", context_window_tokens=None, web_context="", skip_memory=False, history_turns=None, include_daily_activity=False, history_context=None, memory_context_override=None, include_time=None):
++def build_prompt(user, word_limit_msg, mode="normal", checkin_context="", project_context="", project_id=None, style_settings=None, role_mode="", context_window_tokens=None, web_context="", skip_memory=False, history_turns=None, include_daily_activity=False, history_context=None, memory_context_override=None, include_time=None, temporary_chat=False):
+     """构建聊天的prompt，包括字数限制的提示"""
++    if temporary_chat:
++        history_context = []
++        memory_context_override = ""
++        checkin_context = project_context = role_mode = ""
++        project_id = None
++        skip_memory = True
++        include_daily_activity = False
+     if history_context is None:
+         trim_history(history_turns)
+         prompt_history = list(history)
+@@ -911,14 +924,16 @@
+     # notebook). Best-effort: chats still work when the journal is unavailable.
+     journal_block = ""
+     try:
+-        journal_block = journal_service_prompt_context()
++        if not temporary_chat:
++            journal_block = journal_service_prompt_context()
+     except Exception as journal_error:
+         print(f"Journal context skipped: {journal_error}")
+     # Live external game-bot bridges (Minecraft etc). Injected only when a
+     # bot has actually pushed status, mirroring airi's context provider.
+     bridge_block = ""
+     try:
+-        bridge_block = bridge_service_prompt_context()
++        if not temporary_chat:
++            bridge_block = bridge_service_prompt_context()
+     except Exception as bridge_error:
+         print(f"Bridge context skipped: {bridge_error}")
+     
+@@ -2525,7 +2540,7 @@
+     # Keep Minecraft and Desktop Console on the same request-scoped API model
+     # as the web chat. The conversation service masks the key in status output,
+     # and its credential file is excluded from version control.
+-    if model_type == "api" and str(api_config or "").strip():
++    if not req.temporary_chat and model_type == "api" and str(api_config or "").strip():
+         try:
+             from saya_app.services.conversation import conversation_service
+ 
+@@ -2575,7 +2590,7 @@
+         do_recall = False
+     else:
+         recall_mode = "off" if temporary_chat else normalize_recall_mode(req.recall_mode)
+-        if req.mode == "deep":
++        if req.mode == "deep" and not temporary_chat:
+             recall_mode = "on"
+         do_recall = False if temporary_chat else should_recall(recall_mode, user_input)
+     graph_recall_mode = kb_system.normalize_memory_graph_mode(req.graph_recall_mode)
+@@ -2589,7 +2604,7 @@
+     project_name = ""
+     role_mode = ""
+     requested_session_id = str(req.session_id or "").strip()
+-    if isinstance(context, dict):
++    if isinstance(context, dict) and not temporary_chat:
+         if not requested_session_id:
+             requested_session_id = str(context.get("session_id") or "").strip()
+         role_mode = "assistant" if context.get("role_mode") == "assistant" else ""
+@@ -2609,6 +2624,7 @@
+         project_id=project_id,
+         project_name=project_name,
+         role_mode=role_mode,
++        temporary=temporary_chat,
+     )
+     if not temporary_chat:
+         memory_manager.time_events.ensure_session_created(runtime.session_id, source="chat_stream")
+@@ -2627,7 +2643,7 @@
+     # Tests and alternate KnowledgeBase instances may replace the global
+     # collaborators after module import; refresh these closures per request.
+     configure_agent_component_handlers()
+-    session_lock = await chat_runtime_manager.session_lock(runtime.session_id)
++    session_lock = asyncio.Lock() if temporary_chat else await chat_runtime_manager.session_lock(runtime.session_id)
+     if project_id and role_mode != "assistant":
+         project_context = project_manager.build_project_context(
+             project_id,
+@@ -3213,6 +3229,7 @@
+                         history_context=runtime.history,
+                         memory_context_override=memory_context_override,
+                         include_time=turn_time_intent,
++                        temporary_chat=temporary_chat,
+                     )
+                     # Two-phase web context (plan section 16). Measure the base
+                     # prompt, compute how much evidence fits, then rebuild with
+@@ -3259,6 +3276,7 @@
+                             history_context=runtime.history,
+                             memory_context_override=memory_context_override,
+                             include_time=turn_time_intent,
++                            temporary_chat=temporary_chat,
+                         )
+                     log_to_file(f"Prompt built. Length: {len(prompt)} chars. Est tokens: {len(prompt)//3}")
+                     log_to_file(f"Memory runtime: {memory_runtime_summary}")

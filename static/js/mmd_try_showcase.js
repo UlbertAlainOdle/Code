@@ -1,7 +1,59 @@
+const motionSettingsStorage = window.SayaSettingsStore?.storage || window.localStorage;
 window.onerror = function(msg, url, line, col, error) {
     if (String(msg || '').includes("ResizeObserver")) return;
     console.error("Global Error:", msg, "Line:", line, error);
 };
+
+// The showcase is also opened as a standalone page, so it cannot assume the
+// main app's dialog helpers are present.  These small equivalents keep export
+// and reset feedback in the same dark, non-blocking visual language.
+function showMotionNotice(message, type = 'info') {
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, {type, duration: type === 'error' ? 4200 : 3000});
+        return;
+    }
+    let wrap = document.getElementById('motion-notice-wrap');
+    if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'motion-notice-wrap';
+        wrap.className = 'motion-notice-wrap';
+        document.body.appendChild(wrap);
+    }
+    const notice = document.createElement('div');
+    notice.className = `motion-notice ${type}`;
+    notice.textContent = String(message || '');
+    wrap.appendChild(notice);
+    setTimeout(() => notice.remove(), type === 'error' ? 5200 : 3200);
+}
+
+function confirmMotionAction(message, run) {
+    if (typeof window.showConfirmDialog === 'function') {
+        window.showConfirmDialog({
+            title: 'Reset current motion?',
+            message,
+            confirmLabel: 'Reset',
+            danger: true,
+            onConfirm: close => { close(); run(); }
+        });
+        return;
+    }
+    const overlay = document.createElement('div');
+    overlay.className = 'motion-confirm-overlay';
+    overlay.innerHTML = `
+        <div class="motion-confirm" role="dialog" aria-modal="true" aria-label="Reset current motion">
+            <strong>Reset current motion?</strong>
+            <p>${String(message || '').replace(/[&<>\"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[char]))}</p>
+            <div class="motion-confirm-actions"><button type="button" data-cancel>Cancel</button><button type="button" data-confirm>Reset</button></div>
+        </div>`;
+    const onKeyDown = event => { if (event.key === 'Escape') finish(); };
+    const finish = () => { document.removeEventListener('keydown', onKeyDown); overlay.remove(); };
+    overlay.querySelector('[data-cancel]').addEventListener('click', finish);
+    overlay.querySelector('[data-confirm]').addEventListener('click', () => { finish(); run(); });
+    overlay.addEventListener('click', event => { if (event.target === overlay) finish(); });
+    document.body.appendChild(overlay);
+    document.addEventListener('keydown', onKeyDown);
+    overlay.querySelector('[data-confirm]')?.focus();
+}
 
 const MODEL_URL = '/MMD/TDA%20Default%20Miku%20%28Xoriu%20Ver.%29/TDA%20Default%20Miku%20%28Xoriu%20Ver%29.pmx';
 
@@ -56,7 +108,9 @@ let motionAnnotations = loadMotionAnnotations();
 let isExportingMotions = false;
 let lastExportResult = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+const motionPageReady=callback=>document.readyState==='loading'
+    ?document.addEventListener('DOMContentLoaded',callback,{once:true}):queueMicrotask(callback);
+motionPageReady(() => {
     initDraggableModel();
     initMotionListControls();
     const nextButton = document.getElementById('next-motion');
@@ -117,7 +171,7 @@ function getMotionNameFromUrl(url) {
 
 function loadMotionMarks() {
     try {
-        const raw = window.localStorage ? window.localStorage.getItem(MOTION_MARKS_STORAGE_KEY) : null;
+        const raw = motionSettingsStorage.getItem(MOTION_MARKS_STORAGE_KEY);
         const parsed = raw ? JSON.parse(raw) : {};
         return parsed && typeof parsed === 'object' ? parsed : {};
     } catch (e) {
@@ -128,8 +182,8 @@ function loadMotionMarks() {
 
 function saveMotionMarks() {
     try {
-        if (window.localStorage) {
-            window.localStorage.setItem(MOTION_MARKS_STORAGE_KEY, JSON.stringify(motionMarks));
+        if (motionSettingsStorage) {
+            motionSettingsStorage.setItem(MOTION_MARKS_STORAGE_KEY, JSON.stringify(motionMarks));
         }
     } catch (e) {
         console.warn("Motion marks save failed", e);
@@ -138,7 +192,7 @@ function saveMotionMarks() {
 
 function loadMotionAnnotations() {
     try {
-        const raw = window.localStorage ? window.localStorage.getItem(MOTION_ANNOTATIONS_STORAGE_KEY) : null;
+        const raw = motionSettingsStorage.getItem(MOTION_ANNOTATIONS_STORAGE_KEY);
         const parsed = raw ? JSON.parse(raw) : {};
         return parsed && typeof parsed === 'object' ? parsed : {};
     } catch (e) {
@@ -149,8 +203,8 @@ function loadMotionAnnotations() {
 
 function saveMotionAnnotations() {
     try {
-        if (window.localStorage) {
-            window.localStorage.setItem(MOTION_ANNOTATIONS_STORAGE_KEY, JSON.stringify(motionAnnotations));
+        if (motionSettingsStorage) {
+            motionSettingsStorage.setItem(MOTION_ANNOTATIONS_STORAGE_KEY, JSON.stringify(motionAnnotations));
         }
     } catch (e) {
         console.warn("Motion annotations save failed", e);
@@ -269,12 +323,12 @@ async function exportCheckedMotions() {
             : `Exported ${copiedCount}`;
         updateMotionHud(status);
         if (data.export_dir) {
-            alert(`Exported ${copiedCount} checked motion file${copiedCount === 1 ? '' : 's'} to:\n${data.export_dir}`);
+            showMotionNotice(`Exported ${copiedCount} checked motion file${copiedCount === 1 ? '' : 's'} to: ${data.export_dir}`);
         }
     } catch (error) {
         console.error('Export checked motions failed:', error);
         updateMotionHud('Export failed');
-        alert(error.message || String(error));
+        showMotionNotice(error.message || String(error), 'error');
     } finally {
         isExportingMotions = false;
         updateMotionExportState();
@@ -495,9 +549,7 @@ function initDraggableModel() {
 
     container.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        if (confirm("Reset current motion?")) {
-            resetCurrentMotion();
-        }
+        confirmMotionAction('The current motion returns to its initial position and playback state.', () => resetCurrentMotion());
     });
 
     const dragBar = container.querySelector('.drag-bar');

@@ -1,0 +1,45 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>模型指令对照 · 句内顿挫</title>
+<style>body{font:16px/1.75 system-ui,sans-serif;max-width:960px;margin:32px auto;padding:0 22px;background:#f5f6fa;color:#242b40}article{background:#fff;border:1px solid #dce0ed;border-radius:14px;padding:20px;margin:18px 0}h1{font-size:25px}h2{font-size:19px}audio{width:100%}label{display:inline-block;margin:8px 20px 8px 0}select,button{font:inherit;padding:7px;border:1px solid #a1abc3;border-radius:7px;background:#fff}small{color:#606b83}table{font-size:14px;width:100%;border-collapse:collapse}td,th{padding:7px;border-bottom:1px solid #dce0ed;text-align:left}.hint{background:#fff5dd;padding:12px;border-radius:8px}</style>
+<h1>模型指令对照 · 重点听重音、停顿和语调</h1>
+<p class="hint" id="feedback">用户反馈：这组已有一些变化，但难过、紧张不够明显，整体仍然轻快，尤其紧张。它仍是 Base 的实验指令路径，不能凭波形变化认定情绪成功。</p>
+<p><a href="direction.html">模型指令初测</a> · <a href="direction.html?test=negative">加强负面表达 / 仅原说话人向量对照</a></p>
+<article><label>文本 <select id="case"><option value="arrival">等待归来</option><option value="waiting">在意与解释</option><option value="comfort">安慰与陪伴</option></select></label><label>种子 <select id="seed"><option>42</option><option>77</option></select></label><p><label><input type="checkbox" id="matched" checked>对齐平均速度和响度，排除整体快慢干扰</label></p><p id="text"></p><small>默认对齐时长与 RMS；段内重音、停顿比例和语调仍保留。实际时长因拉伸窗口会有少量偏差。</small></article>
+<div id="samples"></div><article><h2>如何判断</h2><p>听“终于回来了”“一直在等你”等位置：重音、犹豫停顿、句末抑扬是否改变？再判断是否仍是原来的 Saya，文字有没有漏、加、断。如果只听出随机变化或还没有情感差异，这条路径也不能算验收通过。</p><p><a href="direction/direction.json">生成条件与哈希</a> · <a href="direction/measurements.json">句内声学测量</a> · <a href="index.html">上一版对照</a></p><div id="metrics"></div></article>
+<script>
+const labels={neutral:'平静 · 无指令',happy:'开心 · 重音、起伏、句末上扬',sad:'难过 · 犹豫停顿、句末下沉',stressed:'紧张 · 顿挫、重点加重'};
+const negative=new URLSearchParams(location.search).get('test')==='negative';
+const folder=negative?'direction/negative':'direction';
+let report,metrics;
+if(negative)document.getElementById('feedback').textContent='试听结论：用户认为仅原音色向量明显优于原参考 ICL，并确认仍像 Saya、可以采用。现已采用向量 + 加强指令方案；同模型声音相似度下降仍保留记录，效果可能因文本而异。';
+async function render(){
+    if(!report)return;
+    const c=document.getElementById('case').value,s=Number(document.getElementById('seed').value),matched=document.getElementById('matched').checked;
+    const names=report.labels||labels;
+    document.querySelectorAll('audio').forEach(a=>a.pause());
+    document.getElementById('text').textContent=report.texts[c];
+    const container=document.getElementById('samples');container.replaceChildren();
+    for(const mood of Object.keys(names)){
+        const row=report.results.find(r=>r.case===c&&r.seed===s&&r.mood===mood);
+        if(!row||!row.matched_file)continue;
+        const card=document.createElement('article'),h=document.createElement('h2'),a=document.createElement('audio'),p=document.createElement('p'),small=document.createElement('small');
+        h.textContent=names[mood];a.controls=true;a.preload='metadata';a.preservesPitch=true;
+        a.src=folder+'/'+(matched?row.matched_file:row.file);
+        a.onplay=()=>document.querySelectorAll('audio').forEach(x=>{if(x!==a)x.pause()});
+        p.textContent=row.instruction||'固定参考克隆，不额外加入指令。';
+        small.textContent='原始时长 '+row.duration.toFixed(2)+' 秒；试听时长 '+(matched?row.matched.duration:row.duration).toFixed(2)+' 秒。';
+        card.append(h,a,p,small);container.append(card);
+    }
+    if(metrics){
+        const rows=metrics.results.filter(r=>r.case===c&&r.seed===s);
+        document.getElementById('metrics').innerHTML='<table><tr><th>条件</th><th>局部 F0 变化 / 音分</th><th>局部强弱变化 / dB</th><th>内部停顿 / 秒</th><th>音色相似度</th></tr>'+rows.map(r=>'<tr><td>'+names[r.mood]+'</td><td>'+r.centered_pitch_median_abs_cents.toFixed(1)+'</td><td>'+r.centered_energy_median_abs_db.toFixed(2)+'</td><td>'+r.internal_pauses.map(p=>p.start+'处 '+p.seconds).join('；')+'</td><td>'+r.speaker_cosine_to_neutral.toFixed(4)+'</td></tr>').join('')+'</table><small>MFCC 动态对齐后移除整体音高/强弱偏移的局部差异；不是情绪识别或逐字核验。即使指标变化，听感仍可能不符合情绪。</small>';
+    }
+}
+Promise.all([fetch(folder+'/direction.json').then(r=>r.json()),fetch(folder+'/measurements.json').then(r=>r.ok?r.json():null).catch(()=>null)]).then(([r,m])=>{
+    report=r;metrics=m;
+    [...document.getElementById('case').options].forEach(o=>{if(!r.texts[o.value])o.remove()});
+    document.querySelector('a[href="direction/direction.json"]').href=folder+'/direction.json';
+    document.querySelector('a[href="direction/measurements.json"]').href=folder+'/measurements.json';
+    render();
+}).catch(()=>document.getElementById('text').textContent='实验音频尚未生成完毕，请稍后刷新。');
+document.querySelectorAll('select,input').forEach(e=>e.onchange=render);
+</script></html>

@@ -1,0 +1,652 @@
+{
+  "texts": {
+    "arrival": "博士，你终于回来了。我一直在等你。先坐下来，慢慢告诉我今天发生了什么。",
+    "comfort": "我们可以先停一下。刚才的事情已经过去了。你不用急着回答，我会在这里陪着你。"
+  },
+  "labels": {
+    "neutral": "原参考 ICL · 平静",
+    "neutral-xvec": "仅原音色向量 · 平静",
+    "sad": "原参考 ICL · 加强难过指令",
+    "sad-xvec": "仅原音色向量 · 加强难过指令",
+    "stressed": "原参考 ICL · 加强紧张指令",
+    "stressed-xvec": "仅原音色向量 · 加强紧张指令"
+  },
+  "settings": {
+    "enabled": true,
+    "provider": "qwen_local",
+    "auto_read": false,
+    "engine": "vllm_omni",
+    "stream_audio": true,
+    "stream_chat": true,
+    "stream_buffer_seconds": 0.8,
+    "mode": "clone",
+    "language": "Chinese",
+    "description": "年轻成年女性，清亮柔和的二次元声线，活泼亲切，有自然的情绪起伏，咬字清楚，避免夸张尖叫和机械感。",
+    "voice_id": "1fd8568ff260441587cbe97a01c0ca83",
+    "x_vector_only": false,
+    "temperature": 0.9,
+    "top_p": 1.0,
+    "top_k": 50,
+    "repetition_penalty": 1.05,
+    "max_new_tokens": 2048,
+    "seed": 42,
+    "chunk_chars": 100,
+    "volume": 1.0,
+    "playback_rate": 1.0,
+    "mood_prosody": false,
+    "mood_control": "model",
+    "idle_unload_seconds": 0
+  },
+  "results": [
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "neutral",
+      "x_vector_only": false,
+      "instruction": "",
+      "file": "arrival-42-neutral.wav",
+      "elapsed_seconds": 1.9266046000011556,
+      "duration": 6.8,
+      "rms": 0.07682744761945064,
+      "sha256": "aefb29e33e364e1663c83ce63c0d3669997f384e059b35386e27fdd6a2735832",
+      "matched_file": "arrival-42-neutral-matched.wav",
+      "matched": {
+        "duration": 6.8,
+        "rms": 0.04268191925325299,
+        "sha256": "68e1e826c521cc39db8a9340783a9a3625bd89e3bf14d519e7f4f58c38b8b204"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.5555542672476916,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "neutral-xvec",
+      "x_vector_only": true,
+      "instruction": "",
+      "file": "arrival-42-neutral-xvec.wav",
+      "elapsed_seconds": 1.0942956999970193,
+      "duration": 6.72,
+      "rms": 0.06887024234232371,
+      "sha256": "3d5fb38934ad3e673d7c8abdbf0498b994b664245dce4adcc388dda754a2b919",
+      "matched_file": "arrival-42-neutral-xvec-matched.wav",
+      "matched": {
+        "duration": 6.793541666666667,
+        "rms": 0.04298170083826125,
+        "sha256": "01decb6a4878c523f7f220ef44a6c0d4422d9eb079b2f4fbb8c44c031756d238"
+      },
+      "normalization": {
+        "mood": "neutral-xvec",
+        "tempo": 0.9882352941176471,
+        "gain": 0.6197425029315529,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "sad",
+      "x_vector_only": false,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "arrival-42-sad.wav",
+      "elapsed_seconds": 1.2558543000013742,
+      "duration": 7.68,
+      "rms": 0.06788999374001105,
+      "sha256": "9af9fa340793d45b5582ec6024ee182e50fd442d7be6023cdc0dd0f04e90f24c",
+      "matched_file": "arrival-42-sad-matched.wav",
+      "matched": {
+        "duration": 6.816875,
+        "rms": 0.04234599343782767,
+        "sha256": "e66d3f465532e409d9fc0bf34cf1589f443514674592a9efb9b512b09fdbb762"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.1294117647058823,
+        "gain": 0.628690827844041,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "sad-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "arrival-42-sad-xvec.wav",
+      "elapsed_seconds": 1.3696339999987686,
+      "duration": 8.64,
+      "rms": 0.05021390160792272,
+      "sha256": "738b6b4d21aaa842533033ff44cf785fa51f56f14c89bf88d71f934eb91b59c5",
+      "matched_file": "arrival-42-sad-xvec-matched.wav",
+      "matched": {
+        "duration": 6.79925,
+        "rms": 0.04232674396709484,
+        "sha256": "ce9ce9730b05f5dc5e8a59e10d7c00ddcb77df3f582c3e27e2e2053694d57eb8"
+      },
+      "normalization": {
+        "mood": "sad-xvec",
+        "tempo": 1.2705882352941178,
+        "gain": 0.85,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "stressed",
+      "x_vector_only": false,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "arrival-42-stressed.wav",
+      "elapsed_seconds": 1.1107045999997354,
+      "duration": 6.8,
+      "rms": 0.07426202261102606,
+      "sha256": "2a1a2bf898493e28b2451c9a1bda80a2ccbb3baf055551ba1ec276339aa9afb3",
+      "matched_file": "arrival-42-stressed-matched.wav",
+      "matched": {
+        "duration": 6.8,
+        "rms": 0.04268176160855316,
+        "sha256": "08c7a7ae191fa56218af959068f86ae00c91c2aaec1c768f51d33f6a09a13814"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 1.0,
+        "gain": 0.5747462143644485,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 42,
+      "mood": "stressed-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "arrival-42-stressed-xvec.wav",
+      "elapsed_seconds": 1.1931196000005002,
+      "duration": 7.44,
+      "rms": 0.053959039326961014,
+      "sha256": "e3c66e4ecd8e2dce3ba9f6d13e7ee559f5419f5d1001e51d304733b6d7b3aaf7",
+      "matched_file": "arrival-42-stressed-xvec-matched.wav",
+      "matched": {
+        "duration": 6.812916666666666,
+        "rms": 0.042538107271279685,
+        "sha256": "8ea564727ccffddf5751e4f6085bb2f9d3589c0dcf2977edc94984b204a4501d"
+      },
+      "normalization": {
+        "mood": "stressed-xvec",
+        "tempo": 1.0941176470588236,
+        "gain": 0.7910040078383686,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "neutral",
+      "x_vector_only": false,
+      "instruction": "",
+      "file": "arrival-77-neutral.wav",
+      "elapsed_seconds": 1.127699799999391,
+      "duration": 6.96,
+      "rms": 0.08091416188396963,
+      "sha256": "7ec2d1c28b2d7feb43af6e43274c93067df66d50f0a4bfb38f5356e5b5d2f330",
+      "matched_file": "arrival-77-neutral-matched.wav",
+      "matched": {
+        "duration": 6.96,
+        "rms": 0.042086651283637894,
+        "sha256": "327c3a4a324539dbb2672d531ac253b9ad97f6be8b8d880dcdb40f6b4e1b2f2c"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.5201395503576147,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "neutral-xvec",
+      "x_vector_only": true,
+      "instruction": "",
+      "file": "arrival-77-neutral-xvec.wav",
+      "elapsed_seconds": 1.091797699999006,
+      "duration": 6.88,
+      "rms": 0.06713852938328771,
+      "sha256": "5a683317ad146981d1b5a3cd9ca09157a087a1777e22fe3b6fc4b89277da446c",
+      "matched_file": "arrival-77-neutral-xvec-matched.wav",
+      "matched": {
+        "duration": 6.954791666666667,
+        "rms": 0.042375267524086435,
+        "sha256": "e105086ecf2933dbf5fbc169181ad770c2427fecf1db36b6a328b3b1087a1980"
+      },
+      "normalization": {
+        "mood": "neutral-xvec",
+        "tempo": 0.9885057471264368,
+        "gain": 0.6268629379655063,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "sad",
+      "x_vector_only": false,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "arrival-77-sad.wav",
+      "elapsed_seconds": 1.3024530000002414,
+      "duration": 8.16,
+      "rms": 0.06620969910970884,
+      "sha256": "bf384f09e942b337b198905ae773ad360a2f74f7d73adfc32affdb62c69670c0",
+      "matched_file": "arrival-77-sad-matched.wav",
+      "matched": {
+        "duration": 6.970833333333333,
+        "rms": 0.041647414426806965,
+        "sha256": "b0551214212c40fdb6e103adb28e8b621d2fa2c83dab0a6f8ba61538872cd04e"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.1724137931034484,
+        "gain": 0.6356569557906315,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "sad-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "arrival-77-sad-xvec.wav",
+      "elapsed_seconds": 1.407893999999942,
+      "duration": 8.88,
+      "rms": 0.04951371268222495,
+      "sha256": "07b509544693b60fbdbe09eda53d5f36141bce44ceaaa1cafdfc136530760fb5",
+      "matched_file": "arrival-77-sad-xvec-matched.wav",
+      "matched": {
+        "duration": 6.970791666666667,
+        "rms": 0.04144917763088984,
+        "sha256": "7f7799353659883db6e4a6a0a08d5eb7c9a6b3f9dee801582d380dbb2cd47dbf"
+      },
+      "normalization": {
+        "mood": "sad-xvec",
+        "tempo": 1.2758620689655173,
+        "gain": 0.85,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "stressed",
+      "x_vector_only": false,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "arrival-77-stressed.wav",
+      "elapsed_seconds": 1.1174528000010469,
+      "duration": 6.88,
+      "rms": 0.07527715922391319,
+      "sha256": "e785474e9e60a4bcd570a5f11f64637b9db0fc8f760094d03fb0de57eb6f4b27",
+      "matched_file": "arrival-77-stressed-matched.wav",
+      "matched": {
+        "duration": 6.954958333333333,
+        "rms": 0.04255749586402028,
+        "sha256": "73a2b0c81148a0556241bdbb5c4fdc4e937194995d663340fb1931010d644c12"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 0.9885057471264368,
+        "gain": 0.5590893202372812,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "arrival",
+      "seed": 77,
+      "mood": "stressed-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "arrival-77-stressed-xvec.wav",
+      "elapsed_seconds": 1.147413000002416,
+      "duration": 7.2,
+      "rms": 0.051140446656647826,
+      "sha256": "2d38d61f17ac783c4c503fb493c94f19d86f61ff26dcf959f2ce64bf2ba1cfbb",
+      "matched_file": "arrival-77-stressed-xvec-matched.wav",
+      "matched": {
+        "duration": 6.957083333333333,
+        "rms": 0.0419779908128602,
+        "sha256": "8bc2f4e6479d5e1e704d1a196b6f80ab9fe4596bc169bbd08b9b10266cb91313"
+      },
+      "normalization": {
+        "mood": "stressed-xvec",
+        "tempo": 1.0344827586206897,
+        "gain": 0.8229622252315683,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "neutral",
+      "x_vector_only": false,
+      "instruction": "",
+      "file": "comfort-42-neutral.wav",
+      "elapsed_seconds": 1.138018199999351,
+      "duration": 6.96,
+      "rms": 0.06556806517714367,
+      "sha256": "0abbd7a286ce0fe14198247a1216bf379b06acdd52f2afdea3a875384382c214",
+      "matched_file": "comfort-42-neutral-matched.wav",
+      "matched": {
+        "duration": 6.96,
+        "rms": 0.04080220769971571,
+        "sha256": "bcf73688388cfee19aef53962103c164fbc26fb8bb870b8ef205f8c0fcea5b4a"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.6222879814153969,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "neutral-xvec",
+      "x_vector_only": true,
+      "instruction": "",
+      "file": "comfort-42-neutral-xvec.wav",
+      "elapsed_seconds": 1.142406499999197,
+      "duration": 7.04,
+      "rms": 0.061315084038896774,
+      "sha256": "49086ed9e051601a5b295c9028ea9ffa83cc2cdc3b1ae57fb084ee13c09bd89f",
+      "matched_file": "comfort-42-neutral-xvec-matched.wav",
+      "matched": {
+        "duration": 6.962166666666667,
+        "rms": 0.04106106171674992,
+        "sha256": "88ca1c4ad863906ccd33288e02c4c18933e2c83701e120014d15578e622e90bb"
+      },
+      "normalization": {
+        "mood": "neutral-xvec",
+        "tempo": 1.0114942528735633,
+        "gain": 0.665451569772195,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "sad",
+      "x_vector_only": false,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "comfort-42-sad.wav",
+      "elapsed_seconds": 1.2602409999999509,
+      "duration": 7.68,
+      "rms": 0.06215148579115532,
+      "sha256": "cc7dedfe687ed5754fed934b1818da0db6f6a41cd5bfabb91683e1f6f79f5cf7",
+      "matched_file": "comfort-42-sad-matched.wav",
+      "matched": {
+        "duration": 6.9667916666666665,
+        "rms": 0.04090315224823414,
+        "sha256": "0cb114bc2f824be95d583fe7b48e18cedb4e69fa9f20a6dd06c45ac56a5ecaca"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.103448275862069,
+        "gain": 0.6564962752701305,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "sad-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "comfort-42-sad-xvec.wav",
+      "elapsed_seconds": 1.2495896999971592,
+      "duration": 8.0,
+      "rms": 0.048002610499291665,
+      "sha256": "061b1b9160f2767b6673528d8690a6c03c71ad6eca86a8c00d63262a027ab122",
+      "matched_file": "comfort-42-sad-xvec-matched.wav",
+      "matched": {
+        "duration": 6.971166666666667,
+        "rms": 0.04025126212513919,
+        "sha256": "4eb1fda682ca21fcec3cca5b785a63247e5c932ab2f8a0c4be8a56b32ebddcb8"
+      },
+      "normalization": {
+        "mood": "sad-xvec",
+        "tempo": 1.1494252873563218,
+        "gain": 0.85,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "stressed",
+      "x_vector_only": false,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "comfort-42-stressed.wav",
+      "elapsed_seconds": 1.0933336000016425,
+      "duration": 6.64,
+      "rms": 0.06527013657178142,
+      "sha256": "abf07c270040a3e0b178ed5c35325ee3ad602af9582cb53758f9b199d95c0ac6",
+      "matched_file": "comfort-42-stressed-matched.wav",
+      "matched": {
+        "duration": 6.94875,
+        "rms": 0.0415013363291549,
+        "sha256": "f8a8320428be0c71149503965d9f54086f2a3a4cfa5ebb5781f952ea267756ba"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 0.9540229885057471,
+        "gain": 0.6251284441472756,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 42,
+      "mood": "stressed-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "comfort-42-stressed-xvec.wav",
+      "elapsed_seconds": 1.0746935000024678,
+      "duration": 6.72,
+      "rms": 0.04983287476030062,
+      "sha256": "8360ed8dc3742a27d2e2d979e2a22b58f1b4a9b19a8ea0ab1441fc53d0c3804c",
+      "matched_file": "comfort-42-stressed-xvec-matched.wav",
+      "matched": {
+        "duration": 6.945333333333333,
+        "rms": 0.04161357609236757,
+        "sha256": "5067bc9d9b82eb91091b4e08fdc492894d4d10c3e36f4942293c5ad5411b563f"
+      },
+      "normalization": {
+        "mood": "stressed-xvec",
+        "tempo": 0.9655172413793103,
+        "gain": 0.8187811584352548,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "neutral",
+      "x_vector_only": false,
+      "instruction": "",
+      "file": "comfort-77-neutral.wav",
+      "elapsed_seconds": 1.0811276999993424,
+      "duration": 6.56,
+      "rms": 0.06808689004068191,
+      "sha256": "dd6b51f9d6a6a6f58c52db4c1ccb9277e89da897deaee9d64343c21a4c8d469d",
+      "matched_file": "comfort-77-neutral-matched.wav",
+      "matched": {
+        "duration": 6.56,
+        "rms": 0.04598599116735903,
+        "sha256": "bffbc99990221770b55915aeddec050801ea7b23cb9e93bf29a0f1eb445324db"
+      },
+      "normalization": {
+        "mood": "neutral",
+        "tempo": 1.0,
+        "gain": 0.6754013496357666,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "neutral-xvec",
+      "x_vector_only": true,
+      "instruction": "",
+      "file": "comfort-77-neutral-xvec.wav",
+      "elapsed_seconds": 1.179548899999645,
+      "duration": 7.36,
+      "rms": 0.0629312165525256,
+      "sha256": "68fa7ddb624b1992c1ad050d24d42fc7d4c24454aaed038376e704ff123fdefd",
+      "matched_file": "comfort-77-neutral-xvec-matched.wav",
+      "matched": {
+        "duration": 6.559166666666667,
+        "rms": 0.04540117881018358,
+        "sha256": "2653a90cd8c4f61250cab001b974d50651778a164aa43cb2b4c455d9a7f1e0fb"
+      },
+      "normalization": {
+        "mood": "neutral-xvec",
+        "tempo": 1.1219512195121952,
+        "gain": 0.730733965512908,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "sad",
+      "x_vector_only": false,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "comfort-77-sad.wav",
+      "elapsed_seconds": 1.1989783999997599,
+      "duration": 7.44,
+      "rms": 0.05588365036191228,
+      "sha256": "3e6cdd1b71f523a20142a24a94e2b416c3d0af4fdde38b18237276f0ce73d3b7",
+      "matched_file": "comfort-77-sad-matched.wav",
+      "matched": {
+        "duration": 6.568708333333333,
+        "rms": 0.04541569816161506,
+        "sha256": "509b0adf894c928edf0a13c45bd2319e135bf12e0fca8143b0f41b2bd034c46d"
+      },
+      "normalization": {
+        "mood": "sad",
+        "tempo": 1.1341463414634148,
+        "gain": 0.8228878594752737,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "sad-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显悲伤、失落和疲惫的语气说。压低声音，语调沉重，重点处有长一点的犹豫停顿，句尾无力地下沉。",
+      "file": "comfort-77-sad-xvec.wav",
+      "elapsed_seconds": 1.2768711999997322,
+      "duration": 7.68,
+      "rms": 0.054101149912916,
+      "sha256": "af5bbaca2b6848b8d3ef1caae45b76f91f3fae87346b60d839eec80c3031f561",
+      "matched_file": "comfort-77-sad-xvec-matched.wav",
+      "matched": {
+        "duration": 6.565958333333334,
+        "rms": 0.04554461065467666,
+        "sha256": "e901cb0759d92e7b66489c50fd32724ff1b7e588bfa78daa103315ff39c20bef"
+      },
+      "normalization": {
+        "mood": "sad-xvec",
+        "tempo": 1.170731707317073,
+        "gain": 0.85,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "stressed",
+      "x_vector_only": false,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "comfort-77-stressed.wav",
+      "elapsed_seconds": 1.1732093999999051,
+      "duration": 7.12,
+      "rms": 0.06345490700801934,
+      "sha256": "d4399ee78d94c0c60aa7c4b08f0fc2b2abb9e85d4354876890299c59af13fe11",
+      "matched_file": "comfort-77-stressed-matched.wav",
+      "matched": {
+        "duration": 6.570375,
+        "rms": 0.04581170027947317,
+        "sha256": "3409fa0a162a3905df6878c754e0f2475c2aa25e614d550ba2e558ce8e2fac02"
+      },
+      "normalization": {
+        "mood": "stressed",
+        "tempo": 1.0853658536585367,
+        "gain": 0.7247032513997216,
+        "method": "none",
+        "instructions": ""
+      }
+    },
+    {
+      "case": "comfort",
+      "seed": 77,
+      "mood": "stressed-xvec",
+      "x_vector_only": true,
+      "instruction": "用明显紧张、不安和谨慎的语气说。声线收紧，压着声音，重音后短暂犹豫，短句结尾收住，表达克制而绷紧。",
+      "file": "comfort-77-stressed-xvec.wav",
+      "elapsed_seconds": 1.1539683000009973,
+      "duration": 7.2,
+      "rms": 0.05970502662977537,
+      "sha256": "9296e900e1dcd43bf921b3964744687030fee97d80c762d26abf54e4a73ea7ef",
+      "matched_file": "comfort-77-stressed-xvec-matched.wav",
+      "matched": {
+        "duration": 6.565083333333333,
+        "rms": 0.04574569823673925,
+        "sha256": "d81935429e45afb9b735d2b9b92de70bd46f443331e72dcd5330271436e72123"
+      },
+      "normalization": {
+        "mood": "stressed-xvec",
+        "tempo": 1.0975609756097562,
+        "gain": 0.7702195279324274,
+        "method": "none",
+        "instructions": ""
+      }
+    }
+  ],
+  "user_feedback_v2": "some changes; sad/stressed weak, still lively especially stressed",
+  "listening_status": "User accepted vector identity and improved emotional expression; adopted in v3. No multi-listener or all-text guarantee.",
+  "reference_sha256": "5297a210f300cc7d70559499b6c360dec066241886d82f26a79c4a16e6ebb962",
+  "state_unchanged": {
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.wav": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\settings.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\emotion_state.json": true
+  },
+  "user_feedback_vector": "Speaker-vector clearly better than ICL; still sounds like Saya, can adopt."
+}

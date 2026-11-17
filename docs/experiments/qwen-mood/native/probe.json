@@ -1,0 +1,48 @@
+{
+  "qwen_tts": "0.1.1",
+  "torch": "2.6.0+cu124",
+  "voice_id": "1fd8568ff260441587cbe97a01c0ca83",
+  "reference_sha256": "5297a210f300cc7d70559499b6c360dec066241886d82f26a79c4a16e6ebb962",
+  "signature": "(self, text: Union[str, List[str]], language: Union[str, List[str]] = None, ref_audio: Union[str, numpy.ndarray, Tuple[numpy.ndarray, int], List[Union[str, numpy.ndarray, Tuple[numpy.ndarray, int]]], NoneType] = None, ref_text: Union[str, List[Optional[str]], NoneType] = None, x_vector_only_mode: Union[bool, List[bool]] = False, voice_clone_prompt: Union[Dict[str, Any], List[qwen_tts.inference.qwen3_tts_model.VoiceClonePromptItem], NoneType] = None, non_streaming_mode: bool = False, **kwargs) -> Tuple[List[numpy.ndarray], int]",
+  "text": "博士，我们先把今天的事情安排好，然后一起休息一会儿。",
+  "seed": 42,
+  "results": [
+    {
+      "label": "neutral",
+      "instruct": null,
+      "accepted": true,
+      "samples": 117120,
+      "sample_rate": 24000,
+      "duration": 4.88,
+      "float_sha256": "089eeaaae82cb9d744dc4e5960e0126621abd2c62f94e4c87549856bc95eb4ed",
+      "identical_to_baseline": true,
+      "max_abs_difference": 0.0,
+      "elapsed_seconds": 10.826
+    },
+    {
+      "label": "instruct-happy",
+      "instruct": "用非常开心、兴奋的语气说。",
+      "accepted": true,
+      "samples": 117120,
+      "sample_rate": 24000,
+      "duration": 4.88,
+      "float_sha256": "089eeaaae82cb9d744dc4e5960e0126621abd2c62f94e4c87549856bc95eb4ed",
+      "identical_to_baseline": true,
+      "max_abs_difference": 0.0,
+      "elapsed_seconds": 10.361
+    },
+    {
+      "label": "instruct-sad",
+      "instruct": "用非常悲伤、低落的语气说。",
+      "accepted": true,
+      "samples": 117120,
+      "sample_rate": 24000,
+      "duration": 4.88,
+      "float_sha256": "089eeaaae82cb9d744dc4e5960e0126621abd2c62f94e4c87549856bc95eb4ed",
+      "identical_to_baseline": true,
+      "max_abs_difference": 0.0,
+      "elapsed_seconds": 10.166
+    }
+  ],
+  "reference_unchanged": true
+}

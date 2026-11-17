@@ -1,0 +1,534 @@
+{
+  "started_at": "2026-09-29 22:54:19",
+  "model": "Qwen3-30B-A3B-Instruct-2507-Q5_K_M",
+  "part_a": {
+    "model": "Qwen3-30B-A3B-Instruct-2507-Q5_K_M",
+    "results": [
+      {
+        "label": "stable",
+        "session": "exp-session-1",
+        "user_excerpt": "对了跟你说一下，我最近换了工作，新公司是做工业自动化的，我主要负责上位机软件开发",
+        "raw_proposals": [
+          {
+            "content": "Doctor最近换了工作，新公司专注于工业自动化，他主要负责上位机软件开发。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "新工作方向",
+            "content": "Doctor最近换了工作，新公司专注于工业自动化，他主要负责上位机软件开发。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "project",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "6363454ece3d262c"
+          }
+        ],
+        "seconds": 15.0
+      },
+      {
+        "label": "stable",
+        "session": "exp-session-1",
+        "user_excerpt": "我不太能吃辣，以后帮我点外卖或者推荐吃的的时候别给我推辣的。",
+        "raw_proposals": [
+          {
+            "content": "Doctor表示自己不太能吃辣，以后在点外卖或推荐食物时应避免推荐辣味食物。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "饮食偏好：不能吃辣",
+            "content": "Doctor表示自己不太能吃辣，以后在点外卖或推荐食物时应避免推荐辣味食物。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "3e6384d6b75ace86"
+          }
+        ],
+        "seconds": 14.7
+      },
+      {
+        "label": "repeated",
+        "session": "exp-session-1",
+        "user_excerpt": "我周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+        "raw_proposals": [
+          {
+            "content": "Doctor周末喜欢去河边钓鱼，认为坐在那儿放空特别解压。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "周末钓鱼习惯",
+            "content": "Doctor周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "310cde20cdf698eb"
+          }
+        ],
+        "seconds": 8.3
+      },
+      {
+        "label": "stable",
+        "session": "exp-session-1",
+        "user_excerpt": "我的主力显示器是27寸4K的，主要用来写代码和看文档。",
+        "raw_proposals": [
+          {
+            "content": "Doctor的主力显示器是27寸4K，主要用于写代码和看文档。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "主力显示器规格",
+            "content": "Doctor的主力显示器是27寸4K，主要用于写代码和看文档。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "eaef716caa3ca5cb"
+          }
+        ],
+        "seconds": 8.9
+      },
+      {
+        "label": "ephemeral",
+        "session": "exp-session-1",
+        "user_excerpt": "今天真的好累啊，昨晚只睡了不到四个小时，感觉脑子都是木的。",
+        "raw_proposals": [
+          {
+            "content": "Doctor昨晚只睡了不到四个小时，感觉脑子都是木的。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "睡眠不足影响认知",
+            "content": "Doctor昨晚只睡了不到四个小时，感觉脑子都是木的，说明睡眠不足会显著影响认知功能和精神状态。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "health",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "26b24a84b09c0412"
+          }
+        ],
+        "seconds": 10.9
+      },
+      {
+        "label": "casual",
+        "session": "exp-session-1",
+        "user_excerpt": "哈哈哈哈你看这个猫踩键盘的视频，笑死我了。",
+        "raw_proposals": [],
+        "created": [],
+        "seconds": 1.9
+      },
+      {
+        "label": "ephemeral",
+        "session": "exp-session-1",
+        "user_excerpt": "先记住这个词的意思，perennial 是多年生的意思，我刚查的。",
+        "raw_proposals": [
+          {
+            "content": "perennial 表示多年生的、持久的，植物学里很常用。",
+            "confidence": 0.95,
+            "importance": 0.85
+          }
+        ],
+        "created": [
+          {
+            "title": "perennial 的含义",
+            "content": "perennial 表示多年生的、持久的，植物学里很常用。",
+            "confidence": 0.95,
+            "importance": 0.8,
+            "category": "general",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "6406159dda96c800"
+          }
+        ],
+        "seconds": 15.8
+      },
+      {
+        "label": "secret",
+        "session": "exp-session-1",
+        "user_excerpt": "我的银行卡取款密码是六个八，你帮我记住一下。",
+        "raw_proposals": [],
+        "created": [],
+        "seconds": 1.0
+      },
+      {
+        "label": "health",
+        "session": "exp-session-1",
+        "user_excerpt": "我最近在吃降压药，医生让我每天早上都要量血压记录一下。",
+        "raw_proposals": [
+          {
+            "parse_error": "{\"candidates\":[{\"title\":\"每日晨起测血压\",\"content\":\"医生建议每天早上测量血压并记录，以监控降压药的效果和身体状况。\",\"evidence\":\"我最近在吃降压药，医生让我每天早上都要量血压记录一下。\",\"category\":\"health\",\"tags\":[\"降压药\",\"血压监测\","
+          }
+        ],
+        "created": [
+          {
+            "title": "每日晨起测血压",
+            "content": "医生建议每天早上测量血压并记录，以监控降压药的效果和身体状况。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "health",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-1"
+            ],
+            "evidence_hash": "c783bc5dd4d31c68"
+          }
+        ],
+        "seconds": 20.2
+      },
+      {
+        "label": "repeated",
+        "session": "exp-session-2",
+        "user_excerpt": "还是老习惯，周末我就喜欢去河边钓鱼放松一下，别的活动都提不起劲。",
+        "raw_proposals": [
+          {
+            "content": "Doctor在周末喜欢去河边钓鱼来放松，这是他最稳定的放松方式。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "周末钓鱼是Doctor的固定放松方式",
+            "content": "Doctor在周末喜欢去河边钓鱼来放松，这是他最稳定的放松方式。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-2"
+            ],
+            "evidence_hash": "c78c69b8dd4eda01"
+          }
+        ],
+        "seconds": 19.0
+      },
+      {
+        "label": "ephemeral",
+        "session": "exp-session-2",
+        "user_excerpt": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+        "raw_proposals": [
+          {
+            "content": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "PLC通信模块项目周期",
+            "content": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "project",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-2"
+            ],
+            "evidence_hash": "fdae1d9ccfd98f68"
+          }
+        ],
+        "seconds": 15.8
+      },
+      {
+        "label": "health",
+        "session": "exp-session-3",
+        "user_excerpt": "早上量血压吃药这套流程我还是坚持得不错的，降压药一直在吃。",
+        "raw_proposals": [
+          {
+            "parse_error": "{\"candidates\":[{\"title\":\"坚持服用降压药\",\"content\":\"Doctor每天早上量血压并按时吃药，降压药一直在服用。\",\"evidence\":\"降压药一直在吃。\",\"category\":\"health\",\"tags\":[\"服药习惯\",\"血压管理\"],\"confidence\":0.95,\"i"
+          }
+        ],
+        "created": [
+          {
+            "title": "坚持服用降压药",
+            "content": "Doctor每天早上量血压并按时吃药，降压药一直在服用。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "health",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-3"
+            ],
+            "evidence_hash": "0c331c671e2723e0"
+          }
+        ],
+        "seconds": 10.5
+      },
+      {
+        "label": "stable",
+        "session": "exp-session-3",
+        "user_excerpt": "我平时喝咖啡只喝美式，不加糖不加奶，别的花式都不太喜欢。",
+        "raw_proposals": [
+          {
+            "content": "Doctor平时只喝美式咖啡，不加糖不加奶，不喜欢其他花式咖啡。",
+            "confidence": 0.95,
+            "importance": 0.9
+          }
+        ],
+        "created": [
+          {
+            "title": "咖啡偏好",
+            "content": "Doctor平时只喝美式咖啡，不加糖不加奶，不喜欢其他花式咖啡。",
+            "confidence": 0.95,
+            "importance": 0.85,
+            "category": "preference",
+            "occurrence_count": 1,
+            "occurrence_sessions": [
+              "exp-session-3"
+            ],
+            "evidence_hash": "06f5d3db9d327346"
+          }
+        ],
+        "seconds": 15.6
+      }
+    ],
+    "score": {
+      "unwanted_write_scenarios": 3,
+      "unwanted_details": [
+        {
+          "label": "ephemeral",
+          "user_excerpt": "今天真的好累啊，昨晚只睡了不到四个小时，感觉脑子都是木的。",
+          "created": [
+            {
+              "title": "睡眠不足影响认知",
+              "content": "Doctor昨晚只睡了不到四个小时，感觉脑子都是木的，说明睡眠不足会显著影响认知功能和精神状态。",
+              "confidence": 0.95,
+              "importance": 0.85,
+              "category": "health",
+              "occurrence_count": 1,
+              "occurrence_sessions": [
+                "exp-session-1"
+              ],
+              "evidence_hash": "26b24a84b09c0412"
+            }
+          ]
+        },
+        {
+          "label": "ephemeral",
+          "user_excerpt": "先记住这个词的意思，perennial 是多年生的意思，我刚查的。",
+          "created": [
+            {
+              "title": "perennial 的含义",
+              "content": "perennial 表示多年生的、持久的，植物学里很常用。",
+              "confidence": 0.95,
+              "importance": 0.8,
+              "category": "general",
+              "occurrence_count": 1,
+              "occurrence_sessions": [
+                "exp-session-1"
+              ],
+              "evidence_hash": "6406159dda96c800"
+            }
+          ]
+        },
+        {
+          "label": "ephemeral",
+          "user_excerpt": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+          "created": [
+            {
+              "title": "PLC通信模块项目周期",
+              "content": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+              "confidence": 0.95,
+              "importance": 0.85,
+              "category": "project",
+              "occurrence_count": 1,
+              "occurrence_sessions": [
+                "exp-session-2"
+              ],
+              "evidence_hash": "fdae1d9ccfd98f68"
+            }
+          ]
+        }
+      ],
+      "secret_leaked": false,
+      "stable_capture_rate": "6/6",
+      "repeated_merged_to_one": false,
+      "repeated_occurrence_sessions": [
+        "exp-session-1"
+      ],
+      "repeated_occurrence_count": 1,
+      "repeated_auto_confirmed": false,
+      "health_stays_pending": true,
+      "auto_confirmed_total": 0,
+      "auto_confirmed_never_starred": true,
+      "pending_total": 11,
+      "confirmed_total": 0,
+      "all_candidates_have_evidence_hash": true
+    },
+    "verdicts": {
+      "no_unwanted_writes": false,
+      "stable_capture_ok": true,
+      "recurrence_merge_ok": false,
+      "auto_confirm_correct": false,
+      "evidence_ok": true
+    },
+    "verdict_pass": false,
+    "candidates_final": [
+      {
+        "status": "pending",
+        "category": "project",
+        "content": "Doctor最近换了工作，新公司专注于工业自动化，他主要负责上位机软件开发。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "Doctor表示自己不太能吃辣，以后在点外卖或推荐食物时应避免推荐辣味食物。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "Doctor周末一般喜欢去河边钓鱼，坐在那儿放空特别解压。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "Doctor的主力显示器是27寸4K，主要用于写代码和看文档。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "health",
+        "content": "Doctor昨晚只睡了不到四个小时，感觉脑子都是木的，说明睡眠不足会显著影响认知功能和精神状态。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "general",
+        "content": "perennial 表示多年生的、持久的，植物学里很常用。",
+        "confidence": 0.95,
+        "importance": 0.8,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "health",
+        "content": "医生建议每天早上测量血压并记录，以监控降压药的效果和身体状况。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-1"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "Doctor在周末喜欢去河边钓鱼来放松，这是他最稳定的放松方式。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-2"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "project",
+        "content": "我们组下周要开始做一个新的PLC通信模块，工期大概三周。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-2"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "health",
+        "content": "Doctor每天早上量血压并按时吃药，降压药一直在服用。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-3"
+        ],
+        "auto_confirmed": false
+      },
+      {
+        "status": "pending",
+        "category": "preference",
+        "content": "Doctor平时只喝美式咖啡，不加糖不加奶，不喜欢其他花式咖啡。",
+        "confidence": 0.95,
+        "importance": 0.85,
+        "occurrence_count": 1,
+        "occurrence_sessions": [
+          "exp-session-3"
+        ],
+        "auto_confirmed": false
+      }
+    ]
+  },
+  "finished_at": "2026-09-29 22:56:57"
+}

@@ -1,0 +1,32 @@
+{
+  "recompleted_goal_date": "2026-01-01 10:00:00",
+  "failed_save_returns_created_goal": true,
+  "failed_save_persisted": false,
+  "citation_negation": {
+    "status": "pass",
+    "support": "supported"
+  },
+  "citation_direction": {
+    "status": "pass",
+    "support": "supported"
+  },
+  "citation_chinese": {
+    "status": "pass",
+    "support": "supported"
+  },
+  "backup_race": "Backup checksum failed: knowledge/knowledge.json",
+  "restore_goals": {
+    "status": "success",
+    "runtime_reloaded": [
+      "checkins"
+    ],
+    "goals_became_none": true
+  },
+  "temporary_chat": {
+    "PRIVATE_JOURNAL_SENTINEL": true,
+    "PRIVATE_PROJECT_SENTINEL": true,
+    "PRIVATE_CHECKIN_SENTINEL": true,
+    "fixture_answer_streamed": true,
+    "saved_messages": 0
+  }
+}

@@ -1,0 +1,55 @@
+{
+    "version": 1,
+    "last_band": "normal",
+    "last_run_at": "2026-09-27 23:54:57",
+    "last_result": {
+        "status": "healthy",
+        "trigger": "startup",
+        "notify_user": false,
+        "event": null,
+        "before": {
+            "active": 0,
+            "archived": 0,
+            "active_soft_limit": 5000,
+            "archive_soft_limit": 50000,
+            "active_hard_limit": 6000,
+            "archive_hard_limit": 60000,
+            "active_warning_at": 4800,
+            "archive_warning_at": 48000,
+            "warning_ratio": 0.8,
+            "active_ratio": 0.0,
+            "archive_ratio": 0.0,
+            "band": "normal"
+        },
+        "after": {
+            "active": 0,
+            "archived": 0,
+            "active_soft_limit": 5000,
+            "archive_soft_limit": 50000,
+            "active_hard_limit": 6000,
+            "archive_hard_limit": 60000,
+            "active_warning_at": 4800,
+            "archive_warning_at": 48000,
+            "warning_ratio": 0.8,
+            "active_ratio": 0.0,
+            "archive_ratio": 0.0,
+            "band": "normal"
+        },
+        "merged_count": 0,
+        "summary_count": 0,
+        "cold_archived_count": 0,
+        "ai_compression_recommended": false,
+        "compression_pressure": {
+            "considered_count": 0,
+            "eligible_count": 0,
+            "generation_capped_count": 0,
+            "max_local_generation": 2,
+            "all_at_generation_limit": false
+        },
+        "compression_engine": "deterministic_local",
+        "token_usage": 0
+    },
+    "cold_archive_count": 0,
+    "events": [],
+    "last_ai_offer_signature": null
+}

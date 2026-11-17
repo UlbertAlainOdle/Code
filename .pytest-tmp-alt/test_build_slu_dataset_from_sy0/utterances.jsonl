@@ -1,0 +1,3 @@
+{"text": "挖点铁矿", "route": "task", "commands": ["collect iron_ore 8"], "direct_action": null, "goal": null}
+{"text": "给我一瓶治疗药水", "route": "goal", "commands": [], "direct_action": null, "goal": {"type": "obtain_and_deliver", "target": "potion/healing", "count": 1, "recipient": "Doctor"}}
+{"text": "今天天气真不错", "route": "chat", "commands": [], "direct_action": null, "goal": null}

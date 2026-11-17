@@ -1,0 +1,100 @@
+--- 
++++ 
+@@ -53,26 +53,48 @@
+     pieces = [_normalize_space(piece) for piece in _PASSAGE_SPLIT_RE.split(clean)]
+     pieces = [piece for piece in pieces if piece]
+     result = []
+-    current = ""
+     for piece in pieces:
+-        if len(piece) > max_chars:
+-            if current:
+-                result.append(current)
+-                current = ""
+-            result.extend(
+-                piece[offset:offset + max_chars]
+-                for offset in range(0, len(piece), max_chars)
+-            )
+-            continue
+-        combined = f"{current} {piece}".strip() if current else piece
+-        if current and len(combined) > max_chars:
+-            result.append(current)
+-            current = piece
+-        else:
+-            current = combined
+-    if current:
+-        result.append(current)
++        # A neighboring sentence must not supply missing numbers/qualifiers
++        # for a different claim in the same paragraph.
++        result.extend(piece[offset:offset + max_chars] for offset in range(0, len(piece), max_chars))
+     return result[:240]
++
++
++_NEGATION_RE = re.compile(r"\b(?:not|never|no|cannot|without)\b|\b\w+n['’]t\b|(?:不支持|不允许|不能|不可|没有|并非|尚未|未能|未支持|不提供|不包含)", re.I)
++_UP_RE = re.compile(r"\b(?:increas\w*|grew|grow\w*|rose|ris(?:e|es|en|ing))\b|增长|上升|增加|上涨", re.I)
++_DOWN_RE = re.compile(r"\b(?:decreas\w*|declin\w*|fell|fall\w*|drop\w*)\b|下降|减少|下跌|降低", re.I)
++_QUANTITY_RE = re.compile(r"(\d+(?:[.,]\d+)*)\s*(%|％|percentage points?|percent|ms|milliseconds?|seconds?|secs?|minutes?|hours?|MB|GB|TB|USD|EUR|美元|欧元|万元|亿元|元|毫秒|秒|分钟|小时|个百分点)", re.I)
++_SUBJECT_RE = re.compile(r"^(?:(?i:the)\s+)?([A-Z][\w.-]*(?:\s+[A-Z][\w.-]*)*)(?=\s+(?:revenue|supports?|does|do|is|was|has|released|reported|announced)\b)")
++
++
++def _conflict_reasons(claim: str, passage: str) -> list:
++    """Conservative warning signals, not a semantic entailment verdict."""
++    reasons = []
++    if bool(_NEGATION_RE.search(claim)) != bool(_NEGATION_RE.search(passage)):
++        reasons.append("negation_mismatch")
++    claim_directions = {name for name, pattern in (("up", _UP_RE), ("down", _DOWN_RE)) if pattern.search(claim)}
++    source_directions = {name for name, pattern in (("up", _UP_RE), ("down", _DOWN_RE)) if pattern.search(passage)}
++    if claim_directions and source_directions and claim_directions.isdisjoint(source_directions):
++        reasons.append("direction_mismatch")
++    aliases = {"％": "%", "percent": "%", "percentage point": "pp", "percentage points": "pp",
++               "个百分点": "pp", "milliseconds": "ms", "millisecond": "ms", "毫秒": "ms",
++               "seconds": "s", "second": "s", "secs": "s", "sec": "s", "秒": "s",
++               "minutes": "min", "minute": "min", "分钟": "min", "hours": "h", "hour": "h", "小时": "h",
++               "美元": "usd", "欧元": "eur"}
++    def quantities(text):
++        values = {}
++        for number, unit in _QUANTITY_RE.findall(text):
++            unit = unit.lower()
++            values.setdefault(number, set()).add(aliases.get(unit, unit))
++        return values
++    claimed, sourced = quantities(claim), quantities(passage)
++    if any(number in sourced and not units.issubset(sourced[number]) for number, units in claimed.items()):
++        reasons.append("unit_mismatch")
++    claim_subject, source_subject = _SUBJECT_RE.search(claim), _SUBJECT_RE.search(passage)
++    if (claim_subject and source_subject and
++            claim_subject.group(1).lower() != source_subject.group(1).lower()):
++        reasons.append("subject_mismatch")
++    return reasons
+ 
+ 
+ def _claim_before(text: str, marker_start: int, previous_end: int) -> str:
+@@ -120,8 +142,11 @@
+             best_number_match = number_match
+ 
+     status = getattr(source, "status", "failed")
++    conflicts = _conflict_reasons(claim, best) if best else []
+     if status != "read":
+         support = "snippet_only" if best else "unavailable"
++    elif conflicts:
++        support = "unsupported"
+     elif best_score >= 0.34 and best_number_match:
+         support = "supported"
+     elif best_score >= 0.16:
+@@ -136,6 +161,7 @@
+         "support": support,
+         "overlap_score": round(max(0.0, min(1.0, best_score)), 3),
+         "passage": excerpt,
++        "conflicts": conflicts,
+     }
+ 
+ 
+@@ -247,8 +273,9 @@
+         status = "pass"
+ 
+     return {
+-        "version": 1,
++        "version": 2,
+         "method": "deterministic_lexical",
++        "limitation": "仅检查词面、数字及明显冲突，不代表事实已经核实。",
+         "status": status,
+         "summary": counts,
+         "claims": claims,

@@ -15,6 +15,15 @@ from saya_app.services.web_research import policy
 
 
 # --------------------------------------------------------------------- policy
+def test_brave_usage_limit_is_distinct_from_authentication_and_rate_limit():
+    from types import SimpleNamespace
+    from saya_app.services.web_research.search import BraveSearchService
+    class Session:
+        def get(self,*args,**kwargs):return SimpleNamespace(status_code=402)
+    results,error=BraveSearchService(session=Session()).search('public fixture query','fake-search-key')
+    assert results==[] and error=='usage_limit_exceeded'
+
+
 class NormalizeModeTests(unittest.TestCase):
     def test_known_values(self):
         self.assertEqual(policy.normalize_mode("off"), "off")

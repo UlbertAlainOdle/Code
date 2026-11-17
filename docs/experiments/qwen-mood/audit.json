@@ -1,0 +1,133 @@
+{
+  "text": "博士，我们先把今天的事情安排好，然后一起休息一会儿。",
+  "settings": {
+    "enabled": true,
+    "provider": "qwen_local",
+    "auto_read": false,
+    "engine": "vllm_omni",
+    "stream_audio": true,
+    "stream_chat": true,
+    "stream_buffer_seconds": 0.8,
+    "mode": "clone",
+    "language": "Chinese",
+    "description": "年轻成年女性，清亮柔和的二次元声线，活泼亲切，有自然的情绪起伏，咬字清楚，避免夸张尖叫和机械感。",
+    "voice_id": "1fd8568ff260441587cbe97a01c0ca83",
+    "x_vector_only": false,
+    "temperature": 0.9,
+    "top_p": 1.0,
+    "top_k": 50,
+    "repetition_penalty": 1.05,
+    "max_new_tokens": 2048,
+    "seed": 42,
+    "chunk_chars": 100,
+    "volume": 1.0,
+    "playback_rate": 1.0,
+    "mood_prosody": true,
+    "idle_unload_seconds": 0
+  },
+  "reference_sha256": "5297a210f300cc7d70559499b6c360dec066241886d82f26a79c4a16e6ebb962",
+  "comparison_source": "one generated clone waveform reused for DSP A/B; avoids random sampling confound",
+  "listening_status": "Human listening: timing-only prototype fails requested emotional phrasing.",
+  "results": [
+    {
+      "mood": "neutral",
+      "tempo": 1.0,
+      "gain": 1.0,
+      "method": "pitch_preserving_dsp_v1",
+      "duration": 5.36,
+      "dsp_seconds": 0.0002865999995265156,
+      "sha256": "ab843854becff99e9e573b22a7b98a108e9a163b9ff1e26456831a31e4640273"
+    },
+    {
+      "mood": "happy",
+      "tempo": 1.08,
+      "gain": 1.0,
+      "method": "pitch_preserving_dsp_v1",
+      "duration": 4.976708333333334,
+      "dsp_seconds": 0.04613700000118115,
+      "sha256": "0b842bc4349c06c64e0d49d4649a88f597bb0e7cd092c823867389b862c0c8b9"
+    },
+    {
+      "mood": "excited",
+      "tempo": 1.14,
+      "gain": 1.0,
+      "method": "pitch_preserving_dsp_v1",
+      "duration": 4.713166666666667,
+      "dsp_seconds": 0.04586040000140201,
+      "sha256": "32c58885fea260e393db52e6f9600d7fc14ec2ed7e037d9aeb33530ba0637069"
+    },
+    {
+      "mood": "sad",
+      "tempo": 0.88,
+      "gain": 0.78,
+      "method": "pitch_preserving_dsp_v1",
+      "duration": 6.0754166666666665,
+      "dsp_seconds": 0.050687099999777274,
+      "sha256": "9e1dc744169cddca8e0482cd107476f7d93b6e97a247e7b3a95d283a37ed5b99"
+    },
+    {
+      "mood": "stressed",
+      "tempo": 1.04,
+      "gain": 0.88,
+      "method": "pitch_preserving_dsp_v1",
+      "duration": 5.166541666666666,
+      "dsp_seconds": 0.04436820000046282,
+      "sha256": "d000c4da18c02e4cf32fa5f4153a05c4ccf7f0b1f7115271ecff108fee3a271c"
+    }
+  ],
+  "instruction_probe": [
+    {
+      "label": "baseline",
+      "instruction": null,
+      "status": 200,
+      "elapsed_seconds": 0.8796474000009766,
+      "duration": 5.36,
+      "sha256": "ab843854becff99e9e573b22a7b98a108e9a163b9ff1e26456831a31e4640273"
+    },
+    {
+      "label": "baseline-repeat",
+      "instruction": null,
+      "status": 200,
+      "elapsed_seconds": 0.8684212999978627,
+      "duration": 5.36,
+      "sha256": "ab843854becff99e9e573b22a7b98a108e9a163b9ff1e26456831a31e4640273"
+    },
+    {
+      "label": "happy",
+      "instruction": "用非常开心、兴奋的语气说。",
+      "status": 200,
+      "elapsed_seconds": 0.7970927999995183,
+      "duration": 4.88,
+      "sha256": "717fad9fdb4968e8000742755a81face6805bf2dac695226e67fbb0aff4cf082"
+    },
+    {
+      "label": "sad",
+      "instruction": "用非常悲伤、低落的语气说。",
+      "status": 200,
+      "elapsed_seconds": 0.9062226999994891,
+      "duration": 5.6,
+      "sha256": "e2b7e942e63ca5a2a12f47035765233cc29b350fd4818474173c4854b9a87801"
+    }
+  ],
+  "cold_preview_seconds": 48.06077870000081,
+  "wav_route": {
+    "duration": 6.0754166666666665,
+    "mood": "sad"
+  },
+  "stream_route": {
+    "duration": 12.546375,
+    "generated_seconds": 2.254658699999709,
+    "first_packet_seconds": 0.15675259999989066,
+    "packets": 148,
+    "simulated_first_playback_seconds": 0.449,
+    "simulated_gap_count": 0,
+    "simulated_gap_seconds": 0
+  },
+  "state_unchanged": {
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.wav": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\voices\\1fd8568ff260441587cbe97a01c0ca83.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\tts\\settings.json": true,
+    "D:\\Dear\\Talk\\mistral_models\\Code\\knowledge_base\\emotion_state.json": true
+  },
+  "user_feedback_v1": "感觉只有语速变了，情感上顿挫等一点没变"
+}

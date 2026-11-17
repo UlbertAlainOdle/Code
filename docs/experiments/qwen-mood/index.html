@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Saya 固定音色 · 旧语速音量对照</title>
+<style>body{font:16px/1.7 system-ui,sans-serif;max-width:900px;margin:40px auto;padding:0 22px;background:#f5f6fa;color:#242b40}article{background:white;border:1px solid #dce0ed;border-radius:14px;padding:18px 24px;margin:18px 0}h1{font-size:26px}h2{font-size:19px}audio{width:100%;margin:8px 0}button{padding:8px 14px;margin:5px;border:1px solid #697bb5;background:white;border-radius:8px;cursor:pointer}p{margin:8px 0}small{color:#5c647c}label{margin-right:16px}table{width:100%;border-collapse:collapse;font-size:14px}td,th{text-align:left;border-bottom:1px solid #dce0ed;padding:6px}#blind-result{min-height:1.7em}</style>
+<h1>Saya 固定音色 · 旧语速音量对照</h1>
+<article><p><strong>真人试听结果：只有语速变化，情感顿挫没有达到要求。</strong>此页保留旧实验供复查。<a href="direction.html">ICL 模型指令对照</a>仍偏轻快。后续<a href="direction.html?test=negative">加强负面指令 / 仅音色向量对照</a>获得用户认可：表达更好，仍像 Saya，现已采用。</p></article>
+<p>同一段克隆音频的对照：仅改变语速和音量，保留音高。文字、参考声音、模型采样结果完全相同。</p>
+<article><p>“博士，我们先把今天的事情安排好，然后一起休息一会儿。”</p>
+<p><label><input type="checkbox" id="equal">对齐响度，只比较节奏</label><small>关闭时保留原型的音量映射；每次只播放一段。</small></p>
+<h2>平静 · 原始克隆</h2><audio controls preload="metadata" src="neutral.wav" data-gain="1"></audio>
+<h2>开心 · 语速 1.08</h2><audio controls preload="metadata" src="happy.wav" data-gain="1"></audio>
+<h2>兴奋 · 语速 1.14</h2><audio controls preload="metadata" src="excited.wav" data-gain="1"></audio>
+<h2>低落 · 语速 0.88，音量 0.78</h2><audio controls preload="metadata" src="sad.wav" data-gain="0.78"></audio>
+<h2>紧张 · 语速 1.04，音量 0.88</h2><audio controls preload="metadata" src="stressed.wav" data-gain="0.88"></audio></article>
+<article><h2>听辨小实验</h2><p>随机选取“兴奋”或“低落”之一，先听再选择。主观上能辨认什么情绪，以及是不是同一个 Saya，需要真人判断。</p>
+<button id="random">播放随机样本</button><button data-answer="excited">轻快</button><button data-answer="sad">舒缓</button><p id="blind-result" aria-live="polite"></p></article>
+<article><h2>真实加速接口输出</h2><p>下方单独通过现有 WAV / 流式接口生成，不用于排除采样变化的 A/B 对照。</p><p>低落 · WAV</p><audio controls preload="metadata" src="api-sad.wav"></audio><p>兴奋 · 流式 PCM，三段重复文本</p><audio controls preload="metadata" src="api-stream-excited.wav"></audio></article>
+<article><h2>模型控制实验</h2><p>原生 Base 克隆分别加入开心、悲伤 instruct，三个输出逐样本完全一致。参数被接受却没有生效。vLLM 会拼接指令前缀，其结果可能变化，但官方没有把指令控制列为 Base 能力。</p>
+<p>原生：无指令</p><audio controls preload="metadata" src="native/neutral.wav"></audio><p>原生：开心指令</p><audio controls preload="metadata" src="native/instruct-happy.wav"></audio><p>原生：悲伤指令</p><audio controls preload="metadata" src="native/instruct-sad.wav"></audio>
+<details><summary>vLLM 非官方 Base 指令实验</summary><p>基线</p><audio controls src="omni-instruct-baseline.wav"></audio><p>重复基线</p><audio controls src="omni-instruct-baseline-repeat.wav"></audio><p>开心指令</p><audio controls src="omni-instruct-happy.wav"></audio><p>悲伤指令</p><audio controls src="omni-instruct-sad.wav"></audio></details></article>
+<article><h2>限制与验证记录</h2><p>这是韵律后处理，只能提供快慢、强弱线索。不能生成笑声、哭腔或情绪语调；“紧张”尤其难靠轻微语速和音量单独辨认。没有通过真人盲听验收。保音高和说话人相似度只是客观代理指标，不能保证所有文本的音色和自然度。</p>
+<p>自动朗读以开始时的连续心情为准；首句播放后才出现的 MOTION / MOOD 标签留到下一次朗读。试听标签不会改变陪伴状态。</p><p><a href="audit.json">真实 HTTP 实验记录</a> · <a href="native/probe.json">原生指令实验</a> · <a href="measurements.json">声学与说话人测量</a></p></article>
+<script>
+const players=[...document.querySelectorAll('audio')]; let choice=null, blind=new Audio();
+function stopOthers(active){[...players,blind].forEach(a=>{if(a!==active)a.pause()})}
+players.forEach(a=>{a.preservesPitch=true;a.addEventListener('play',()=>stopOthers(a))});
+function volume(){const equal=document.getElementById('equal').checked;players.forEach(a=>{a.volume=a.dataset.gain?(equal?0.75/Number(a.dataset.gain):1):1});if(choice)blind.volume=equal?0.75/(choice==='sad'?0.78:1):1}
+document.getElementById('equal').onchange=volume;
+document.getElementById('random').onclick=()=>{choice=Math.random()<0.5?'excited':'sad';blind.src=choice+'.wav';volume();stopOthers(blind);document.getElementById('blind-result').textContent='请听完后选择。';blind.play().catch(()=>{document.getElementById('blind-result').textContent='音频文件未生成或无法播放。'})};
+document.querySelectorAll('[data-answer]').forEach(b=>b.onclick=()=>{document.getElementById('blind-result').textContent=choice?(b.dataset.answer===choice?'判断一致。':'本次判断不同。')+' 本次是'+(choice==='sad'?'舒缓':'轻快')+'样本。':'请先播放随机样本。'});
+</script></html>
